@@ -54,9 +54,13 @@ export default function QuickStart() {
         </h2>
       </Reveal>
 
+      {/* min-w-0 or a track refuses to shrink below the widest code line, which
+          pushes the card past the viewport and takes the whole page horizontal
+          with it. The pre scrolls on its own once the track is allowed to be
+          narrower than its content. */}
       <div className="grid gap-5 md:grid-cols-3">
         {STEPS.map((step, i) => (
-          <Reveal key={step.title} delay={i * 0.12}>
+          <Reveal key={step.title} delay={i * 0.12} className="min-w-0">
             <div className="frost-card flex h-full flex-col rounded-2xl p-6">
               <div className="mb-4 flex items-center gap-3">
                 <span className="flex h-8 w-8 select-none items-center justify-center rounded-full border border-ice/30 font-mono text-sm text-ice">
