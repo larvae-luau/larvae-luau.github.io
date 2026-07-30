@@ -1,28 +1,49 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'motion/react'
+import { type MotionValue, motion, useScroll, useTransform } from 'motion/react'
+import useLiteMotion from '@/lib/use-lite-motion'
 
 /**
  * Layered snowy-mountain scene behind the hero: aurora glow, drifting mist,
  * and three parallax mountain ridges that separate as you scroll.
+ *
+ * Touch devices get the same scene without the scroll listener. Four transforms
+ * recomputed on every scroll frame is what makes the hero stutter on iOS, and
+ * the parallax reads as depth on a slow pointer scroll far more than under a
+ * flick with momentum.
  */
 export default function IcyBackdrop() {
-  const { scrollY } = useScroll()
-  const farY = useTransform(scrollY, [0, 900], [0, 120])
-  const midY = useTransform(scrollY, [0, 900], [0, 220])
-  const nearY = useTransform(scrollY, [0, 900], [0, 340])
-  const auroraOpacity = useTransform(scrollY, [0, 600], [1, 0])
+  const lite = useLiteMotion()
+  return lite ? <Scene /> : <ParallaxScene />
+}
 
+function ParallaxScene() {
+  const { scrollY } = useScroll()
+  const far = useTransform(scrollY, [0, 900], [0, 120])
+  const mid = useTransform(scrollY, [0, 900], [0, 220])
+  const near = useTransform(scrollY, [0, 900], [0, 340])
+  const aurora = useTransform(scrollY, [0, 600], [1, 0])
+  return <Scene far={far} mid={mid} near={near} aurora={aurora} />
+}
+
+interface SceneProps {
+  far?: MotionValue<number>
+  mid?: MotionValue<number>
+  near?: MotionValue<number>
+  aurora?: MotionValue<number>
+}
+
+function Scene({ far, mid, near, aurora }: SceneProps) {
   return (
+    /* Pinned to one viewport rather than the whole section: the hero grows past
+       100svh on a phone, and the ridges belong on the horizon either way. Below
+       them the ground fade has already reached the page background. */
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 select-none overflow-hidden"
+      className="pointer-events-none absolute inset-x-0 top-0 h-svh select-none overflow-hidden"
     >
       {/* Aurora */}
-      <motion.div
-        style={{ opacity: auroraOpacity }}
-        className="absolute inset-0"
-      >
+      <motion.div style={{ opacity: aurora }} className="absolute inset-0">
         <div className="absolute -top-40 left-1/2 h-168 w-7xl -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(135,253,255,0.16),transparent_60%)] blur-2xl" />
         <div className="absolute -top-24 left-[12%] h-120 w-136 rotate-12 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(90,167,255,0.13),transparent_65%)] blur-3xl" />
         <div className="absolute top-10 right-[8%] h-104 w-120 -rotate-12 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(160,120,255,0.1),transparent_65%)] blur-3xl" />
@@ -34,7 +55,7 @@ export default function IcyBackdrop() {
       {/* Mountain ridges */}
       <motion.svg
         aria-hidden="true"
-        style={{ y: farY }}
+        style={{ y: far }}
         className="absolute bottom-0 h-[46%] w-full"
         viewBox="0 0 1440 320"
         preserveAspectRatio="none"
@@ -51,7 +72,7 @@ export default function IcyBackdrop() {
       </motion.svg>
       <motion.svg
         aria-hidden="true"
-        style={{ y: midY }}
+        style={{ y: mid }}
         className="absolute bottom-0 h-[38%] w-full"
         viewBox="0 0 1440 320"
         preserveAspectRatio="none"
@@ -67,7 +88,7 @@ export default function IcyBackdrop() {
       </motion.svg>
       <motion.svg
         aria-hidden="true"
-        style={{ y: nearY }}
+        style={{ y: near }}
         className="absolute bottom-0 h-[28%] w-full"
         viewBox="0 0 1440 320"
         preserveAspectRatio="none"

@@ -2,6 +2,7 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from 'motion/react'
 import type { PointerEvent, ReactNode } from 'react'
+import useLiteMotion from '@/lib/use-lite-motion'
 
 interface TiltProps {
   children: ReactNode
@@ -13,8 +14,13 @@ interface TiltProps {
 /**
  * Pointer-tracking 3D tilt: the card rotates toward the cursor with a
  * spring, and settles back flat when the pointer leaves.
+ *
+ * A finger has no hover, so on touch this only ever fires mid-drag. It drops to
+ * a plain wrapper there rather than leaving a preserve-3d layer and a permanent
+ * will-change hint on every button and card for an effect nobody can trigger.
  */
 export default function Tilt({ children, className, max = 8 }: TiltProps) {
+  const lite = useLiteMotion()
   const px = useMotionValue(0.5)
   const py = useMotionValue(0.5)
   const spring = { stiffness: 160, damping: 18, mass: 0.4 }
@@ -32,6 +38,8 @@ export default function Tilt({ children, className, max = 8 }: TiltProps) {
     px.set(0.5)
     py.set(0.5)
   }
+
+  if (lite) return <div className={className}>{children}</div>
 
   return (
     <motion.div
