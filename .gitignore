@@ -41,3 +41,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# internal planning notes stay out of the repo
+*.md
+
+# but the docs site content has to ship, the build reads it
+!content/docs/**/*.md
