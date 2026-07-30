@@ -88,6 +88,19 @@ body {
   -webkit-backdrop-filter: blur(14px);
 }
 
+/* Entrance blurs, neutralized rather than merely un-targeted.
+   The lite variants stop animating `filter` at all on touch, but the first
+   render is always the desktop one, so motion has already written a blur inline
+   by the time that swap happens and nothing is left to animate it back to zero.
+   Overriding it here is also what guarantees the browser never rasterizes a
+   filter for these, whatever the inline style ends up saying. */
+@media (hover: none) and (pointer: coarse) {
+  .motion-blur {
+    /* biome-ignore lint/complexity/noImportantStyles: has to outrank the inline style motion writes */
+    filter: none !important;
+  }
+}
+
 /* Touch devices: a backdrop filter makes the browser re-read and re-blur
    everything behind the element whenever any of it changes, and the snow canvas
    changes all of it every frame. There are a dozen of these on the page and one

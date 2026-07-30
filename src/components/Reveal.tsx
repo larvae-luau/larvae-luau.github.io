@@ -32,7 +32,7 @@ export default function Reveal({
       }
       viewport={{ once: true, margin: '-80px' }}
       transition={{ type: 'spring', stiffness: 70, damping: 16, delay }}
-      className={className}
+      className={`motion-blur ${className ?? ''}`}
     >
       {children}
     </motion.div>
