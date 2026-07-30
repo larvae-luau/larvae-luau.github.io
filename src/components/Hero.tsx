@@ -12,6 +12,7 @@ import { type ReactNode, useState } from 'react'
 import IceButton from '@/components/IceButton'
 import IcyBackdrop from '@/components/IcyBackdrop'
 import Tilt from '@/components/Tilt'
+import { useDisabledEffects } from '@/lib/debug-flags'
 import logo from '@/lib/logo'
 import useLiteMotion from '@/lib/use-lite-motion'
 
@@ -66,6 +67,7 @@ type InstallId = (typeof INSTALLS)[number]['id']
 
 export default function Hero() {
   const lite = useLiteMotion()
+  const off = useDisabledEffects()
   const [installer, setInstaller] = useState<InstallId>('lpm')
   const active = INSTALLS.find((i) => i.id === installer) ?? INSTALLS[0]
 
@@ -78,24 +80,33 @@ export default function Hero() {
         className="mb-8"
       >
         <motion.div
-          animate={{ y: 6 }}
-          initial={{ y: -6 }}
+          animate={off.has('float') ? undefined : { y: 6 }}
+          initial={off.has('float') ? undefined : { y: -6 }}
           transition={{
             duration: 3,
             repeat: Infinity,
             repeatType: 'mirror',
             ease: 'easeInOut',
           }}
-          style={{ willChange: 'transform' }}
+          /* Pinning the layer for the whole session only pays off where the
+             logo also carries a filter, which on touch it no longer does. */
+          style={lite ? undefined : { willChange: 'transform' }}
           className="relative"
         >
           {/* The wide half of the glow, as a gradient rather than a second
-                drop-shadow. Chained drop-shadows blur the first shadow along
-                with the artwork, and WebKit's box-blur approximation turns that
-                into a visible rectangle behind a transparent PNG. */}
+              drop-shadow. Chained drop-shadows blur the first shadow along
+              with the artwork, and WebKit's box-blur approximation turns that
+              into a visible rectangle behind a transparent PNG.
+              Touch drops the remaining drop-shadow too and picks up its cyan
+              inner stop here instead. A filter under a transform that never
+              stops running is a layer iOS re-rasterizes rather than reuses. */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -inset-10 rounded-full bg-[radial-gradient(circle,rgba(90,167,255,0.22),transparent_70%)]"
+            className={`pointer-events-none absolute -inset-10 rounded-full ${
+              lite
+                ? 'bg-[radial-gradient(circle,rgba(135,253,255,0.20),transparent_45%),radial-gradient(circle,rgba(90,167,255,0.22),transparent_70%)]'
+                : 'bg-[radial-gradient(circle,rgba(90,167,255,0.22),transparent_70%)]'
+            }`}
           />
           <Tilt max={14}>
             <Image
@@ -105,7 +116,11 @@ export default function Hero() {
               height={130}
               priority
               draggable={false}
-              className="relative select-none filter-[drop-shadow(0_0_18px_rgba(135,253,255,0.4))]"
+              className={`relative select-none ${
+                lite
+                  ? ''
+                  : 'filter-[drop-shadow(0_0_18px_rgba(135,253,255,0.4))]'
+              }`}
             />
           </Tilt>
         </motion.div>
@@ -130,7 +145,7 @@ export default function Hero() {
           <motion.span
             key={w}
             variants={lite ? liteWord : word}
-            className={`inline-block ${i > 0 ? 'ml-[0.28em]' : ''} ${
+            className={`motion-blur inline-block ${i > 0 ? 'ml-[0.28em]' : ''} ${
               w === 'sub-zero' ? 'ice-text' : ''
             }`}
           >

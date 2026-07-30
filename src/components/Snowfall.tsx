@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { useDisabledEffects } from '@/lib/debug-flags'
 import { createFlakes, type Flake, stepFlake } from '@/lib/snow'
 import { LITE_MOTION_QUERY } from '@/lib/use-lite-motion'
 
@@ -18,8 +19,10 @@ const URL_BAR_SLACK = 160
  */
 export default function Snowfall() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const off = useDisabledEffects().has('snow')
 
   useEffect(() => {
+    if (off) return
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -122,7 +125,9 @@ export default function Snowfall() {
       window.removeEventListener('orientationchange', orient)
       document.removeEventListener('visibilitychange', visibility)
     }
-  }, [])
+  }, [off])
+
+  if (off) return null
 
   return (
     <div
