@@ -12,8 +12,13 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+const siteOrigin =
+  process.env.NEXT_PUBLIC_SITE_ORIGIN ?? 'https://coldluau.github.io'
+const ogImage = `${basePath}/coldluau-og.png`
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://coldluau.github.io'),
+  metadataBase: new URL(siteOrigin),
   title: 'coldluau · the cold, fast Luau preprocessor',
   description:
     'A parallel, incremental Luau preprocessor written in Rust. Native Roblox string requires, realm aware validation, and one Rojo project file instead of two.',
@@ -22,12 +27,12 @@ export const metadata: Metadata = {
     title: 'coldluau · the cold, fast Luau preprocessor',
     description:
       'Parallel, parse-once, and incremental, with native Roblox string requires that no other tool can emit.',
-    url: 'https://coldluau.github.io',
+    url: `${siteOrigin}${basePath}`,
     siteName: 'coldluau',
     type: 'website',
     images: [
       {
-        url: '/coldluau-og.png',
+        url: ogImage,
         width: 384,
         height: 384,
         alt: 'coldluau logo',
@@ -41,7 +46,7 @@ export const metadata: Metadata = {
     title: 'coldluau · the cold, fast Luau preprocessor',
     description:
       'Parallel, parse-once, and incremental, with native Roblox string requires that no other tool can emit.',
-    images: ['/coldluau-og.png'],
+    images: [ogImage],
   },
 }
 

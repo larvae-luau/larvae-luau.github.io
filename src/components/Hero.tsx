@@ -12,6 +12,7 @@ import { useState } from 'react'
 import IceButton from '@/components/IceButton'
 import IcyBackdrop from '@/components/IcyBackdrop'
 import Tilt from '@/components/Tilt'
+import logo from '@/lib/logo'
 
 const container: Variants = {
   hidden: {},
@@ -74,7 +75,7 @@ export default function Hero() {
           >
             <Tilt max={14}>
               <Image
-                src="/coldluautransparent.png"
+                src={logo}
                 alt="coldluau logo"
                 width={130}
                 height={130}

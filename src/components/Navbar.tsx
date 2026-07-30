@@ -3,6 +3,7 @@
 import { motion } from 'motion/react'
 import Image from 'next/image'
 import IceButton from '@/components/IceButton'
+import logo from '@/lib/logo'
 
 const LINKS = [
   { href: '#features', label: 'Features' },
@@ -24,7 +25,7 @@ export default function Navbar() {
       <nav className="frost-card mx-auto mt-4 flex max-w-5xl select-none items-center justify-between rounded-2xl px-5 py-3">
         <a href="#top" className="flex items-center gap-3">
           <Image
-            src="/coldluautransparent.png"
+            src={logo}
             alt=""
             width={32}
             height={32}

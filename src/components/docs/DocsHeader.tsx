@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import DocsSearch from '@/components/docs/DocsSearch'
 import type { SearchEntry } from '@/lib/doc-meta'
+import logo from '@/lib/logo'
 
 export default function DocsHeader({ entries }: { entries: SearchEntry[] }) {
   return (
@@ -9,7 +10,7 @@ export default function DocsHeader({ entries }: { entries: SearchEntry[] }) {
       <div className="frost-card mx-auto mt-4 flex max-w-7xl items-center gap-4 rounded-2xl px-5 py-3">
         <Link href="/" className="flex items-center gap-3">
           <Image
-            src="/coldluautransparent.png"
+            src={logo}
             alt=""
             width={30}
             height={30}

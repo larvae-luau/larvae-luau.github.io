@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import logo from '@/lib/logo'
 
 export default function Footer() {
   return (
@@ -7,7 +8,7 @@ export default function Footer() {
       <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-6 sm:flex-row">
         <div className="flex items-center gap-3">
           <Image
-            src="/coldluautransparent.png"
+            src={logo}
             alt=""
             width={28}
             height={28}
