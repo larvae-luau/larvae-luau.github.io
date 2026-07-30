@@ -37,7 +37,7 @@ export default function DocsHeader({ entries }: { entries: SearchEntry[] }) {
             Home
           </Link>
           <a
-            href="https://github.com/coldluau/coldluau"
+            href="https://github.com/coldluau/cli"
             target="_blank"
             rel="noreferrer"
             className="rounded-lg border border-ice/25 px-3 py-1.5 text-sm font-medium text-ice transition-colors hover:bg-ice/10"

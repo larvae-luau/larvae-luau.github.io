@@ -53,7 +53,7 @@ export default function Navbar() {
             Docs
           </IceButton>
           <IceButton
-            href="https://github.com/coldluau/coldluau"
+            href="https://github.com/coldluau/cli"
             variant="ghost"
             size="sm"
             external

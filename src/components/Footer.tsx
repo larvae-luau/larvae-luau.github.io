@@ -21,7 +21,7 @@ export default function Footer() {
         </div>
         <div className="flex items-center gap-6 text-sm text-muted">
           <a
-            href="https://github.com/coldluau/coldluau"
+            href="https://github.com/coldluau/cli"
             target="_blank"
             rel="noreferrer"
             className="transition-colors hover:text-ice"

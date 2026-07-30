@@ -136,7 +136,7 @@ export default function Hero() {
             Get started
           </IceButton>
           <IceButton
-            href="https://github.com/coldluau/coldluau"
+            href="https://github.com/coldluau/cli"
             variant="ghost"
             external
           >

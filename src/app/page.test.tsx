@@ -70,7 +70,7 @@ describe('Home page', () => {
     expect(docs.className).toContain('bg-ice')
     expect(within(nav).getByText('GitHub')).toHaveAttribute(
       'href',
-      'https://github.com/coldluau/coldluau',
+      'https://github.com/coldluau/cli',
     )
   })
 
