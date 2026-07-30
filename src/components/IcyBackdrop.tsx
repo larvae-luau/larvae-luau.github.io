@@ -23,13 +23,13 @@ export default function IcyBackdrop() {
         style={{ opacity: auroraOpacity }}
         className="absolute inset-0"
       >
-        <div className="absolute -top-40 left-1/2 h-[42rem] w-[80rem] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(135,253,255,0.16),transparent_60%)] blur-2xl" />
-        <div className="absolute -top-24 left-[12%] h-[30rem] w-[34rem] rotate-12 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(90,167,255,0.13),transparent_65%)] blur-3xl" />
-        <div className="absolute top-10 right-[8%] h-[26rem] w-[30rem] -rotate-12 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(160,120,255,0.1),transparent_65%)] blur-3xl" />
+        <div className="absolute -top-40 left-1/2 h-168 w-7xl -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(135,253,255,0.16),transparent_60%)] blur-2xl" />
+        <div className="absolute -top-24 left-[12%] h-120 w-136 rotate-12 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(90,167,255,0.13),transparent_65%)] blur-3xl" />
+        <div className="absolute top-10 right-[8%] h-104 w-120 -rotate-12 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(160,120,255,0.1),transparent_65%)] blur-3xl" />
       </motion.div>
 
       {/* Stars */}
-      <div className="absolute inset-x-0 top-0 h-2/3 opacity-70 [background-image:radial-gradient(1px_1px_at_12%_18%,#cfeeff_50%,transparent_51%),radial-gradient(1px_1px_at_28%_42%,#9fdcff_50%,transparent_51%),radial-gradient(1.5px_1.5px_at_44%_12%,#eaf6ff_50%,transparent_51%),radial-gradient(1px_1px_at_63%_30%,#cfeeff_50%,transparent_51%),radial-gradient(1.5px_1.5px_at_78%_16%,#9fdcff_50%,transparent_51%),radial-gradient(1px_1px_at_88%_38%,#eaf6ff_50%,transparent_51%)]" />
+      <div className="absolute inset-x-0 top-0 h-2/3 opacity-70 bg-[radial-gradient(1px_1px_at_12%_18%,#cfeeff_50%,transparent_51%),radial-gradient(1px_1px_at_28%_42%,#9fdcff_50%,transparent_51%),radial-gradient(1.5px_1.5px_at_44%_12%,#eaf6ff_50%,transparent_51%),radial-gradient(1px_1px_at_63%_30%,#cfeeff_50%,transparent_51%),radial-gradient(1.5px_1.5px_at_78%_16%,#9fdcff_50%,transparent_51%),radial-gradient(1px_1px_at_88%_38%,#eaf6ff_50%,transparent_51%)]" />
 
       {/* Mountain ridges */}
       <motion.svg
@@ -79,7 +79,7 @@ export default function IcyBackdrop() {
       </motion.svg>
 
       {/* Ground fade into the page background */}
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-background" />
     </div>
   )
 }
