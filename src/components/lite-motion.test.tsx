@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Hero from '@/components/Hero'
+import Reveal from '@/components/Reveal'
 import Tilt from '@/components/Tilt'
 import { LITE_MOTION_QUERY } from '@/lib/use-lite-motion'
 
@@ -54,6 +55,30 @@ describe('Tilt on a coarse pointer', () => {
     const wrapper = screen.getByTestId('tilted').parentElement
     expect(wrapper?.style.transformStyle).toBe('')
     expect(wrapper?.style.willChange).toBe('')
+  })
+})
+
+describe('entrance blurs', () => {
+  // The first render is always the desktop one, so motion writes a blur inline
+  // before the swap to the touch variants happens. Those variants stop naming
+  // `filter`, which leaves nothing to animate it back to zero. The class is
+  // what the stylesheet hangs the override on, so losing it strands the blur.
+  it('tags every wrapper the stylesheet has to neutralize', () => {
+    render(
+      <Reveal className="h-full">
+        <span data-testid="revealed" />
+      </Reveal>,
+    )
+    const wrapper = screen.getByTestId('revealed').parentElement
+    expect(wrapper).toHaveClass('motion-blur')
+    expect(wrapper).toHaveClass('h-full')
+  })
+
+  it('tags the headline words too', () => {
+    render(<Hero />)
+    const words = screen.getByRole('heading', { level: 1 }).children
+    expect(words.length).toBeGreaterThan(0)
+    for (const word of words) expect(word).toHaveClass('motion-blur')
   })
 })
 
