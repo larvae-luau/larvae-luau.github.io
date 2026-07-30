@@ -24,6 +24,12 @@
 }
 
 html {
+  /* Backstop for horizontal pan. The same declaration on body alone is meant
+     to propagate to the viewport, which iOS honours unreliably. `clip` rather
+     than `hidden` so the root never becomes a scroll container, which would
+     take the sticky docs sidebar with it. Pairing it with a visible y axis is
+     allowed and leaves that axis alone. */
+  overflow-x: clip;
   scroll-behavior: smooth;
   /* Firefox */
   scrollbar-width: thin;
