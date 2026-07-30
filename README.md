@@ -92,3 +92,26 @@ To check the site still holds up under a subpath, build it with one.
 ```bash
 NEXT_PUBLIC_BASE_PATH=/example npm run build
 ```
+
+## The version badge
+
+The badge under the logo prints the CLI's latest published release and links to its notes. `next.config.ts` asks the GitHub API once per build and inlines the answer, so visitors never wait on that request and the number never pops in. When the CLI has no releases, or the API cannot be reached, `src/lib/release.ts` prints `v0.1.0-beta` and points at the releases index instead. A build is never allowed to fail over this.
+
+The catch is that the value is fixed at build time, and publishing a release in the CLI repository pushes nothing here. Two things cover that. The deploy workflow runs nightly on a schedule, so the badge can only be a day stale on its own. It also accepts a `repository_dispatch` for an immediate rebuild, which the CLI can fire from its own release workflow.
+
+```yaml
+- name: Refresh the site
+  run: |
+    gh api repos/coldluau/coldluau.github.io/dispatches \
+      -f event_type=release-published
+  env:
+    GH_TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
+```
+
+`SITE_DISPATCH_TOKEN` is a fine-grained token with contents write on this repository, since the built in `GITHUB_TOKEN` cannot reach across repositories.
+
+To see a published release locally without waiting for one to exist, hand the build the values the config would have fetched.
+
+```bash
+RELEASE_TAG=v0.2.1 npm run build
+```

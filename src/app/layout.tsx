@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { releaseVersion } from '@/lib/release'
 import {
   REPO_URL,
   SITE_DESCRIPTION,
@@ -64,6 +65,9 @@ export const viewport: Viewport = {
 
 /** Only claims that are true today, nothing about ratings or price. */
 const structuredData = {
+  /* Shares its source with the hero badge, which is the only other place the
+     version appears. Two hardcoded copies would drift the first time one of
+     them was updated. */
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
   name: SITE_NAME,
@@ -71,7 +75,7 @@ const structuredData = {
   url: SITE_ORIGIN,
   applicationCategory: 'DeveloperApplication',
   operatingSystem: 'Linux, macOS, Windows',
-  softwareVersion: '0.1.0',
+  softwareVersion: releaseVersion(),
   programmingLanguage: 'Rust',
   codeRepository: REPO_URL,
 }

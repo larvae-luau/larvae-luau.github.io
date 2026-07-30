@@ -14,6 +14,7 @@ import IcyBackdrop from '@/components/IcyBackdrop'
 import Tilt from '@/components/Tilt'
 import { useDisabledEffects } from '@/lib/debug-flags'
 import logo from '@/lib/logo'
+import { currentRelease } from '@/lib/release'
 import useLiteMotion from '@/lib/use-lite-motion'
 
 const container: Variants = {
@@ -68,6 +69,7 @@ type InstallId = (typeof INSTALLS)[number]['id']
 export default function Hero() {
   const lite = useLiteMotion()
   const off = useDisabledEffects()
+  const release = currentRelease()
   const [installer, setInstaller] = useState<InstallId>('lpm')
   const active = INSTALLS.find((i) => i.id === installer) ?? INSTALLS[0]
 
@@ -126,14 +128,23 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
-      <motion.p
+      <motion.a
+        href={release.url}
+        target="_blank"
+        rel="noreferrer"
+        title={
+          release.published
+            ? 'Read the release notes'
+            : 'No release published yet'
+        }
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="mb-5 select-none rounded-full border border-ice/20 bg-ice/5 px-4 py-1.5 font-mono text-xs tracking-widest text-ice uppercase"
+        data-testid="release-badge"
+        className="mb-5 select-none rounded-full border border-ice/20 bg-ice/5 px-4 py-1.5 font-mono text-xs tracking-widest text-ice uppercase transition-colors hover:border-ice/40 hover:bg-ice/10"
       >
-        Rust-powered Luau preprocessor · v0.1.0
-      </motion.p>
+        Rust-powered Luau preprocessor · {release.label}
+      </motion.a>
 
       <motion.h1
         variants={container}

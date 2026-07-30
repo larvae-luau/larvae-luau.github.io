@@ -9,6 +9,17 @@ on:
   push:
     branches: ["main"]
 
+  # The hero badge is resolved from the CLI's latest release at build time, and
+  # a release over there pushes nothing here. Rebuild nightly so the badge can
+  # only ever be a day stale on its own.
+  schedule:
+    - cron: "0 6 * * *"
+
+  # Lets the CLI repo trigger an immediate rebuild the moment it publishes,
+  # instead of waiting for the nightly run. See the snippet in the readme.
+  repository_dispatch:
+    types: [release-published]
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -61,7 +72,11 @@ jobs:
           #
           # You may remove this line if you want to manage the configuration yourself.
           static_site_generator: next
+      # Push builds only. The cache is keyed on source files, so a rebuild
+      # triggered purely by a new release would restore a tree that has not
+      # changed and risk reusing the page that still names the old version.
       - name: Restore cache
+        if: github.event_name == 'push'
         uses: actions/cache@v4
         with:
           path: |
@@ -75,6 +90,11 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
+        env:
+          # Runners share outbound addresses and the anonymous GitHub API quota
+          # is 60 an hour across all of them, which a release lookup can lose a
+          # race to. The default token reads public releases fine.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
