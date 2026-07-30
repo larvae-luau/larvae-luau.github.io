@@ -1,26 +1,325 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #04070d;
+  --surface: #0a1220;
+  --foreground: #eaf6ff;
+  --muted: #8ba3bd;
+  --ice: #87fdff;
+  --glacier: #5aa7ff;
+  --deep: #1e3a5f;
+  --frost-border: rgba(135, 253, 255, 0.14);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-ice: var(--ice);
+  --color-glacier: var(--glacier);
+  --color-deep: var(--deep);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(135, 253, 255, 0.35) #04070d;
+}
+
+/* WebKit */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #04070d;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(135, 253, 255, 0.45),
+    rgba(90, 167, 255, 0.35)
+  );
+  border: 2px solid #04070d;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(135, 253, 255, 0.7),
+    rgba(90, 167, 255, 0.55)
+  );
+}
+::-webkit-scrollbar-corner {
+  background: #04070d;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(135, 253, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Frosted glass card */
+.frost-card {
+  background: linear-gradient(
+    160deg,
+    rgba(135, 253, 255, 0.06),
+    rgba(10, 18, 32, 0.55) 40%
+  );
+  border: 1px solid var(--frost-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Icy gradient text */
+.ice-text {
+  background: linear-gradient(
+    115deg,
+    #ffffff 0%,
+    var(--ice) 45%,
+    var(--glacier) 90%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Soft cyan glow */
+.ice-glow {
+  box-shadow:
+    0 0 24px rgba(135, 253, 255, 0.18),
+    0 0 90px rgba(90, 167, 255, 0.1);
+}
+
+/* Thin scrollbars for code blocks */
+.code-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.code-scroll::-webkit-scrollbar-thumb {
+  background: rgba(135, 253, 255, 0.2);
+  border-radius: 3px;
+}
+
+/* ─── Docs prose ─────────────────────────────────────────────────────────
+   Styles the HTML that markdown renders into. Element selectors instead of
+   utility classes, since the markdown renderer emits plain tags. */
+
+.doc-prose {
+  color: rgba(234, 246, 255, 0.82);
+  font-size: 0.975rem;
+  line-height: 1.75;
+}
+
+.doc-prose > *:first-child {
+  margin-top: 0;
+}
+
+.doc-prose h2 {
+  margin: 3rem 0 1rem;
+  scroll-margin-top: 7rem;
+  border-top: 1px solid rgba(135, 253, 255, 0.1);
+  padding-top: 2rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.doc-prose h2:first-child {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.doc-prose h3 {
+  margin: 2rem 0 0.75rem;
+  scroll-margin-top: 7rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.doc-prose h4 {
+  margin: 1.5rem 0 0.5rem;
+  font-weight: 600;
+  color: rgba(234, 246, 255, 0.9);
+}
+
+.doc-prose p {
+  margin: 0 0 1.1rem;
+}
+
+.doc-prose strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.doc-prose a {
+  color: var(--ice);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(135, 253, 255, 0.3);
+  transition: border-color 0.15s ease;
+}
+
+.doc-prose a:hover {
+  border-bottom-color: var(--ice);
+}
+
+.doc-prose ul,
+.doc-prose ol {
+  margin: 0 0 1.1rem;
+  padding-left: 1.35rem;
+}
+
+.doc-prose ul {
+  list-style: none;
+}
+
+.doc-prose ul > li {
+  position: relative;
+}
+
+.doc-prose ul > li::before {
+  content: "";
+  position: absolute;
+  left: -1rem;
+  top: 0.7em;
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: rgba(135, 253, 255, 0.55);
+}
+
+.doc-prose ol {
+  list-style: decimal;
+}
+
+.doc-prose ol::marker,
+.doc-prose li::marker {
+  color: var(--ice);
+}
+
+.doc-prose li {
+  margin: 0.35rem 0;
+}
+
+.doc-prose li > ul,
+.doc-prose li > ol {
+  margin: 0.35rem 0;
+}
+
+/* Inline code */
+.doc-prose :not(pre) > code {
+  background: rgba(135, 253, 255, 0.08);
+  border: 1px solid rgba(135, 253, 255, 0.14);
+  border-radius: 0.375rem;
+  padding: 0.1rem 0.35rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.85em;
+  color: var(--ice);
+  white-space: nowrap;
+}
+
+/* Fenced code */
+.doc-code {
+  position: relative;
+  margin: 0 0 1.4rem;
+  border: 1px solid rgba(135, 253, 255, 0.12);
+  border-radius: 0.85rem;
+  background: rgba(4, 7, 13, 0.75);
+  overflow: hidden;
+}
+
+.doc-code-lang {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(135, 253, 255, 0.45);
+  user-select: none;
+  pointer-events: none;
+}
+
+.doc-code pre {
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  overflow-x: auto;
+}
+
+.doc-code code {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.83rem;
+  line-height: 1.7;
+  color: rgba(234, 246, 255, 0.85);
+}
+
+/* Tables */
+.doc-table {
+  margin: 0 0 1.4rem;
+  overflow-x: auto;
+  border: 1px solid rgba(135, 253, 255, 0.12);
+  border-radius: 0.85rem;
+}
+
+.doc-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.doc-table th {
+  background: rgba(135, 253, 255, 0.06);
+  color: var(--ice);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.doc-table th,
+.doc-table td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid rgba(135, 253, 255, 0.08);
+  vertical-align: top;
+}
+
+.doc-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.doc-table td code {
+  white-space: nowrap;
+}
+
+/* Blockquotes, used for the callouts */
+.doc-prose blockquote {
+  margin: 0 0 1.4rem;
+  border-left: 2px solid var(--ice);
+  border-radius: 0 0.5rem 0.5rem 0;
+  background: rgba(135, 253, 255, 0.05);
+  padding: 0.9rem 1.1rem;
+  color: rgba(234, 246, 255, 0.88);
+}
+
+.doc-prose blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.doc-prose hr {
+  margin: 2.5rem 0;
+  border: 0;
+  border-top: 1px solid rgba(135, 253, 255, 0.12);
 }
