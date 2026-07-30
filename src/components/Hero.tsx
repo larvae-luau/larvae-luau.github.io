@@ -192,9 +192,13 @@ export default function Hero() {
           layout: { type: 'spring', stiffness: 260, damping: 26 },
         }}
         data-testid="install-command"
-        className="frost-card relative mt-12 flex items-center gap-4 overflow-hidden rounded-xl px-4 py-2.5 font-mono text-sm text-muted"
+        /* The command cannot wrap, so at the full size the three toggles plus
+           the longest command overrun a phone by about thirty pixels. Tighter
+           spacing and a step down in type buy that back without truncating,
+           and max-w-full keeps the chip inside the viewport regardless. */
+        className="frost-card relative mt-12 flex max-w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2.5 font-mono text-xs text-muted sm:gap-4 sm:px-4 sm:text-sm"
       >
-        <div className="flex select-none gap-1 border-r border-ice/10 pr-3">
+        <div className="flex shrink-0 select-none gap-1 border-r border-ice/10 pr-3">
           {INSTALLS.map((option) => (
             <motion.button
               key={option.id}
