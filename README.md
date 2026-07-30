@@ -1,6 +1,6 @@
 # coldluau site
 
-The landing page and documentation for [coldluau](https://github.com/coldluau), a Luau preprocessor written in Rust. Built with Next.js and exported as static files, so GitHub Pages can serve the whole thing.
+The landing page and documentation for [coldluau](https://github.com/coldluau/cli), a Luau preprocessor written in Rust. Built with Next.js and exported as static files, so GitHub Pages can serve the whole thing.
 
 ## What coldluau does
 
@@ -81,9 +81,11 @@ src/lib/snow.ts      snowfall physics, kept pure so it can be tested
 
 ## Deploying
 
-Pushing to the default branch builds the export and publishes it to GitHub Pages. The workflow reads the repository name to work out the base path, so a project site is served from a subpath and a `*.github.io` repository is served from the root, with no config to change either way.
+Pushing to the default branch builds the export and publishes it to GitHub Pages through `.github/workflows/nextjs.yml`. That workflow calls `actions/configure-pages`, which works out the base path from the repository name and injects it for you, so a project site served from a subpath needs no config change.
 
-To build against a subpath locally, set the base path yourself.
+The base path is the one thing worth knowing about when adding images. `next/image` leaves a plain string `src` untouched while images are unoptimized, so a file referenced as `/logo.png` is requested from the domain root and misses a subpath deploy entirely. Import the file instead and it goes through the asset pipeline, which applies the prefix. See `src/lib/logo.ts`.
+
+To reproduce a subpath build locally, set the base path yourself.
 
 ```bash
 NEXT_PUBLIC_BASE_PATH=/docs npm run build
