@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:probe": "NEXT_PUBLIC_PERF_PROBE=1 next build",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",

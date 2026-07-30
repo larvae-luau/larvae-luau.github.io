@@ -5,8 +5,10 @@ import Features from '@/components/Features'
 import Footer from '@/components/Footer'
 import Hero from '@/components/Hero'
 import Navbar from '@/components/Navbar'
+import PerfProbe from '@/components/PerfProbe'
 import QuickStart from '@/components/QuickStart'
 import Snowfall from '@/components/Snowfall'
+import { PROBE_AVAILABLE } from '@/lib/debug-flags'
 
 export default function Home() {
   return (
@@ -22,6 +24,7 @@ export default function Home() {
         <QuickStart />
       </main>
       <Footer />
+      {PROBE_AVAILABLE && <PerfProbe />}
     </div>
   )
 }
