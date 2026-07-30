@@ -1,6 +1,6 @@
 # coldluau site
 
-The landing page and documentation for [coldluau](https://github.com/coldluau/cli), a Luau preprocessor written in Rust. Built with Next.js and exported as static files, so GitHub Pages can serve the whole thing.
+The landing page and documentation for [coldluau](https://github.com/coldluau/cli), a Luau preprocessor written in Rust. Built with Next.js, tailwind and framer motion.
 
 ## What coldluau does
 
