@@ -81,12 +81,14 @@ src/lib/snow.ts      snowfall physics, kept pure so it can be tested
 
 ## Deploying
 
-Pushing to the default branch builds the export and publishes it to GitHub Pages through `.github/workflows/nextjs.yml`. That workflow calls `actions/configure-pages`, which works out the base path from the repository name and injects it for you, so a project site served from a subpath needs no config change.
+Pushing to the default branch builds the export and publishes it to GitHub Pages through `.github/workflows/nextjs.yml`. Because the repository is named after the organisation, Pages serves it from the domain root, so the landing page is at `/` and the documentation sits under `/docs`.
 
-The base path is the one thing worth knowing about when adding images. `next/image` leaves a plain string `src` untouched while images are unoptimized, so a file referenced as `/logo.png` is requested from the domain root and misses a subpath deploy entirely. Import the file instead and it goes through the asset pipeline, which applies the prefix. See `src/lib/logo.ts`.
+That workflow calls `actions/configure-pages`, which reads the site URL and injects a base path when there is one. Renaming the repository is therefore all it takes to move the site under a subpath, no config change needed, which is worth knowing because a base path is easy to break.
 
-To reproduce a subpath build locally, set the base path yourself.
+Reference an image as a plain string and you will break it. `next/image` leaves a string `src` untouched while images are unoptimized, so `/logo.png` is fetched from the domain root and misses a subpath deploy completely. Import the file instead, which routes it through the asset pipeline and picks up whatever prefix is in play. See `src/lib/logo.ts`.
+
+To check the site still holds up under a subpath, build it with one.
 
 ```bash
-NEXT_PUBLIC_BASE_PATH=/docs npm run build
+NEXT_PUBLIC_BASE_PATH=/example npm run build
 ```
