@@ -19,8 +19,16 @@ export async function generateMetadata({
   const doc = getDoc(slug.join('/'))
   if (!doc) return {}
   return {
-    title: `${doc.title} · coldluau docs`,
+    title: doc.title,
     description: doc.description,
+    alternates: { canonical: `/docs/${doc.slug}` },
+    openGraph: {
+      title: doc.title,
+      description: doc.description,
+      url: `/docs/${doc.slug}`,
+      type: 'article',
+      modifiedTime: doc.updated,
+    },
   }
 }
 

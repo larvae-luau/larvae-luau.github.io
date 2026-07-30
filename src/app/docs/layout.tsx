@@ -5,9 +5,14 @@ import Footer from '@/components/Footer'
 import { getCategories, getSearchIndex } from '@/lib/docs'
 
 export const metadata: Metadata = {
-  title: 'coldluau docs',
+  // a plain string here would drop the root template for every docs page
+  title: {
+    default: 'Docs',
+    template: '%s · coldluau docs',
+  },
   description:
     'Documentation for coldluau, the Luau preprocessor that rewrites aliases into native Roblox string requires.',
+  alternates: { canonical: '/docs' },
 }
 
 export default function DocsLayout({
