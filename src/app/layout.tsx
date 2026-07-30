@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import ogImage from '../../public/coldluau-og.png'
 import './globals.css'
 
 const geistSans = Geist({
@@ -12,10 +13,8 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 const siteOrigin =
   process.env.NEXT_PUBLIC_SITE_ORIGIN ?? 'https://coldluau.github.io'
-const ogImage = `${basePath}/coldluau-og.png`
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
@@ -27,14 +26,14 @@ export const metadata: Metadata = {
     title: 'coldluau · the cold, fast Luau preprocessor',
     description:
       'Parallel, parse-once, and incremental, with native Roblox string requires that no other tool can emit.',
-    url: `${siteOrigin}${basePath}`,
+    url: siteOrigin,
     siteName: 'coldluau',
     type: 'website',
     images: [
       {
-        url: ogImage,
-        width: 384,
-        height: 384,
+        url: ogImage.src,
+        width: ogImage.width,
+        height: ogImage.height,
         alt: 'coldluau logo',
       },
     ],
@@ -46,7 +45,7 @@ export const metadata: Metadata = {
     title: 'coldluau · the cold, fast Luau preprocessor',
     description:
       'Parallel, parse-once, and incremental, with native Roblox string requires that no other tool can emit.',
-    images: [ogImage],
+    images: [ogImage.src],
   },
 }
 
