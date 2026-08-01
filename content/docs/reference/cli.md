@@ -3,7 +3,7 @@ title: CLI reference
 description: Every coldluau command, flag, exit code, and environment variable
 category: Reference
 order: 1
-updated: 2026-07-29
+updated: 2026-07-30
 ---
 
 coldluau has five commands: `process`, `check`, `init`, `schema`, and `self`. That is the whole surface. There is no `serve`, no `build`, and no `minify` command, and coldluau never runs rojo for you.
@@ -104,13 +104,23 @@ Manages the coldluau binary itself.
 
 | subcommand | what it does |
 |---|---|
-| `self install` | copy the binary to `~/.coldluau/bin`, print PATH instructions |
+| `self install` | copy the binary to `~/.coldluau/bin` and get it on PATH |
 | `self update` | check GitHub releases, download and swap in the newer build |
+| `self update --force` | update even when another tool manages the binary |
 | `self uninstall` | prompt, then remove `~/.coldluau` |
 
-`self install` copies the **running** binary to `~/.coldluau/bin/coldluau` and prints the `export PATH="$HOME/.coldluau/bin:$PATH"` line to add to your shell profile. On Windows it prints instructions for adding the directory through Settings, it does not edit the registry. Running it twice is safe, it reports `coldluau is already installed at <path>`.
+`self install` copies the **running** binary to `~/.coldluau/bin/coldluau`. PATH handling then differs by platform, on purpose:
 
-`self update` honors `GITHUB_TOKEN` for the releases API, which matters on shared runners where anonymous rate limits bite. When there is nothing newer it says `coldluau is already up to date`.
+| platform | what happens |
+|---|---|
+| Windows | the directory is added to your PATH for real, written to the user Path in the registry and broadcast so new terminals pick it up |
+| unix | the `export PATH="$HOME/.coldluau/bin:$PATH"` line is printed for you to add to your shell profile |
+
+Editing someone's shell profile behind their back is rude, which is why unix stays manual. Running it twice is safe, and it warns when another tool already manages the binary, because a second copy can shadow the first on PATH.
+
+`self update` only replaces the copy that `self install` put in place. **If rokit, aftman, foreman, lpm or cargo owns the binary it refuses**, and tells you to bump the version in that manifest instead. Overwriting a pinned tool would leave the manifest and the bytes on disk disagreeing, which is a confusing state to debug later. Pass `--force` when you mean it anyway.
+
+It honors `GITHUB_TOKEN` for the releases API, which matters on shared runners where anonymous rate limits bite. When there is nothing newer it says `coldluau is already up to date`.
 
 `self uninstall` asks `Remove <dir>?` and defaults to **no**, so pressing enter cancels.
 

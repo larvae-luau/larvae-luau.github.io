@@ -19,8 +19,8 @@ const STEPS: Step[] = [
 # or
 lpx coldluau
 # or
-cargo install --path .`,
-    body: 'Three separate routes to the same binary, not commands to run in order. lpm adds it as a project tool, lpx runs it once and installs nothing, and cargo builds from a local clone. Prebuilt binaries ship on GitHub releases.',
+cargo install coldluau`,
+    body: 'Three separate routes to the same binary, not commands to run in order. lpm adds it as a project tool, lpx runs it once and installs nothing, and cargo pulls the published crate. Prebuilt binaries ship on GitHub releases.',
   },
   {
     title: 'Initialize',

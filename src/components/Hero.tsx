@@ -61,7 +61,7 @@ const HEADLINE = ['Preprocess', 'Luau', 'at', 'sub-zero', 'speed.']
 const INSTALLS = [
   { id: 'lpm', command: 'lpm tool add coldluau' },
   { id: 'lpx', command: 'lpx coldluau' },
-  { id: 'cargo', command: 'cargo install --path .' },
+  { id: 'cargo', command: 'cargo install coldluau' },
 ] as const
 
 type InstallId = (typeof INSTALLS)[number]['id']

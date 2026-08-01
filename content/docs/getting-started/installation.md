@@ -3,7 +3,7 @@ title: Installation
 description: Install coldluau with lpm, lpx, cargo, or a prebuilt binary
 category: Getting started
 order: 1
-updated: 2026-07-29
+updated: 2026-07-30
 ---
 
 coldluau ships as a single binary with no runtime dependencies. Pick one of the routes below, they all end with a `coldluau` you can run.
@@ -31,10 +31,16 @@ Good for trying coldluau on a project before committing to it, or for a one off 
 ## Build from source
 
 ```shell
-cargo install --path .
+cargo install coldluau
 ```
 
-Run this from a clone of the coldluau repository. coldluau is not published to crates.io, so `cargo install --path .` needs the local checkout, there is no registry name to install by.
+That pulls the published crate from crates.io, so it needs no checkout.
+
+To build from a clone instead, ex: to try an unreleased change, point cargo at the path:
+
+```shell
+cargo install --path .
+```
 
 ## Prebuilt binaries
 
@@ -56,15 +62,17 @@ Download the asset for your platform, mark it executable if your OS needs that, 
 coldluau self install
 ```
 
-It then prints the line to add to your shell profile:
+On **Windows** it puts the directory on your PATH for real, writing the user Path in the registry and broadcasting the change so newly opened terminals pick it up. Nothing further to do.
+
+On **unix** it prints the line for your shell profile instead:
 
 ```shell
 export PATH="$HOME/.coldluau/bin:$PATH"
 ```
 
-On Windows it prints instructions for adding the directory through Settings instead. It does **not** edit the registry.
+That asymmetry is deliberate. Editing someone's shell profile without asking is rude, so unix leaves the last step to you.
 
-Running `self install` twice is safe. The second run reports `coldluau is already installed at <path>` and changes nothing.
+Running `self install` twice is safe. It also warns when another tool already manages the coldluau binary, because a second copy can shadow the first on PATH and leave you running a version you did not expect.
 
 ## The three self subcommands
 
@@ -79,6 +87,12 @@ coldluau self update
 ```
 
 It honors `GITHUB_TOKEN` for the releases API, which matters if you hit rate limits on a shared runner. When there is nothing newer it says `coldluau is already up to date` and exits.
+
+**It only updates the copy `self install` made.** If rokit, aftman, foreman, lpm or cargo owns your binary, it refuses and points you at that manifest instead, since overwriting a pinned tool leaves the manifest and the bytes on disk disagreeing. Bump the version where the pin lives, or pass `--force` if you really want the swap.
+
+```shell
+coldluau self update --force
+```
 
 ### self uninstall
 

@@ -8,7 +8,7 @@ You write `require("@pkg/signal")` and coldluau writes `require("@game/Replicate
 
 It also refuses to emit a require that would break in a running game, which is the part nothing else in the ecosystem does. Requires that resolve fine on disk can still fail at runtime because Starter containers clone their children, because ServerStorage never replicates to a client, or because instance lookup is case sensitive while your filesystem is not. coldluau maps both ends of every require into the DataModel and errors instead of shipping the break.
 
-It is a drop in alternative to darklua, accepts every darklua rule name, and runs roughly 16x faster on a normal project.
+It is a drop in alternative to darklua. 27 of darklua's 32 rule names run under the same names, coldluau adds 7 more, and it is roughly 17x faster on a normal project.
 
 ## Running it
 
