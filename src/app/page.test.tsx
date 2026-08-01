@@ -94,42 +94,59 @@ describe('Home page', () => {
 
   it('shows every benchmark workload with its speedup', () => {
     render(<Home />)
+    // each workload appears twice, once head to head and once incremental
     for (const label of ['3,000 files', '5,000 files', '1 large file']) {
-      expect(screen.getByText(label)).toBeInTheDocument()
+      expect(screen.getAllByText(label).length).toBeGreaterThan(0)
     }
-    for (const speedup of ['17.1x faster', '17.6x faster', '74.4x faster']) {
-      expect(screen.getByText(speedup)).toBeInTheDocument()
-    }
+    // 3,000 and 5,000 files both land on 14.0x
+    expect(screen.getAllByText('14.0x faster')).toHaveLength(2)
+    expect(screen.getByText('10.3x faster')).toBeInTheDocument()
   })
 
-  it('explains every benchmark column and the speedup basis', () => {
+  it('defines each workload and states the caveats', () => {
     render(<Home />)
     const benchmarks = document.getElementById('benchmarks')
-    expect(screen.getByText('first build, empty cache')).toBeInTheDocument()
-    expect(screen.getByText('rebuild with nothing changed')).toBeInTheDocument()
-    expect(benchmarks?.textContent).toContain('rebuild after touching a single')
+    for (const term of ['same rules', 'parse only', 'darklua default']) {
+      expect(benchmarks?.textContent).toContain(term)
+    }
+    // the run conditions, so a reader can judge the numbers
+    expect(benchmarks?.textContent).toContain('7 runs per cell')
+    expect(benchmarks?.textContent).toContain('darklua 0.19.0')
+    // the narrowest win is called out rather than buried
     expect(benchmarks?.textContent).toContain(
-      'whole-project require validation',
-    )
-    expect(screen.getAllByText('cold vs darklua')).toHaveLength(3)
-    // the one figure that reads as surprising is annotated in place
-    expect(benchmarks?.textContent).toContain(
-      'check is the only column that costs more than a cold build',
+      'the workload coldluau wins by the smallest margin',
     )
   })
 
-  it('shows cold, darklua, and incremental timings', () => {
+  it('leads with the matched comparison, not the flattering one', () => {
     render(<Home />)
     const benchmarks = document.getElementById('benchmarks')
-    // cold builds and the darklua baseline
-    expect(screen.getByText('24 ms')).toBeInTheDocument()
-    expect(screen.getByText('411 ms')).toBeInTheDocument()
-    expect(screen.getByText('1191 ms')).toBeInTheDocument()
-    // coldluau-only incremental columns
-    for (const mode of ['warm', 'one edit', 'check']) {
-      expect(benchmarks?.textContent).toContain(mode)
+    // the badge quotes same-rules, the defensible apples to apples figure
+    expect(screen.getAllByText('same rules, both cold')).toHaveLength(3)
+    expect(benchmarks?.textContent).toContain(
+      'both tools run 10 matching rules',
+    )
+    // the flattering parse-only figure is still shown, just not as the headline
+    expect(benchmarks?.textContent).toContain('17.9x')
+    expect(benchmarks?.textContent).toContain('75.3x')
+  })
+
+  it('refuses to claim a speedup against darklua default', () => {
+    render(<Home />)
+    const benchmarks = document.getElementById('benchmarks')
+    expect(benchmarks?.textContent).toContain('571 ms')
+    expect(benchmarks?.textContent).toContain('No speedup is claimed')
+  })
+
+  it('shows the incremental columns as coldluau only', () => {
+    render(<Home />)
+    const table = screen.getByTestId('incremental-table')
+    for (const mode of ['cold', 'warm', 'one edit', 'check']) {
+      expect(table.textContent).toContain(mode)
     }
-    expect(screen.getByText('75 ms')).toBeInTheDocument()
+    expect(document.getElementById('benchmarks')?.textContent).toContain(
+      'darklua has no cache',
+    )
   })
 
   it('mounts the snowfall canvas as decorative', () => {

@@ -3,64 +3,66 @@
 import { motion } from 'motion/react'
 import Reveal from '@/components/Reveal'
 
-interface Workload {
-  label: string
-  detail: string
-  cold: number
-  warm: number
-  edit: number
-  check: number
+interface Matchup {
+  coldluau: number
   darklua: number
   speedup: string
-  /** Shown under the card when a number needs context. */
+}
+
+interface Run {
+  label: string
+  detail: string
+  /** The headline, both tools running the same 10 rules. */
+  sameRules: Matchup
+  /** darklua with no rules at all, coldluau still rewriting every require. */
+  parseOnly: Matchup
+  /** darklua's own default stack, which coldluau cannot match yet. */
+  darkluaDefault: number
+  incremental: { cold: number; warm: number; edit: number; check: number }
   note?: string
 }
 
-const COLUMNS = [
-  { term: 'cold', definition: 'first build, empty cache' },
-  { term: 'warm', definition: 'rebuild with nothing changed' },
-  { term: 'one edit', definition: 'rebuild after touching a single file' },
-  {
-    term: 'check',
-    definition: 'whole-project require validation, parses everything',
-  },
-  {
-    term: 'darklua',
-    definition: 'parse and print with every rule off, the least work it can do',
-  },
-]
-
-const WORKLOADS: Workload[] = [
+const RUNS: Run[] = [
   {
     label: '3,000 files',
     detail: 'synthetic project',
-    cold: 24,
-    warm: 12,
-    edit: 13,
-    check: 20,
-    darklua: 411,
-    speedup: '17.1x',
+    sameRules: { coldluau: 35, darklua: 493, speedup: '14.0x' },
+    parseOnly: { coldluau: 24, darklua: 430, speedup: '17.9x' },
+    darkluaDefault: 571,
+    incremental: { cold: 24, warm: 14, edit: 13, check: 21 },
   },
   {
     label: '5,000 files',
     detail: 'synthetic project',
-    cold: 38,
-    warm: 22,
-    edit: 21,
-    check: 30,
-    darklua: 672,
-    speedup: '17.6x',
+    sameRules: { coldluau: 57, darklua: 799, speedup: '14.0x' },
+    parseOnly: { coldluau: 40, darklua: 703, speedup: '17.5x' },
+    darkluaDefault: 938,
+    incremental: { cold: 40, warm: 22, edit: 22, check: 37 },
   },
   {
     label: '1 large file',
     detail: 'single 3.5 MB module',
-    cold: 16,
-    warm: 3,
-    edit: 2,
-    check: 75,
-    darklua: 1191,
-    speedup: '74.4x',
-    note: 'check is the only column that costs more than a cold build here. It is whole-project validation rather than a build, so one 3.5 MB module is the worst case for it, and it still comes in 16x under darklua.',
+    sameRules: { coldluau: 140, darklua: 1450, speedup: '10.3x' },
+    parseOnly: { coldluau: 16, darklua: 1206, speedup: '75.3x' },
+    darkluaDefault: 1605,
+    incremental: { cold: 16, warm: 3, edit: 3, check: 80 },
+    note: 'Rules cost far more here than require rewriting does, 140 ms against 16 ms, because one enormous module gives the thread pool nothing to split. It is the workload coldluau wins by the smallest margin once rules are on.',
+  },
+]
+
+const WORKLOADS = [
+  {
+    term: 'same rules',
+    definition: 'both tools run 10 matching rules with retain_lines',
+  },
+  {
+    term: 'parse only',
+    definition: 'darklua runs no rules, coldluau still rewrites every require',
+  },
+  {
+    term: 'darklua default',
+    definition:
+      'darklua’s own default stack plus its dense generator, which coldluau has neither of yet',
   },
 ]
 
@@ -120,23 +122,24 @@ export default function Benchmarks() {
           Cold, hard <span className="ice-text">numbers</span>
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-muted">
-          Full require rewriting in coldluau against darklua 0.19 with an empty
-          rule list, so darklua only parses and reprints. Mean of 5 runs.
+          The headline is the matched comparison, both tools cold on the same
+          tree running the same 10 rules. 16 cores, 7 runs per cell, median
+          reported, coldluau 0.1.0 against darklua 0.19.0.
         </p>
       </Reveal>
 
       <Reveal className="mb-6">
         <div className="frost-card rounded-2xl p-6">
           <p className="mb-4 select-none font-mono text-xs tracking-widest text-ice/70 uppercase">
-            how to read this
+            the three workloads
           </p>
-          <dl className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
-            {COLUMNS.map((column) => (
-              <div key={column.term} className="flex gap-3 text-sm">
-                <dt className="w-20 shrink-0 font-mono text-xs leading-6 text-ice">
-                  {column.term}
+          <dl className="flex flex-col gap-2">
+            {WORKLOADS.map((workload) => (
+              <div key={workload.term} className="flex gap-3 text-sm">
+                <dt className="w-32 shrink-0 font-mono text-xs leading-6 text-ice">
+                  {workload.term}
                 </dt>
-                <dd className="text-muted">{column.definition}</dd>
+                <dd className="text-muted">{workload.definition}</dd>
               </div>
             ))}
           </dl>
@@ -144,7 +147,7 @@ export default function Benchmarks() {
       </Reveal>
 
       <div className="flex flex-col gap-6">
-        {WORKLOADS.map((run, i) => (
+        {RUNS.map((run, i) => (
           <Reveal key={run.label} delay={i * 0.12}>
             <div className="frost-card rounded-2xl p-6">
               <div className="mb-5 flex items-center justify-between gap-4">
@@ -154,10 +157,10 @@ export default function Benchmarks() {
                 </div>
                 <div className="shrink-0 text-right">
                   <span className="inline-block rounded-full border border-ice/25 bg-ice/10 px-3 py-1 font-mono text-sm font-semibold text-ice">
-                    {run.speedup} faster
+                    {run.sameRules.speedup} faster
                   </span>
                   <p className="mt-1 select-none font-mono text-[0.65rem] text-muted">
-                    cold vs darklua
+                    same rules, both cold
                   </p>
                 </div>
               </div>
@@ -165,32 +168,40 @@ export default function Benchmarks() {
               <div className="flex flex-col gap-3">
                 <Bar
                   label="coldluau"
-                  ms={run.cold}
-                  max={run.darklua}
+                  ms={run.sameRules.coldluau}
+                  max={run.sameRules.darklua}
                   accent
                   delay={0.15}
                 />
                 <Bar
                   label="darklua"
-                  ms={run.darklua}
-                  max={run.darklua}
+                  ms={run.sameRules.darklua}
+                  max={run.sameRules.darklua}
                   accent={false}
                   delay={0.25}
                 />
               </div>
 
-              {/* incremental modes darklua has no equivalent for */}
               <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 border-t border-ice/10 pt-4 font-mono text-xs">
-                {[
-                  { key: 'warm', value: run.warm },
-                  { key: 'one edit', value: run.edit },
-                  { key: 'check', value: run.check },
-                ].map((mode) => (
-                  <span key={mode.key}>
-                    <span className="select-none text-muted">{mode.key} </span>
-                    <span className="text-foreground/80">{mode.value} ms</span>
+                <span>
+                  <span className="select-none text-muted">parse only </span>
+                  <span className="text-foreground/80">
+                    {run.parseOnly.coldluau} ms
                   </span>
-                ))}
+                  <span className="select-none text-muted"> vs </span>
+                  <span className="text-foreground/80">
+                    {run.parseOnly.darklua} ms
+                  </span>
+                  <span className="text-ice"> {run.parseOnly.speedup}</span>
+                </span>
+                <span>
+                  <span className="select-none text-muted">
+                    darklua default{' '}
+                  </span>
+                  <span className="text-foreground/80">
+                    {run.darkluaDefault} ms
+                  </span>
+                </span>
               </div>
 
               {run.note && (
@@ -203,13 +214,73 @@ export default function Benchmarks() {
         ))}
       </div>
 
-      <Reveal delay={0.2}>
+      <Reveal delay={0.15} className="mt-6">
+        <div className="frost-card rounded-2xl p-6">
+          <p className="mb-1 select-none font-mono text-xs tracking-widest text-ice/70 uppercase">
+            incremental, ours alone
+          </p>
+          <p className="mb-5 text-sm text-muted">
+            darklua has no cache, so every darklua run is a cold run and these
+            columns have no counterpart.
+          </p>
+          <div
+            data-testid="incremental-table"
+            className="code-scroll overflow-x-auto"
+          >
+            <table className="w-full min-w-[26rem] border-collapse font-mono text-xs">
+              <thead>
+                <tr className="select-none text-left text-muted">
+                  <th className="pb-2 font-normal">files</th>
+                  <th className="pb-2 text-right font-normal">cold</th>
+                  <th className="pb-2 text-right font-normal">warm</th>
+                  <th className="pb-2 text-right font-normal">one edit</th>
+                  <th className="pb-2 text-right font-normal">check</th>
+                </tr>
+              </thead>
+              <tbody>
+                {RUNS.map((run) => (
+                  <tr key={run.label} className="border-t border-ice/8">
+                    <td className="py-2 text-foreground/80">{run.label}</td>
+                    <td className="py-2 text-right text-ice">
+                      {run.incremental.cold} ms
+                    </td>
+                    <td className="py-2 text-right text-foreground/80">
+                      {run.incremental.warm} ms
+                    </td>
+                    <td className="py-2 text-right text-foreground/80">
+                      {run.incremental.edit} ms
+                    </td>
+                    <td className="py-2 text-right text-foreground/80">
+                      {run.incremental.check} ms
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.2} className="mt-6">
+        <div className="frost-card flex flex-wrap items-center justify-center gap-x-10 gap-y-3 rounded-2xl p-6 text-center">
+          <p className="select-none font-mono text-xs tracking-widest text-ice/70 uppercase">
+            stripped binary
+          </p>
+          <p className="font-mono text-sm">
+            <span className="text-ice">coldluau 4.8 MB</span>
+            <span className="select-none text-muted"> against </span>
+            <span className="text-foreground/80">darklua 19.2 MB</span>
+          </p>
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.25}>
         <p className="mx-auto mt-6 max-w-2xl text-center text-xs leading-relaxed text-muted">
-          The bars compare cold builds. Warm, one edit, and check have no
-          darklua counterpart because darklua has no cache, and note that a
-          one-file edit costs barely more than a fully warm run. darklua is
-          doing strictly less work than coldluau in every row here, since it
-          runs no rules and rewrites nothing.
+          On the matched rows coldluau is also doing require rewriting that
+          darklua is not. darklua can convert requires from a rojo sourcemap,
+          but that needs a separate rojo run, so it is left off rather than
+          timed unfairly. No speedup is claimed against darklua’s default stack,
+          because coldluau has neither that rule set nor a dense generator yet.
         </p>
       </Reveal>
     </section>
