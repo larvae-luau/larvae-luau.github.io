@@ -95,10 +95,6 @@ coldluau's parser has not been differentially tested against the official Luau C
 
 `process` is unaffected, it does not parse. So a build keeps working even if `check` reports a syntax error it should not.
 
-### Unix PATH is manual
-
-`coldluau self install` prints the `export` line for your shell profile rather than editing it, since editing a shell profile unasked is rude. Windows needs no such step, the user Path is written for you. See [CLI reference](/docs/reference/cli).
-
 ### Generic type arguments followed by `=`
 
 A generic type argument list immediately followed by `=` needs a space:
