@@ -35,7 +35,7 @@ const ROWS = [
   },
   {
     dimension: 'Rule coverage',
-    coldluau: 'Four shipped, every darklua name accepted, 27 land in M2',
+    coldluau: "34 shipped, 27 of darklua's names plus 7 it does not have",
     darklua: '32 rules today',
   },
   {

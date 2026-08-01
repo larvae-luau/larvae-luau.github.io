@@ -22,7 +22,7 @@ describe('Home page', () => {
     const quickStart = document.getElementById('quick-start')
     expect(quickStart?.textContent).toContain('lpm tool add coldluau')
     expect(quickStart?.textContent).toContain('lpx coldluau')
-    expect(quickStart?.textContent).toContain('cargo install --path .')
+    expect(quickStart?.textContent).toContain('cargo install coldluau')
   })
 
   it('presents the install commands as alternatives, not a sequence', () => {
@@ -39,7 +39,7 @@ describe('Home page', () => {
     expect(chip.textContent).toContain('lpm tool add coldluau')
     fireEvent.click(screen.getByRole('button', { name: 'cargo' }))
     await waitFor(
-      () => expect(chip.textContent).toContain('cargo install --path .'),
+      () => expect(chip.textContent).toContain('cargo install coldluau'),
       { timeout: 3000 },
     )
   })
@@ -97,7 +97,7 @@ describe('Home page', () => {
     for (const label of ['3,000 files', '5,000 files', '1 large file']) {
       expect(screen.getByText(label)).toBeInTheDocument()
     }
-    for (const speedup of ['16.3x faster', '15.3x faster', '79.7x faster']) {
+    for (const speedup of ['17.1x faster', '17.6x faster', '74.4x faster']) {
       expect(screen.getByText(speedup)).toBeInTheDocument()
     }
   })
@@ -122,14 +122,14 @@ describe('Home page', () => {
     render(<Home />)
     const benchmarks = document.getElementById('benchmarks')
     // cold builds and the darklua baseline
-    expect(screen.getByText('27 ms')).toBeInTheDocument()
-    expect(screen.getByText('441 ms')).toBeInTheDocument()
-    expect(screen.getByText('1356 ms')).toBeInTheDocument()
+    expect(screen.getByText('24 ms')).toBeInTheDocument()
+    expect(screen.getByText('411 ms')).toBeInTheDocument()
+    expect(screen.getByText('1191 ms')).toBeInTheDocument()
     // coldluau-only incremental columns
     for (const mode of ['warm', 'one edit', 'check']) {
       expect(benchmarks?.textContent).toContain(mode)
     }
-    expect(screen.getByText('79 ms')).toBeInTheDocument()
+    expect(screen.getByText('75 ms')).toBeInTheDocument()
   })
 
   it('mounts the snowfall canvas as decorative', () => {

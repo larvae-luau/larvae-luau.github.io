@@ -3,10 +3,10 @@ title: Performance
 description: Real numbers from scripts/bench.sh, and the four architectural reasons behind them
 category: Project
 order: 1
-updated: 2026-07-29
+updated: 2026-07-30
 ---
 
-coldluau is roughly 15x faster than darklua on a normal project and roughly 80x faster on a single large file. These numbers come from `scripts/bench.sh` in the repo, and the comparison is deliberately stacked against coldluau.
+coldluau is roughly 17x faster than darklua on a normal project and roughly 74x faster on a single large file. These numbers come from `scripts/bench.sh` in the repo, and the comparison is deliberately stacked against coldluau.
 
 ## Methodology
 
@@ -18,9 +18,9 @@ Every figure is the mean of 5 runs. The single large module is 3,484,526 bytes.
 
 | Workload | cold | warm | one edit | check | darklua | speedup |
 |---|---|---|---|---|---|---|
-| 3,000 files | 27 ms | 14 ms | 15 ms | 22 ms | 441 ms | 16.3x |
-| 5,000 files | 46 ms | 23 ms | 25 ms | 36 ms | 705 ms | 15.3x |
-| 1 file, 3.5 MB | 17 ms | 3 ms | 3 ms | 79 ms | 1356 ms | 79.7x |
+| 3,000 files | 24 ms | 12 ms | 13 ms | 20 ms | 411 ms | 17.1x |
+| 5,000 files | 38 ms | 22 ms | 21 ms | 30 ms | 672 ms | 17.6x |
+| 1 file, 3.5 MB | 16 ms | 3 ms | 2 ms | 75 ms | 1191 ms | 74.4x |
 
 ### What each column means
 
@@ -39,11 +39,11 @@ The warm and one edit columns have no darklua counterpart. darklua has no increm
 
 ### The one column that costs more
 
-On the single large file, `check` at 79 ms is the only figure that costs more than a cold build at 17 ms. That is expected and worth stating plainly.
+On the single large file, `check` at 75 ms is the only figure that costs more than a cold build at 16 ms. That is expected and worth stating plainly.
 
-`check` is not a build. It is whole project require validation, and it parses every file rather than splicing byte ranges. One 3.5 MB module is its worst case: there is nothing to parallelize and nothing to skip. Even then it still comes in about 17x under darklua on the same input.
+`check` is not a build. It is whole project require validation, and it parses every file rather than splicing byte ranges. One 3.5 MB module is its worst case: there is nothing to parallelize and nothing to skip. Even then it still comes in about 16x under darklua on the same input.
 
-Read the `check` column as parser throughput, roughly 40 MB/s on the single large file.
+Read the `check` column as parser throughput, roughly 45 MB/s on the single large file.
 
 ## Why it is faster
 
