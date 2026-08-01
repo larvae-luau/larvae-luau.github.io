@@ -3,7 +3,7 @@ title: Configuration
 description: Every coldluau.toml key, its default, and what it does
 category: Reference
 order: 2
-updated: 2026-07-29
+updated: 2026-07-30
 ---
 
 Configuration lives in `coldluau.toml` next to your Rojo project. Two facts come first, because they shape everything else on this page.
@@ -155,7 +155,7 @@ project = "default.project.json"
 
 ### `[rules]`
 
-Transforms applied to each output file. Three rules ship today, twenty seven more are **planned (M2)**, and every darklua rule name is accepted so that a `.darklua.json` rule list ports over unchanged.
+Transforms applied to each output file. Thirty four rules ship today, 27 of them under darklua's own names, and every darklua rule name is accepted so that a `.darklua.json` rule list ports over unchanged. Two names are still **planned (M2)**.
 
 ```toml
 [rules]

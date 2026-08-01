@@ -3,7 +3,7 @@ title: Roadmap
 description: What is coming in M2, M3, and M4, and the gaps we know about
 category: Project
 order: 3
-updated: 2026-07-29
+updated: 2026-07-30
 ---
 
 Where coldluau is going, so you can tell whether to adopt now or wait.
@@ -22,9 +22,9 @@ The darklua migration path. Converts `require(script.Parent.Foo)` into string re
 
 This is the single item that decides adoption for existing darklua codebases. See [migrating from darklua](/docs/project/migrating-from-darklua).
 
-### The 27 remaining rules
+### Scope tracking
 
-Now unblocked because the parser exists. Full list and current status on the [rules](/docs/reference/rules) page.
+A binding table that knows which `x` refers to which declaration. It unblocks the last two darklua rule names, `rename_variables` and `remove_unused_variable`, which cannot ship safely without it. It also lets `const_requires` and `freeze_module` drop the conservative guards they carry today. See [rules](/docs/reference/rules).
 
 ### `[defines]`
 
@@ -95,9 +95,9 @@ coldluau's parser has not been differentially tested against the official Luau C
 
 `process` is unaffected, it does not parse. So a build keeps working even if `check` reports a syntax error it should not.
 
-### Windows PATH is manual
+### Unix PATH is manual
 
-`coldluau self install` prints instructions to add `~/.coldluau/bin` through Settings. It does not edit the registry. On Unix it prints the `export` line for your shell profile, which is also manual. See [CLI reference](/docs/reference/cli).
+`coldluau self install` prints the `export` line for your shell profile rather than editing it, since editing a shell profile unasked is rude. Windows needs no such step, the user Path is written for you. See [CLI reference](/docs/reference/cli).
 
 ### Generic type arguments followed by `=`
 

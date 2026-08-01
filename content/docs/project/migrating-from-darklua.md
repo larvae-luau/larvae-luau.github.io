@@ -3,7 +3,7 @@ title: Migrating from darklua
 description: What ports directly, what changes, and the one gap to know about first
 category: Project
 order: 2
-updated: 2026-07-29
+updated: 2026-07-30
 ---
 
 coldluau is a drop in alternative to darklua. Most of a `.darklua.json` ports over with a rename and a table move. One thing does not port yet, and it decides whether you can adopt today.
@@ -30,7 +30,7 @@ This is the top item on the [roadmap](/docs/project/roadmap).
 
 All 32 darklua rule names are accepted, so a rule list ports over unchanged. Names that are not implemented yet fail at config load naming their milestone, and names that live somewhere else in coldluau tell you where. Nothing is silently ignored.
 
-3 rules are shipped today, 27 are **planned (M2)**, 3 live in other config tables. The full status table is on the [rules](/docs/reference/rules) page.
+27 of the 32 run today under the same names with matching options, 3 live in other config tables, and 2 are **planned (M2)**. coldluau also adds 7 rules darklua has no equivalent for. The full status table is on the [rules](/docs/reference/rules) page.
 
 ### The idea of a rules list
 
