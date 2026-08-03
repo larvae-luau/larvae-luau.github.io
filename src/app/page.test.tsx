@@ -12,17 +12,17 @@ describe('Home page', () => {
   it('renders the hero headline', () => {
     render(<Home />)
     const heading = screen.getByRole('heading', { level: 1 })
-    expect(heading).toHaveTextContent('Preprocess')
+    expect(heading).toHaveTextContent('One')
+    expect(heading).toHaveTextContent('toolchain')
     expect(heading).toHaveTextContent('Luau')
-    expect(heading).toHaveTextContent('sub-zero')
   })
 
   it('shows the install commands for lpm, lpx, and cargo', () => {
     render(<Home />)
     const quickStart = document.getElementById('quick-start')
-    expect(quickStart?.textContent).toContain('lpm tool add coldluau')
-    expect(quickStart?.textContent).toContain('lpx coldluau')
-    expect(quickStart?.textContent).toContain('cargo install coldluau')
+    expect(quickStart?.textContent).toContain('lpm tool add larvae')
+    expect(quickStart?.textContent).toContain('lpx larvae')
+    expect(quickStart?.textContent).toContain('cargo install larvae')
   })
 
   it('presents the install commands as alternatives, not a sequence', () => {
@@ -36,10 +36,10 @@ describe('Home page', () => {
   it('defaults the hero install command to lpm and switches on click', async () => {
     render(<Home />)
     const chip = screen.getByTestId('install-command')
-    expect(chip.textContent).toContain('lpm tool add coldluau')
+    expect(chip.textContent).toContain('lpm tool add larvae')
     fireEvent.click(screen.getByRole('button', { name: 'cargo' }))
     await waitFor(
-      () => expect(chip.textContent).toContain('cargo install coldluau'),
+      () => expect(chip.textContent).toContain('cargo install larvae'),
       { timeout: 3000 },
     )
   })
@@ -67,10 +67,10 @@ describe('Home page', () => {
     const docs = within(nav).getByText('Docs')
     expect(docs).toHaveAttribute('href', '/docs')
     // the filled primary style marks it as the standout destination
-    expect(docs.className).toContain('bg-ice')
+    expect(docs.className).toContain('bg-hive')
     expect(within(nav).getByText('GitHub')).toHaveAttribute(
       'href',
-      'https://github.com/coldluau/cli',
+      'https://github.com/larvae-luau/larvae',
     )
   })
 
@@ -89,7 +89,7 @@ describe('Home page', () => {
 
   it('renders the logo image', () => {
     render(<Home />)
-    expect(screen.getByAltText(/coldluau logo/i)).toBeInTheDocument()
+    expect(screen.getByAltText(/larvae logo/i)).toBeInTheDocument()
   })
 
   it('shows every benchmark workload with its speedup', () => {
@@ -114,7 +114,7 @@ describe('Home page', () => {
     expect(benchmarks?.textContent).toContain('darklua 0.19.0')
     // the narrowest win is called out rather than buried
     expect(benchmarks?.textContent).toContain(
-      'the workload coldluau wins by the smallest margin',
+      'the workload larvae wins by the smallest margin',
     )
   })
 
@@ -138,7 +138,7 @@ describe('Home page', () => {
     expect(benchmarks?.textContent).toContain('No speedup is claimed')
   })
 
-  it('shows the incremental columns as coldluau only', () => {
+  it('shows the incremental columns as larvae only', () => {
     render(<Home />)
     const table = screen.getByTestId('incremental-table')
     for (const mode of ['cold', 'warm', 'one edit', 'check']) {
@@ -151,9 +151,9 @@ describe('Home page', () => {
 
   it('mounts the snowfall canvas as decorative', () => {
     render(<Home />)
-    const overlay = screen.getByTestId('snowfall-overlay')
+    const overlay = screen.getByTestId('embers-overlay')
     expect(overlay).toHaveAttribute('aria-hidden', 'true')
     expect(overlay.className).toContain('pointer-events-none')
-    expect(screen.getByTestId('snowfall-canvas')).toBeInTheDocument()
+    expect(screen.getByTestId('embers-canvas')).toBeInTheDocument()
   })
 })

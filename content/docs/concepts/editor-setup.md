@@ -6,23 +6,23 @@ order: 6
 updated: 2026-07-29
 ---
 
-Two small pieces of setup, one for editing `coldluau.toml` and one for editing Luau. Neither takes more than a minute.
+Two small pieces of setup, one for editing `larvae.toml` and one for editing Luau. Neither takes more than a minute.
 
 ## Config completion
 
-`coldluau.toml` ships with a JSON Schema, and one comment line at the top of the file is what connects them.
+`larvae.toml` ships with a JSON Schema, and one comment line at the top of the file is what connects them.
 
 ```shell
-coldluau schema
+larvae schema
 ```
 
-That adds or refreshes the `#:schema` line at the top of an existing `coldluau.toml`, pointing at the `coldluau.schema.json` for your version.
+That adds or refreshes the `#:schema` line at the top of an existing `larvae.toml`, pointing at the `larvae.schema.json` for your version.
 
-The command is idempotent, it replaces a stale schema URL rather than adding a second line, and errors if there is no `coldluau.toml`. `coldluau init` adds the line for you, so reach for `schema` only when you wrote the config by hand or after upgrading coldluau.
+The command is idempotent, it replaces a stale schema URL rather than adding a second line, and errors if there is no `larvae.toml`. `larvae init` adds the line for you, so reach for `schema` only when you wrote the config by hand or after upgrading larvae.
 
 ### What you get
 
-Install **Even Better TOML** or **Taplo**, both of which read `#:schema`. Then in `coldluau.toml` you get:
+Install **Even Better TOML** or **Taplo**, both of which read `#:schema`. Then in `larvae.toml` you get:
 
 - completion for every table and key
 - hover docs on each key, the same text as the [configuration reference](/docs/reference/configuration)
@@ -33,7 +33,7 @@ That last one is worth the setup on its own. Unknown keys are hard errors at loa
 
 ## Go to definition on aliases
 
-**luau-lsp reads `.luaurc`.** That is its source of alias truth. coldluau reads `.luaurc` too, and merges `[aliases]` from `coldluau.toml` over it per key, so a `.luaurc` alias gives you both halves:
+**luau-lsp reads `.luaurc`.** That is its source of alias truth. larvae reads `.luaurc` too, and merges `[aliases]` from `larvae.toml` over it per key, so a `.luaurc` alias gives you both halves:
 
 ```json
 {
@@ -43,30 +43,30 @@ That last one is worth the setup on its own. Unknown keys are hard errors at loa
 }
 ```
 
-Now this require is resolvable by your editor and by coldluau:
+Now this require is resolvable by your editor and by larvae:
 
 ```luau
 local Signal = require("@pkg/signal")
 ```
 
-Ctrl-click jumps to `Packages/signal.luau`, hover shows the module's type, and rename works. coldluau independently rewrites the same require for the engine:
+Ctrl-click jumps to `Packages/signal.luau`, hover shows the module's type, and rename works. larvae independently rewrites the same require for the engine:
 
 ```luau
 local Signal = require("@game/ReplicatedStorage/Packages/signal")
 ```
 
-One alias, two consumers, the editor follows it to a file and coldluau follows it to a DataModel path.
+One alias, two consumers, the editor follows it to a file and larvae follows it to a DataModel path.
 
-### When the alias has to live in coldluau.toml
+### When the alias has to live in larvae.toml
 
-`.luaurc` can only express filesystem paths. A DataModel target has to go in `coldluau.toml`:
+`.luaurc` can only express filesystem paths. A DataModel target has to go in `larvae.toml`:
 
 ```toml
 [aliases]
 pkg = "@game/ReplicatedStorage/Packages"
 ```
 
-luau-lsp cannot read that, so go to definition on `@pkg` stops working. If you need both, keep a filesystem alias in `.luaurc` for the editor and let coldluau's auto mounts handle the DataModel side, since they already know where `Packages` lands. See [Rojo integration](/docs/concepts/rojo-integration).
+luau-lsp cannot read that, so go to definition on `@pkg` stops working. If you need both, keep a filesystem alias in `.luaurc` for the editor and let larvae's auto mounts handle the DataModel side, since they already know where `Packages` lands. See [Rojo integration](/docs/concepts/rojo-integration).
 
 ## Related
 

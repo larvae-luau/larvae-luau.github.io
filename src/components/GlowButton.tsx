@@ -14,20 +14,20 @@ type Size = 'md' | 'sm'
 const EDGES: Record<Variant, { rest: string; hover: string; pressed: string }> =
   {
     primary: {
-      rest: '0 5px 0 #3fa9b0, 0 12px 30px rgba(135,253,255,0.22)',
-      hover: '0 7px 0 #3fa9b0, 0 16px 40px rgba(135,253,255,0.3)',
-      pressed: '0 1px 0 #3fa9b0, 0 4px 12px rgba(135,253,255,0.18)',
+      rest: '0 5px 0 #3fa9b0, 0 12px 30px rgba(16,230,148,0.22)',
+      hover: '0 7px 0 #3fa9b0, 0 16px 40px rgba(16,230,148,0.3)',
+      pressed: '0 1px 0 #3fa9b0, 0 4px 12px rgba(16,230,148,0.18)',
     },
     ghost: {
-      rest: '0 5px 0 rgba(135,253,255,0.14), 0 12px 30px rgba(2,5,10,0.6)',
-      hover: '0 7px 0 rgba(135,253,255,0.2), 0 16px 36px rgba(2,5,10,0.7)',
-      pressed: '0 1px 0 rgba(135,253,255,0.14), 0 4px 10px rgba(2,5,10,0.5)',
+      rest: '0 5px 0 rgba(16,230,148,0.14), 0 12px 30px rgba(2,5,10,0.6)',
+      hover: '0 7px 0 rgba(16,230,148,0.2), 0 16px 36px rgba(2,5,10,0.7)',
+      pressed: '0 1px 0 rgba(16,230,148,0.14), 0 4px 10px rgba(2,5,10,0.5)',
     },
   }
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  primary: 'bg-ice text-background hover:bg-white',
-  ghost: 'frost-card text-foreground hover:border-ice/40',
+  primary: 'bg-hive text-background hover:bg-white',
+  ghost: 'hive-card text-foreground hover:border-hive/40',
 }
 
 const SIZE_CLASSES: Record<Size, string> = {
@@ -43,7 +43,7 @@ interface IceButtonProps {
   external?: boolean
 }
 
-export default function IceButton({
+export default function GlowButton({
   href,
   children,
   variant = 'primary',

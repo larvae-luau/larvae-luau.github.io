@@ -1,20 +1,20 @@
 ---
 title: Configuration
-description: Every coldluau.toml key, its default, and what it does
+description: Every larvae.toml key, its default, and what it does
 category: Reference
 order: 2
 updated: 2026-07-30
 ---
 
-Configuration lives in `coldluau.toml` next to your Rojo project. Two facts come first, because they shape everything else on this page.
+Configuration lives in `larvae.toml` next to your Rojo project. Two facts come first, because they shape everything else on this page.
 
 ## Every key is optional
 
-There is no required key and no required table. A project with a `default.project.json` and `.luaurc` aliases needs no `coldluau.toml` at all: `coldluau process` discovers `.luau` and `.lua` files under `src`, honors the `.luaurc` aliases it finds, and rewrites to native string requires. Every table below exists to override a default, never to satisfy one.
+There is no required key and no required table. A project with a `default.project.json` and `.luaurc` aliases needs no `larvae.toml` at all: `larvae process` discovers `.luau` and `.lua` files under `src`, honors the `.luaurc` aliases it finds, and rewrites to native string requires. Every table below exists to override a default, never to satisfy one.
 
 ## Unknown keys are hard errors
 
-coldluau refuses to load a config it does not fully understand. An unknown key fails at load time rather than being skipped. Keys for planned features fail too, and the error names the milestone they land in:
+larvae refuses to load a config it does not fully understand. An unknown key fails at load time rather than being skipped. Keys for planned features fail too, and the error names the milestone they land in:
 
 ```text
 [bundle] is not implemented yet (lands in M3)
@@ -24,9 +24,9 @@ Nothing is silently ignored. This is deliberate. A typo in a key name, or a conf
 
 ## Editor support
 
-The canonical annotated config is `coldluau.example.toml`, and `coldluau.schema.json` is the JSON Schema behind editor completion. Both ship with the tool.
+The canonical annotated config is `larvae.example.toml`, and `larvae.schema.json` is the JSON Schema behind editor completion. Both ship with the tool.
 
-The `#:schema` line at the top of `coldluau.toml` points editors at that schema, which is what gives you completion and hover docs in Even Better TOML or Taplo. `coldluau init` writes the line for you, and `coldluau schema` adds or refreshes it on an existing file.
+The `#:schema` line at the top of `larvae.toml` points editors at that schema, which is what gives you completion and hover docs in Even Better TOML or Taplo. `larvae init` writes the line for you, and `larvae schema` adds or refreshes it on an existing file.
 
 ## Tables
 
@@ -47,7 +47,7 @@ Two value kinds are accepted:
 | DataModel path | `"@game/ReplicatedStorage/Packages"` | a location in the running DataModel |
 | filesystem path | `"./src/shared/utils"` | a directory on disk |
 
-Both exist because `.luaurc` can only express filesystem paths. A DataModel target like `@game/ReplicatedStorage/Packages` has nowhere to live except `coldluau.toml`.
+Both exist because `.luaurc` can only express filesystem paths. A DataModel target like `@game/ReplicatedStorage/Packages` has nowhere to live except `larvae.toml`.
 
 Rules for alias names:
 
@@ -72,7 +72,7 @@ Controls what is read, what is written, and how it is printed.
 | `generator` | `"retain-lines"` | output printer, `dense` and `readable` are **planned (M2)** |
 | `quotes` | `"preserve"` | `preserve`, `double`, or `single` |
 | `cache` | `true` | incremental builds |
-| `cache_dir` | `".coldluau"` | cache and derived project location |
+| `cache_dir` | `".larvae"` | cache and derived project location |
 
 ```toml
 [process]
@@ -113,7 +113,7 @@ Controls what the rewritten requires look like.
 
 The three targets each get a full treatment on [require targets](/docs/concepts/require-targets), including the caveat that native string requires have no wait semantics.
 
-`mounts` is rarely written by hand, because parsing your Rojo project gives coldluau the filesystem to DataModel map for free, see [Rojo integration](/docs/concepts/rojo-integration).
+`mounts` is rarely written by hand, because parsing your Rojo project gives larvae the filesystem to DataModel map for free, see [Rojo integration](/docs/concepts/rojo-integration).
 
 `strict = true` promotes the warning class into errors, see [failure classes](/docs/concepts/failure-classes) for exactly which diagnostics move.
 
@@ -139,7 +139,7 @@ Kebab spellings work too, so `find-first-child`, `wait-for-child`, and `property
 
 ### `[rojo]`
 
-Points coldluau at your project file and says where the derived one goes.
+Points larvae at your project file and says where the derived one goes.
 
 | key | default | meaning |
 |---|---|---|
@@ -151,7 +151,7 @@ Points coldluau at your project file and says where the derived one goes.
 project = "default.project.json"
 ```
 
-`project` is the key to set when a repository holds several project files, since coldluau needs to know which one is the source of truth. The derived project is what you hand to rojo, coldluau never runs rojo itself. See [Rojo integration](/docs/concepts/rojo-integration).
+`project` is the key to set when a repository holds several project files, since larvae needs to know which one is the source of truth. The derived project is what you hand to rojo, larvae never runs rojo itself. See [Rojo integration](/docs/concepts/rojo-integration).
 
 ### `[rules]`
 

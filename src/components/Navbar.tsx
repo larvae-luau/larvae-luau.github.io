@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react'
 import Image from 'next/image'
-import IceButton from '@/components/IceButton'
+import GlowButton from '@/components/GlowButton'
 import logo from '@/lib/logo'
 
 const LINKS = [
@@ -22,7 +22,7 @@ export default function Navbar() {
       className="fixed inset-x-0 top-0 z-40"
     >
       {/* select-none inherits: the whole nav is chrome, nothing worth copying */}
-      <nav className="frost-card mx-auto mt-4 flex max-w-5xl select-none items-center justify-between rounded-2xl px-5 py-3">
+      <nav className="hive-card mx-auto mt-4 flex max-w-5xl select-none items-center justify-between rounded-2xl px-5 py-3">
         <a href="#top" className="flex items-center gap-3">
           <Image
             src={logo}
@@ -32,7 +32,7 @@ export default function Navbar() {
             className="rounded-lg"
           />
           <span className="font-semibold tracking-tight">
-            cold<span className="text-ice">luau</span>
+            lar<span className="text-hive">vae</span>
           </span>
         </a>
         <div className="hidden items-center gap-6 text-sm text-muted sm:flex">
@@ -40,7 +40,7 @@ export default function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="transition-colors hover:text-ice"
+              className="transition-colors hover:text-hive"
             >
               {link.label}
             </a>
@@ -49,17 +49,17 @@ export default function Navbar() {
         {/* Docs and GitHub leave the page, so they read as buttons while the
             links above are just in-page scrolls */}
         <div className="flex items-center gap-2">
-          <IceButton href="/docs" size="sm">
+          <GlowButton href="/docs" size="sm">
             Docs
-          </IceButton>
-          <IceButton
-            href="https://github.com/coldluau/cli"
+          </GlowButton>
+          <GlowButton
+            href="https://github.com/larvae-luau/larvae"
             variant="ghost"
             size="sm"
             external
           >
             GitHub
-          </IceButton>
+          </GlowButton>
         </div>
       </nav>
     </motion.header>

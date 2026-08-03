@@ -8,10 +8,10 @@ export const metadata: Metadata = {
   // a plain string here would drop the root template for every docs page
   title: {
     default: 'Docs',
-    template: '%s · coldluau docs',
+    template: '%s · larvae docs',
   },
   description:
-    'Documentation for coldluau, the Luau preprocessor that rewrites aliases into native Roblox string requires.',
+    'Documentation for larvae, the Luau preprocessor that rewrites aliases into native Roblox string requires.',
   alternates: { canonical: '/docs' },
 }
 
@@ -30,7 +30,7 @@ export default function DocsLayout({
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 select-none"
       >
-        <div className="absolute -top-40 left-1/2 h-[30rem] w-[70rem] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(135,253,255,0.08),transparent_65%)] blur-3xl" />
+        <div className="absolute -top-40 left-1/2 h-[30rem] w-[70rem] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(16,230,148,0.08),transparent_65%)] blur-3xl" />
       </div>
 
       <DocsHeader entries={entries} />

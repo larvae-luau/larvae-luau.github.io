@@ -25,11 +25,11 @@ describe('currentRelease', () => {
   it('uses the published tag and its notes page', () => {
     process.env.RELEASE_TAG = 'v0.2.1'
     process.env.RELEASE_URL =
-      'https://github.com/coldluau/cli/releases/tag/v0.2.1'
+      'https://github.com/larvae-luau/larvae/releases/tag/v0.2.1'
     const release = currentRelease()
     expect(release.label).toBe('v0.2.1')
     expect(release.url).toBe(
-      'https://github.com/coldluau/cli/releases/tag/v0.2.1',
+      'https://github.com/larvae-luau/larvae/releases/tag/v0.2.1',
     )
     expect(release.published).toBe(true)
   })
@@ -61,7 +61,7 @@ describe('releaseVersion', () => {
 describe('RELEASE_API', () => {
   it('is derived from the repo url rather than written out twice', () => {
     expect(RELEASE_API).toBe(
-      'https://api.github.com/repos/coldluau/cli/releases/latest',
+      'https://api.github.com/repos/larvae-luau/larvae/releases/latest',
     )
   })
 })

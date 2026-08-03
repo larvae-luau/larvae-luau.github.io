@@ -67,7 +67,7 @@ export default function PerfProbe() {
         resetAt.current = performance.now()
         setReading((prev) => ({ fps: prev.fps, worst: prev.fps }))
       }}
-      className="fixed bottom-3 left-3 z-50 rounded-lg border border-ice/30 bg-black/85 px-3 py-2 text-left font-mono text-[11px] leading-tight text-ice tabular-nums"
+      className="fixed bottom-3 left-3 z-50 rounded-lg border border-hive/30 bg-black/85 px-3 py-2 text-left font-mono text-[11px] leading-tight text-hive tabular-nums"
     >
       <div className="text-base font-bold">
         {reading.fps} fps

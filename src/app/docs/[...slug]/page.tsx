@@ -46,12 +46,12 @@ export default async function DocPage({ params }: PageProps) {
         <nav aria-label="Breadcrumb" className="mb-3 select-none text-xs">
           <Link
             href="/docs"
-            className="text-muted transition-colors hover:text-ice"
+            className="text-muted transition-colors hover:text-hive"
           >
             Docs
           </Link>
           <span className="mx-2 text-muted/50">/</span>
-          <span className="font-mono tracking-wide text-ice/70 uppercase">
+          <span className="font-mono tracking-wide text-hive/70 uppercase">
             {doc.category}
           </span>
         </nav>
@@ -60,7 +60,7 @@ export default async function DocPage({ params }: PageProps) {
           {doc.title}
         </h1>
         <p className="mt-3 text-lg text-muted text-pretty">{doc.description}</p>
-        <p className="mt-4 mb-10 flex select-none flex-wrap gap-x-4 border-b border-ice/10 pb-6 font-mono text-xs text-muted">
+        <p className="mt-4 mb-10 flex select-none flex-wrap gap-x-4 border-b border-hive/10 pb-6 font-mono text-xs text-muted">
           <span>updated {formatUpdated(doc.updated)}</span>
           <span>{doc.readingMinutes} min read</span>
         </p>
@@ -72,14 +72,14 @@ export default async function DocPage({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: doc.html }}
         />
 
-        <div className="mt-16 grid gap-4 border-t border-ice/10 pt-8 sm:grid-cols-2">
+        <div className="mt-16 grid gap-4 border-t border-hive/10 pt-8 sm:grid-cols-2">
           {previous ? (
             <Link
               href={`/docs/${previous.slug}`}
-              className="frost-card group rounded-xl p-4 transition-colors hover:border-ice/35"
+              className="hive-card group rounded-xl p-4 transition-colors hover:border-hive/35"
             >
               <span className="select-none text-xs text-muted">Previous</span>
-              <span className="mt-1 block font-medium transition-colors group-hover:text-ice">
+              <span className="mt-1 block font-medium transition-colors group-hover:text-hive">
                 {previous.title}
               </span>
             </Link>
@@ -89,10 +89,10 @@ export default async function DocPage({ params }: PageProps) {
           {next && (
             <Link
               href={`/docs/${next.slug}`}
-              className="frost-card group rounded-xl p-4 text-right transition-colors hover:border-ice/35 sm:col-start-2"
+              className="hive-card group rounded-xl p-4 text-right transition-colors hover:border-hive/35 sm:col-start-2"
             >
               <span className="select-none text-xs text-muted">Next</span>
-              <span className="mt-1 block font-medium transition-colors group-hover:text-ice">
+              <span className="mt-1 block font-medium transition-colors group-hover:text-hive">
                 {next.title}
               </span>
             </Link>
@@ -103,15 +103,15 @@ export default async function DocPage({ params }: PageProps) {
       {doc.headings.length > 1 && (
         <aside className="hidden w-52 shrink-0 xl:block">
           <div className="sticky top-28">
-            <p className="mb-3 select-none font-mono text-[0.7rem] tracking-widest text-ice/70 uppercase">
+            <p className="mb-3 select-none font-mono text-[0.7rem] tracking-widest text-hive/70 uppercase">
               on this page
             </p>
-            <ul className="space-y-1 border-l border-ice/10 text-sm">
+            <ul className="space-y-1 border-l border-hive/10 text-sm">
               {doc.headings.map((heading) => (
                 <li key={heading.id}>
                   <a
                     href={`#${heading.id}`}
-                    className={`block py-1 text-muted transition-colors hover:text-ice ${
+                    className={`block py-1 text-muted transition-colors hover:text-hive ${
                       heading.depth === 3 ? 'pl-7 text-xs' : 'pl-4'
                     }`}
                   >

@@ -3,10 +3,10 @@ title: Roadmap
 description: What is coming in M2, M3, and M4, and the gaps we know about
 category: Project
 order: 3
-updated: 2026-07-30
+updated: 2026-08-03
 ---
 
-Where coldluau is going, so you can tell whether to adopt now or wait.
+Where larvae is going, so you can tell whether to adopt now or wait.
 
 > **Nothing on this page is usable yet.** Every item below is unimplemented. Config keys for planned features are hard errors at load time, and the error names the milestone the feature lands in, ex: `[bundle] is not implemented yet (lands in M3)`. Nothing is silently ignored, so a config written against this page will fail loudly rather than build something wrong.
 
@@ -50,6 +50,16 @@ Two more output printers alongside today's `retain-lines`. `dense` is where dark
 
 Plus multiple input roots.
 
+### Formatting
+
+`larvae fmt`, one opinionated formatter for Luau so a project needs no separate tool for it. Not released yet, and nothing in the config accepts formatter keys today.
+
+### Linting
+
+`larvae lint`, diagnostics over the same parse the transforms already do, so linting costs almost nothing once a file is in memory. Also not released yet.
+
+Together with the transforms that ship today, these are what make larvae a toolchain rather than a preprocessor. Neither is usable at the moment, so treat any mention of them as a plan rather than a feature.
+
 ## After that (M3)
 
 ### Bundling
@@ -58,7 +68,7 @@ Everything into one file, with deterministic and documented module init order, i
 
 ### Cross module dead code elimination
 
-Using the require graph. Possible because coldluau already resolves every require target.
+Using the require graph. Possible because larvae already resolves every require target.
 
 ### Luau extensions
 
@@ -83,7 +93,7 @@ Not scheduled, listed because they show the direction:
 - `inject_module_path`
 - `freeze_module`
 
-The pattern is that all of these lean on things coldluau knows and darklua does not: resolved require targets and the DataModel map. They are not rules darklua could add.
+The pattern is that all of these lean on things larvae knows and darklua does not: resolved require targets and the DataModel map. They are not rules darklua could add.
 
 ## Known gaps
 
@@ -91,7 +101,7 @@ Things that are true today and worth knowing before you hit them.
 
 ### No differential testing against the official parser
 
-coldluau's parser has not been differentially tested against the official Luau C++ parser yet. New Luau syntax could surface as a false syntax error in `check`.
+larvae's parser has not been differentially tested against the official Luau C++ parser yet. New Luau syntax could surface as a false syntax error in `check`.
 
 `process` is unaffected, it does not parse. So a build keeps working even if `check` reports a syntax error it should not.
 

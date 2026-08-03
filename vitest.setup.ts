@@ -7,7 +7,7 @@ afterEach(() => {
   cleanup()
 })
 
-// jsdom has no matchMedia; motion and Snowfall both query it.
+// jsdom has no matchMedia; motion and Embers both query it.
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
@@ -34,7 +34,7 @@ Object.defineProperty(window, 'IntersectionObserver', {
   value: IntersectionObserverStub,
 })
 
-// jsdom's canvas has no 2d context; Snowfall bails out gracefully on null.
+// jsdom's canvas has no 2d context; Embers bails out gracefully on null.
 HTMLCanvasElement.prototype.getContext = vi.fn(() => null) as never
 
 Object.defineProperty(window, 'ResizeObserver', {

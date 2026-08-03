@@ -87,11 +87,11 @@ describe('Hero on a coarse pointer', () => {
     useTouchDevice()
     render(<Hero />)
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'sub-zero',
+      'toolchain',
     )
-    expect(screen.getByAltText(/coldluau logo/i)).toBeInTheDocument()
+    expect(screen.getByAltText(/larvae logo/i)).toBeInTheDocument()
     expect(screen.getByTestId('install-command').textContent).toContain(
-      'lpm tool add coldluau',
+      'lpm tool add larvae',
     )
   })
 

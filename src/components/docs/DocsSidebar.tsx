@@ -19,10 +19,10 @@ export default function DocsSidebar({
       <button
         type="button"
         onClick={() => setOpenOnMobile((value) => !value)}
-        className="frost-card mb-6 flex w-full select-none items-center justify-between rounded-xl px-4 py-3 text-sm font-medium lg:hidden"
+        className="hive-card mb-6 flex w-full select-none items-center justify-between rounded-xl px-4 py-3 text-sm font-medium lg:hidden"
       >
         Browse docs
-        <span aria-hidden="true" className="text-ice">
+        <span aria-hidden="true" className="text-hive">
           {openOnMobile ? '−' : '+'}
         </span>
       </button>
@@ -35,13 +35,13 @@ export default function DocsSidebar({
       >
         {categories.map((category) => (
           <div key={category.name} className="mb-7">
-            <p className="mb-2 select-none font-mono text-[0.7rem] tracking-widest text-ice/70 uppercase">
+            <p className="mb-2 select-none font-mono text-[0.7rem] tracking-widest text-hive/70 uppercase">
               {category.name}
             </p>
             <p className="mb-3 select-none text-[0.7rem] text-muted">
               updated {formatUpdated(category.updated)}
             </p>
-            <ul className="space-y-0.5 border-l border-ice/10">
+            <ul className="space-y-0.5 border-l border-hive/10">
               {category.docs.map((doc) => {
                 const href = `/docs/${doc.slug}`
                 const isActive = pathname === href
@@ -50,7 +50,7 @@ export default function DocsSidebar({
                     {isActive && (
                       <motion.span
                         layoutId="docs-active"
-                        className="absolute -left-px top-0 h-full w-0.5 bg-ice"
+                        className="absolute -left-px top-0 h-full w-0.5 bg-hive"
                         transition={{
                           type: 'spring',
                           stiffness: 350,
@@ -63,7 +63,7 @@ export default function DocsSidebar({
                       onClick={() => setOpenOnMobile(false)}
                       className={`block py-1.5 pl-4 text-sm transition-colors ${
                         isActive
-                          ? 'text-ice'
+                          ? 'text-hive'
                           : 'text-muted hover:text-foreground'
                       }`}
                     >
