@@ -14,11 +14,11 @@ export default function DocsIndex() {
   return (
     <div className="max-w-3xl">
       <Reveal>
-        <p className="mb-3 select-none font-mono text-xs tracking-widest text-ice/70 uppercase">
+        <p className="mb-3 select-none font-mono text-xs tracking-widest text-hive/70 uppercase">
           documentation
         </p>
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          coldluau <span className="ice-text">docs</span>
+          larvae <span className="hive-text">docs</span>
         </h1>
         <p className="mt-4 text-lg text-muted text-pretty">
           A Luau preprocessor written in Rust. It turns your aliases into native
@@ -34,7 +34,7 @@ export default function DocsIndex() {
       <div className="mt-12 flex flex-col gap-5">
         {categories.map((category, index) => (
           <Reveal key={category.name} delay={index * 0.08}>
-            <section className="frost-card rounded-2xl p-6">
+            <section className="hive-card rounded-2xl p-6">
               <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-semibold">{category.name}</h2>
                 <p className="select-none font-mono text-[0.7rem] text-muted">
@@ -42,14 +42,14 @@ export default function DocsIndex() {
                   {formatUpdated(category.updated)}
                 </p>
               </div>
-              <ul className="divide-y divide-ice/8">
+              <ul className="divide-y divide-hive/8">
                 {category.docs.map((doc) => (
                   <li key={doc.slug}>
                     <Link
                       href={`/docs/${doc.slug}`}
                       className="group flex flex-col gap-1 py-3 transition-colors sm:flex-row sm:items-baseline sm:gap-4"
                     >
-                      <span className="min-w-52 font-medium text-foreground transition-colors group-hover:text-ice">
+                      <span className="min-w-52 font-medium text-foreground transition-colors group-hover:text-hive">
                         {doc.title}
                       </span>
                       <span className="flex-1 text-sm text-muted">

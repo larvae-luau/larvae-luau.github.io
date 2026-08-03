@@ -20,15 +20,15 @@ export interface Token {
 /** Theme colors per token type, shared by the React and HTML renderers. */
 export const TOKEN_CLASSES: Record<TokenType, string> = {
   plain: '',
-  keyword: 'text-glacier',
+  keyword: 'text-spore',
   builtin: 'text-white',
-  string: 'text-ice',
+  string: 'text-hive',
   comment: 'text-muted',
-  number: 'text-ice',
-  section: 'text-glacier',
+  number: 'text-hive',
+  section: 'text-spore',
   key: 'text-white',
-  prompt: 'text-ice',
-  command: 'text-glacier',
+  prompt: 'text-hive',
+  command: 'text-spore',
 }
 
 interface LangSpec {

@@ -15,32 +15,32 @@ const STEPS: Step[] = [
   {
     title: 'Install',
     tag: 'pick one',
-    code: `lpm tool add coldluau
+    code: `lpm tool add larvae
 # or
-lpx coldluau
+lpx larvae
 # or
-cargo install coldluau`,
+cargo install larvae`,
     body: 'Three separate routes to the same binary, not commands to run in order. lpm adds it as a project tool, lpx runs it once and installs nothing, and cargo pulls the published crate. Prebuilt binaries ship on GitHub releases.',
   },
   {
     title: 'Initialize',
-    code: 'coldluau init',
-    body: 'Writes a starter coldluau.toml with the editor schema line, and offers to add .coldluau/ and dist/ to your .gitignore. Refuses if a config already exists.',
+    code: 'larvae init',
+    body: 'Writes a starter larvae.toml with the editor schema line, and offers to add .larvae/ and dist/ to your .gitignore. Refuses if a config already exists.',
   },
   {
     title: 'Process, then serve',
-    code: `coldluau process
-rojo serve .coldluau/build.project.json`,
-    body: "coldluau writes dist/ and keeps the derived project file fresh, then you point rojo at it. It never runs rojo for you, serving is rojo's job.",
+    code: `larvae process
+rojo serve .larvae/build.project.json`,
+    body: "larvae writes dist/ and keeps the derived project file fresh, then you point rojo at it. It never runs rojo for you, serving is rojo's job.",
   },
 ]
 
-const CLI = `coldluau process     # rewrite requires, run rules
-coldluau process -w  # rebuild on change
-coldluau check       # validation, the CI gate
-coldluau init        # write a starter coldluau.toml
-coldluau schema      # refresh the editor schema line
-coldluau self        # install, update, uninstall`
+const CLI = `larvae process     # rewrite requires, run rules
+larvae process -w  # rebuild on change
+larvae check       # validation, the CI gate
+larvae init        # write a starter larvae.toml
+larvae schema      # refresh the editor schema line
+larvae self        # install, update, uninstall`
 
 export default function QuickStart() {
   return (
@@ -50,7 +50,7 @@ export default function QuickStart() {
     >
       <Reveal className="mb-14 text-center">
         <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
-          Frozen in <span className="ice-text">three steps</span>
+          Running in <span className="hive-text">three steps</span>
         </h2>
       </Reveal>
 
@@ -61,14 +61,14 @@ export default function QuickStart() {
       <div className="grid gap-5 md:grid-cols-3">
         {STEPS.map((step, i) => (
           <Reveal key={step.title} delay={i * 0.12} className="min-w-0">
-            <div className="frost-card flex h-full flex-col rounded-2xl p-6">
+            <div className="hive-card flex h-full flex-col rounded-2xl p-6">
               <div className="mb-4 flex items-center gap-3">
-                <span className="flex h-8 w-8 select-none items-center justify-center rounded-full border border-ice/30 font-mono text-sm text-ice">
+                <span className="flex h-8 w-8 select-none items-center justify-center rounded-full border border-hive/30 font-mono text-sm text-hive">
                   {i + 1}
                 </span>
                 <h3 className="font-semibold">{step.title}</h3>
                 {step.tag && (
-                  <span className="ml-auto select-none rounded-full border border-ice/20 bg-ice/5 px-2 py-0.5 font-mono text-[0.65rem] text-ice/80">
+                  <span className="ml-auto select-none rounded-full border border-hive/20 bg-hive/5 px-2 py-0.5 font-mono text-[0.65rem] text-hive/80">
                     {step.tag}
                   </span>
                 )}
@@ -76,7 +76,7 @@ export default function QuickStart() {
               <CodeBlock
                 code={step.code}
                 lang="shell"
-                className="mb-4 rounded-lg border border-ice/10 bg-background/60 px-4 py-3"
+                className="mb-4 rounded-lg border border-hive/10 bg-background/60 px-4 py-3"
               />
               {/* bottom-aligned so the three descriptions share a baseline */}
               <p className="mt-auto text-sm leading-relaxed text-muted">
@@ -88,8 +88,8 @@ export default function QuickStart() {
       </div>
 
       <Reveal delay={0.2} className="mt-6">
-        <div className="frost-card rounded-2xl p-6">
-          <p className="mb-3 select-none font-mono text-xs tracking-widest text-ice/70 uppercase">
+        <div className="hive-card rounded-2xl p-6">
+          <p className="mb-3 select-none font-mono text-xs tracking-widest text-hive/70 uppercase">
             the full toolkit
           </p>
           <CodeBlock code={CLI} lang="shell" />

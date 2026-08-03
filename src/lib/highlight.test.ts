@@ -53,7 +53,7 @@ if ready then return 42 end`
 })
 
 describe('tokenize · toml', () => {
-  const code = `# coldluau.toml
+  const code = `# larvae.toml
 [aliases]
 pkg = '@game/ReplicatedStorage/packages'`
 
@@ -70,13 +70,13 @@ pkg = '@game/ReplicatedStorage/packages'`
     expect(typesOf(code, 'toml', "'@game/ReplicatedStorage/packages'")).toEqual(
       ['string'],
     )
-    expect(typesOf(code, 'toml', '# coldluau.toml')).toEqual(['comment'])
+    expect(typesOf(code, 'toml', '# larvae.toml')).toEqual(['comment'])
   })
 })
 
 describe('tokenize · shell', () => {
-  const code = `coldluau process   # rewrite requires
-cargo install coldluau`
+  const code = `larvae process   # rewrite requires
+cargo install larvae`
 
   it('reassembles to the exact input', () => {
     const joined = tokenize(code, 'shell')
@@ -86,13 +86,13 @@ cargo install coldluau`
   })
 
   it('classifies leading commands and comments', () => {
-    expect(typesOf(code, 'shell', 'coldluau')).toEqual(['command'])
+    expect(typesOf(code, 'shell', 'larvae')).toEqual(['command'])
     expect(typesOf(code, 'shell', 'cargo')).toEqual(['command'])
     expect(typesOf(code, 'shell', '# rewrite requires')).toEqual(['comment'])
   })
 
   it('leaves arguments plain', () => {
-    const tokens = tokenize('cargo install coldluau', 'shell')
+    const tokens = tokenize('cargo install larvae', 'shell')
     const plain = tokens.find((t) => t.text.includes('install'))
     expect(plain?.type).toBe('plain')
   })
@@ -100,7 +100,7 @@ cargo install coldluau`
 
 describe('tokenize · json', () => {
   const code = `{
-  "name": "coldluau",
+  "name": "larvae",
   "strict": true,
   "passes": 2
 }`
@@ -115,7 +115,7 @@ describe('tokenize · json', () => {
 
   it('separates keys from string values', () => {
     expect(typesOf(code, 'json', '"name"')).toEqual(['key'])
-    expect(typesOf(code, 'json', '"coldluau"')).toEqual(['string'])
+    expect(typesOf(code, 'json', '"larvae"')).toEqual(['string'])
   })
 
   it('classifies literals and numbers', () => {
@@ -127,7 +127,7 @@ describe('tokenize · json', () => {
 describe('tokenize · yaml', () => {
   const code = `# in CI
 steps:
-  - run: coldluau check
+  - run: larvae check
     strict: true`
 
   it('reassembles to the exact input', () => {
@@ -179,7 +179,7 @@ describe('highlightToHtml', () => {
 
   it('wraps tokens in theme color classes', () => {
     const html = highlightToHtml("local x = 'hi'", 'luau')
-    expect(html).toContain('class="text-glacier"')
-    expect(html).toContain('class="text-ice"')
+    expect(html).toContain('class="text-spore"')
+    expect(html).toContain('class="text-hive"')
   })
 })

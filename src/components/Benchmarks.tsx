@@ -4,7 +4,7 @@ import { motion } from 'motion/react'
 import Reveal from '@/components/Reveal'
 
 interface Matchup {
-  coldluau: number
+  larvae: number
   darklua: number
   speedup: string
 }
@@ -14,9 +14,9 @@ interface Run {
   detail: string
   /** The headline, both tools running the same 10 rules. */
   sameRules: Matchup
-  /** darklua with no rules at all, coldluau still rewriting every require. */
+  /** darklua with no rules at all, larvae still rewriting every require. */
   parseOnly: Matchup
-  /** darklua's own default stack, which coldluau cannot match yet. */
+  /** darklua's own default stack, which larvae cannot match yet. */
   darkluaDefault: number
   incremental: { cold: number; warm: number; edit: number; check: number }
   note?: string
@@ -26,27 +26,27 @@ const RUNS: Run[] = [
   {
     label: '3,000 files',
     detail: 'synthetic project',
-    sameRules: { coldluau: 35, darklua: 493, speedup: '14.0x' },
-    parseOnly: { coldluau: 24, darklua: 430, speedup: '17.9x' },
+    sameRules: { larvae: 35, darklua: 493, speedup: '14.0x' },
+    parseOnly: { larvae: 24, darklua: 430, speedup: '17.9x' },
     darkluaDefault: 571,
     incremental: { cold: 24, warm: 14, edit: 13, check: 21 },
   },
   {
     label: '5,000 files',
     detail: 'synthetic project',
-    sameRules: { coldluau: 57, darklua: 799, speedup: '14.0x' },
-    parseOnly: { coldluau: 40, darklua: 703, speedup: '17.5x' },
+    sameRules: { larvae: 57, darklua: 799, speedup: '14.0x' },
+    parseOnly: { larvae: 40, darklua: 703, speedup: '17.5x' },
     darkluaDefault: 938,
     incremental: { cold: 40, warm: 22, edit: 22, check: 37 },
   },
   {
     label: '1 large file',
     detail: 'single 3.5 MB module',
-    sameRules: { coldluau: 140, darklua: 1450, speedup: '10.3x' },
-    parseOnly: { coldluau: 16, darklua: 1206, speedup: '75.3x' },
+    sameRules: { larvae: 140, darklua: 1450, speedup: '10.3x' },
+    parseOnly: { larvae: 16, darklua: 1206, speedup: '75.3x' },
     darkluaDefault: 1605,
     incremental: { cold: 16, warm: 3, edit: 3, check: 80 },
-    note: 'Rules cost far more here than require rewriting does, 140 ms against 16 ms, because one enormous module gives the thread pool nothing to split. It is the workload coldluau wins by the smallest margin once rules are on.',
+    note: 'Rules cost far more here than require rewriting does, 140 ms against 16 ms, because one enormous module gives the thread pool nothing to split. It is the workload larvae wins by the smallest margin once rules are on.',
   },
 ]
 
@@ -57,12 +57,12 @@ const WORKLOADS = [
   },
   {
     term: 'parse only',
-    definition: 'darklua runs no rules, coldluau still rewrites every require',
+    definition: 'darklua runs no rules, larvae still rewrites every require',
   },
   {
     term: 'darklua default',
     definition:
-      'darklua’s own default stack plus its dense generator, which coldluau has neither of yet',
+      'darklua’s own default stack plus its dense generator, which larvae has neither of yet',
   },
 ]
 
@@ -84,7 +84,7 @@ function Bar({
       {/* chart chrome; the timing beside the bar stays copyable */}
       <span
         className={`select-none font-mono text-xs ${
-          accent ? 'text-ice' : 'text-muted'
+          accent ? 'text-hive' : 'text-muted'
         }`}
       >
         {label}
@@ -96,13 +96,13 @@ function Bar({
           viewport={{ once: true, margin: '-60px' }}
           transition={{ type: 'spring', stiffness: 60, damping: 18, delay }}
           className={`h-full min-w-1 origin-left rounded-full ${
-            accent ? 'bg-linear-to-r from-ice to-glacier' : 'bg-muted/35'
+            accent ? 'bg-linear-to-r from-hive to-spore' : 'bg-muted/35'
           }`}
         />
       </div>
       <span
         className={`text-right font-mono text-xs ${
-          accent ? 'text-ice' : 'text-foreground/70'
+          accent ? 'text-hive' : 'text-foreground/70'
         }`}
       >
         {ms} ms
@@ -119,24 +119,24 @@ export default function Benchmarks() {
     >
       <Reveal className="mb-14 text-center">
         <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
-          Cold, hard <span className="ice-text">numbers</span>
+          Measured, <span className="hive-text">not claimed</span>
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-muted">
           The headline is the matched comparison, both tools cold on the same
           tree running the same 10 rules. 16 cores, 7 runs per cell, median
-          reported, coldluau 0.1.0 against darklua 0.19.0.
+          reported, larvae 0.1.0 against darklua 0.19.0.
         </p>
       </Reveal>
 
       <Reveal className="mb-6">
-        <div className="frost-card rounded-2xl p-6">
-          <p className="mb-4 select-none font-mono text-xs tracking-widest text-ice/70 uppercase">
+        <div className="hive-card rounded-2xl p-6">
+          <p className="mb-4 select-none font-mono text-xs tracking-widest text-hive/70 uppercase">
             the three workloads
           </p>
           <dl className="flex flex-col gap-2">
             {WORKLOADS.map((workload) => (
               <div key={workload.term} className="flex gap-3 text-sm">
-                <dt className="w-32 shrink-0 font-mono text-xs leading-6 text-ice">
+                <dt className="w-32 shrink-0 font-mono text-xs leading-6 text-hive">
                   {workload.term}
                 </dt>
                 <dd className="text-muted">{workload.definition}</dd>
@@ -149,14 +149,14 @@ export default function Benchmarks() {
       <div className="flex flex-col gap-6">
         {RUNS.map((run, i) => (
           <Reveal key={run.label} delay={i * 0.12}>
-            <div className="frost-card rounded-2xl p-6">
+            <div className="hive-card rounded-2xl p-6">
               <div className="mb-5 flex items-center justify-between gap-4">
                 <div>
                   <h3 className="font-semibold">{run.label}</h3>
                   <p className="select-none text-xs text-muted">{run.detail}</p>
                 </div>
                 <div className="shrink-0 text-right">
-                  <span className="inline-block rounded-full border border-ice/25 bg-ice/10 px-3 py-1 font-mono text-sm font-semibold text-ice">
+                  <span className="inline-block rounded-full border border-hive/25 bg-hive/10 px-3 py-1 font-mono text-sm font-semibold text-hive">
                     {run.sameRules.speedup} faster
                   </span>
                   <p className="mt-1 select-none font-mono text-[0.65rem] text-muted">
@@ -167,8 +167,8 @@ export default function Benchmarks() {
 
               <div className="flex flex-col gap-3">
                 <Bar
-                  label="coldluau"
-                  ms={run.sameRules.coldluau}
+                  label="larvae"
+                  ms={run.sameRules.larvae}
                   max={run.sameRules.darklua}
                   accent
                   delay={0.15}
@@ -182,17 +182,17 @@ export default function Benchmarks() {
                 />
               </div>
 
-              <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 border-t border-ice/10 pt-4 font-mono text-xs">
+              <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 border-t border-hive/10 pt-4 font-mono text-xs">
                 <span>
                   <span className="select-none text-muted">parse only </span>
                   <span className="text-foreground/80">
-                    {run.parseOnly.coldluau} ms
+                    {run.parseOnly.larvae} ms
                   </span>
                   <span className="select-none text-muted"> vs </span>
                   <span className="text-foreground/80">
                     {run.parseOnly.darklua} ms
                   </span>
-                  <span className="text-ice"> {run.parseOnly.speedup}</span>
+                  <span className="text-hive"> {run.parseOnly.speedup}</span>
                 </span>
                 <span>
                   <span className="select-none text-muted">
@@ -205,7 +205,7 @@ export default function Benchmarks() {
               </div>
 
               {run.note && (
-                <p className="mt-4 border-t border-ice/8 pt-4 text-xs leading-relaxed text-muted">
+                <p className="mt-4 border-t border-hive/8 pt-4 text-xs leading-relaxed text-muted">
                   {run.note}
                 </p>
               )}
@@ -215,8 +215,8 @@ export default function Benchmarks() {
       </div>
 
       <Reveal delay={0.15} className="mt-6">
-        <div className="frost-card rounded-2xl p-6">
-          <p className="mb-1 select-none font-mono text-xs tracking-widest text-ice/70 uppercase">
+        <div className="hive-card rounded-2xl p-6">
+          <p className="mb-1 select-none font-mono text-xs tracking-widest text-hive/70 uppercase">
             incremental, ours alone
           </p>
           <p className="mb-5 text-sm text-muted">
@@ -239,9 +239,9 @@ export default function Benchmarks() {
               </thead>
               <tbody>
                 {RUNS.map((run) => (
-                  <tr key={run.label} className="border-t border-ice/8">
+                  <tr key={run.label} className="border-t border-hive/8">
                     <td className="py-2 text-foreground/80">{run.label}</td>
-                    <td className="py-2 text-right text-ice">
+                    <td className="py-2 text-right text-hive">
                       {run.incremental.cold} ms
                     </td>
                     <td className="py-2 text-right text-foreground/80">
@@ -262,12 +262,12 @@ export default function Benchmarks() {
       </Reveal>
 
       <Reveal delay={0.2} className="mt-6">
-        <div className="frost-card flex flex-wrap items-center justify-center gap-x-10 gap-y-3 rounded-2xl p-6 text-center">
-          <p className="select-none font-mono text-xs tracking-widest text-ice/70 uppercase">
+        <div className="hive-card flex flex-wrap items-center justify-center gap-x-10 gap-y-3 rounded-2xl p-6 text-center">
+          <p className="select-none font-mono text-xs tracking-widest text-hive/70 uppercase">
             stripped binary
           </p>
           <p className="font-mono text-sm">
-            <span className="text-ice">coldluau 4.8 MB</span>
+            <span className="text-hive">larvae 4.8 MB</span>
             <span className="select-none text-muted"> against </span>
             <span className="text-foreground/80">darklua 19.2 MB</span>
           </p>
@@ -276,11 +276,11 @@ export default function Benchmarks() {
 
       <Reveal delay={0.25}>
         <p className="mx-auto mt-6 max-w-2xl text-center text-xs leading-relaxed text-muted">
-          On the matched rows coldluau is also doing require rewriting that
+          On the matched rows larvae is also doing require rewriting that
           darklua is not. darklua can convert requires from a rojo sourcemap,
           but that needs a separate rojo run, so it is left off rather than
           timed unfairly. No speedup is claimed against darklua’s default stack,
-          because coldluau has neither that rule set nor a dense generator yet.
+          because larvae has neither that rule set nor a dense generator yet.
         </p>
       </Reveal>
     </section>

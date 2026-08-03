@@ -56,8 +56,8 @@ describe('manifest', () => {
   const result = manifest()
 
   it('carries the site identity and theme colors', () => {
-    expect(result.name).toBe('coldluau')
-    expect(result.theme_color).toBe('#87fdff')
+    expect(result.name).toBe('larvae')
+    expect(result.theme_color).toBe('#10e694')
     expect(result.background_color).toBe('#04070d')
     expect(result.start_url).toBe('/')
   })

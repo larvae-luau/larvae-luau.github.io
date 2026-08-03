@@ -1,14 +1,14 @@
-# coldluau site
+# larvae site
 
-The landing page and documentation for [coldluau](https://github.com/coldluau/cli), a Luau preprocessor written in Rust. Built with Next.js, tailwind and framer motion.
+The landing page and documentation for [larvae](https://github.com/larvae-luau/larvae), a Luau toolchain written in Rust. Built with Next.js, tailwind and framer motion.
 
-## What coldluau does
+## What larvae does
 
-You write `require("@pkg/signal")` and coldluau writes `require("@game/ReplicatedStorage/Packages/signal")`, a native Roblox string require the engine already understands. No Instance chains, no sourcemap, and the output still reads like the code you wrote.
+You write `require("@pkg/signal")` and larvae writes `require("@game/ReplicatedStorage/Packages/signal")`, a native Roblox string require the engine already understands. No Instance chains, no sourcemap, and the output still reads like the code you wrote.
 
-It also refuses to emit a require that would break in a running game, which is the part nothing else in the ecosystem does. Requires that resolve fine on disk can still fail at runtime because Starter containers clone their children, because ServerStorage never replicates to a client, or because instance lookup is case sensitive while your filesystem is not. coldluau maps both ends of every require into the DataModel and errors instead of shipping the break.
+It also refuses to emit a require that would break in a running game, which is the part nothing else in the ecosystem does. Requires that resolve fine on disk can still fail at runtime because Starter containers clone their children, because ServerStorage never replicates to a client, or because instance lookup is case sensitive while your filesystem is not. larvae maps both ends of every require into the DataModel and errors instead of shipping the break.
 
-It is a drop in alternative to darklua. 27 of darklua's 32 rule names run under the same names, coldluau adds 7 more, and running the same rules over the same tree it is roughly 14x faster.
+It is a drop in alternative to darklua. 27 of darklua's 32 rule names run under the same names, larvae adds 7 more, and running the same rules over the same tree it is roughly 14x faster.
 
 ## Running it
 
@@ -28,7 +28,7 @@ Every page opens with five frontmatter keys and the build fails loudly if one is
 ```markdown
 ---
 title: CLI reference
-description: Every coldluau command, flag, exit code, and environment variable
+description: Every larvae command, flag, exit code, and environment variable
 category: Reference
 order: 1
 updated: 2026-07-29
@@ -54,7 +54,7 @@ The tool's own voice, worth matching so pages read as one document.
 - No trailing period in short labels or table cells
 - Show the before and after Luau for every transform, that is what readers scan for
 - Never write a planned feature as though it works, tag it with the milestone it lands in
-- coldluau and darklua stay lowercase, even starting a sentence
+- larvae and darklua stay lowercase, even starting a sentence
 
 ## Checks
 
@@ -102,7 +102,7 @@ The catch is that the value is fixed at build time, and publishing a release in 
 ```yaml
 - name: Refresh the site
   run: |
-    gh api repos/coldluau/coldluau.github.io/dispatches \
+    gh api repos/larvae-luau/larvae-luau.github.io/dispatches \
       -f event_type=release-published
   env:
     GH_TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}

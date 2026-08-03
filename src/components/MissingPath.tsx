@@ -17,8 +17,8 @@ export default function MissingPath() {
   if (!path) return null
 
   return (
-    <p className="frost-card mt-8 max-w-full overflow-x-auto rounded-xl px-4 py-2.5 font-mono text-sm text-muted">
-      <span aria-hidden="true" className="select-none text-ice">
+    <p className="hive-card mt-8 max-w-full overflow-x-auto rounded-xl px-4 py-2.5 font-mono text-sm text-muted">
+      <span aria-hidden="true" className="select-none text-hive">
         ${' '}
       </span>
       <span className="text-foreground/80">{path}</span>

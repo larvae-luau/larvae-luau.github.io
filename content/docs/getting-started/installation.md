@@ -1,37 +1,37 @@
 ---
 title: Installation
-description: Install coldluau with lpm, lpx, cargo, or a prebuilt binary
+description: Install larvae with lpm, lpx, cargo, or a prebuilt binary
 category: Getting started
 order: 1
 updated: 2026-07-30
 ---
 
-coldluau ships as a single binary with no runtime dependencies. Pick one of the routes below, they all end with a `coldluau` you can run.
+larvae ships as a single binary with no runtime dependencies. Pick one of the routes below, they all end with a `larvae` you can run.
 
 ## Add it to a project with lpm
 
-lpm is the Luau package manager. Adding coldluau as a project tool pins it for everyone who clones the repo.
+lpm is the Luau package manager. Adding larvae as a project tool pins it for everyone who clones the repo.
 
 ```shell
-lpm tool add coldluau
+lpm tool add larvae
 ```
 
 This is the route to prefer for real projects, since the tool version travels with the project rather than with each machine.
 
 ## Run it once with lpx
 
-lpx fetches and runs coldluau without installing anything.
+lpx fetches and runs larvae without installing anything.
 
 ```shell
-lpx coldluau
+lpx larvae
 ```
 
-Good for trying coldluau on a project before committing to it, or for a one off run in CI. Nothing is left on the machine afterwards.
+Good for trying larvae on a project before committing to it, or for a one off run in CI. Nothing is left on the machine afterwards.
 
 ## Build from source
 
 ```shell
-cargo install coldluau
+cargo install larvae
 ```
 
 That pulls the published crate from crates.io, so it needs no checkout.
@@ -44,22 +44,22 @@ cargo install --path .
 
 ## Prebuilt binaries
 
-Release builds are attached to the GitHub releases page. Assets are named `coldluau-{os}-{arch}`, with `.exe` appended on Windows.
+Release builds are attached to the GitHub releases page. Assets are named `larvae-{os}-{arch}`, with `.exe` appended on Windows.
 
 | asset | platform |
 |---|---|
-| `coldluau-linux-x86_64` | Linux, Intel or AMD |
-| `coldluau-macos-aarch64` | macOS, Apple silicon |
-| `coldluau-windows-x86_64.exe` | Windows, Intel or AMD |
+| `larvae-linux-x86_64` | Linux, Intel or AMD |
+| `larvae-macos-aarch64` | macOS, Apple silicon |
+| `larvae-windows-x86_64.exe` | Windows, Intel or AMD |
 
-Download the asset for your platform, mark it executable if your OS needs that, and move it somewhere on your PATH. Or let coldluau do the moving for you, see below.
+Download the asset for your platform, mark it executable if your OS needs that, and move it somewhere on your PATH. Or let larvae do the moving for you, see below.
 
-## Putting coldluau on PATH
+## Putting larvae on PATH
 
-`coldluau self install` copies the **running** binary to `~/.coldluau/bin/coldluau`, so run it with the binary you just downloaded or built.
+`larvae self install` copies the **running** binary to `~/.larvae/bin/larvae`, so run it with the binary you just downloaded or built.
 
 ```shell
-coldluau self install
+larvae self install
 ```
 
 On **Windows** it puts the directory on your PATH for real, writing the user Path in the registry and broadcasting the change so newly opened terminals pick it up. Nothing further to do.
@@ -67,12 +67,12 @@ On **Windows** it puts the directory on your PATH for real, writing the user Pat
 On **unix** it prints the line for your shell profile instead:
 
 ```shell
-export PATH="$HOME/.coldluau/bin:$PATH"
+export PATH="$HOME/.larvae/bin:$PATH"
 ```
 
 That asymmetry is deliberate. Editing someone's shell profile without asking is rude, so unix leaves the last step to you.
 
-Running `self install` twice is safe. It also warns when another tool already manages the coldluau binary, because a second copy can shadow the first on PATH and leave you running a version you did not expect.
+Running `self install` twice is safe. It also warns when another tool already manages the larvae binary, because a second copy can shadow the first on PATH and leave you running a version you did not expect.
 
 ## The three self subcommands
 
@@ -83,23 +83,23 @@ Running `self install` twice is safe. It also warns when another tool already ma
 Checks GitHub releases, downloads the newer build, and swaps it in.
 
 ```shell
-coldluau self update
+larvae self update
 ```
 
-It honors `GITHUB_TOKEN` for the releases API, which matters if you hit rate limits on a shared runner. When there is nothing newer it says `coldluau is already up to date` and exits.
+It honors `GITHUB_TOKEN` for the releases API, which matters if you hit rate limits on a shared runner. When there is nothing newer it says `larvae is already up to date` and exits.
 
 **It only updates the copy `self install` made.** If rokit, aftman, foreman, lpm or cargo owns your binary, it refuses and points you at that manifest instead, since overwriting a pinned tool leaves the manifest and the bytes on disk disagreeing. Bump the version where the pin lives, or pass `--force` if you really want the swap.
 
 ```shell
-coldluau self update --force
+larvae self update --force
 ```
 
 ### self uninstall
 
-Removes `~/.coldluau`.
+Removes `~/.larvae`.
 
 ```shell
-coldluau self uninstall
+larvae self uninstall
 ```
 
 It prompts with `Remove <dir>?` first, and the default answer is **no**, so pressing enter cancels.
@@ -107,11 +107,11 @@ It prompts with `Remove <dir>?` first, and the default answer is **no**, so pres
 ## Verify the install
 
 ```shell
-coldluau
+larvae
 ```
 
-With no arguments coldluau prints its logo beside the help text. See the [CLI reference](/docs/reference/cli) for every command and flag.
+With no arguments larvae prints its logo beside the help text. See the [CLI reference](/docs/reference/cli) for every command and flag.
 
 ## Next steps
 
-Head to the [quick start](/docs/getting-started/quick-start) to go from a Rojo project to native string requires. Config lives in `coldluau.toml`, documented in the [configuration reference](/docs/reference/configuration), though a plain Rojo project with `.luaurc` aliases needs no config at all.
+Head to the [quick start](/docs/getting-started/quick-start) to go from a Rojo project to native string requires. Config lives in `larvae.toml`, documented in the [configuration reference](/docs/reference/configuration), though a plain Rojo project with `.luaurc` aliases needs no config at all.

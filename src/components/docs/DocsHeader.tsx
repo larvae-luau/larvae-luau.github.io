@@ -7,7 +7,7 @@ import logo from '@/lib/logo'
 export default function DocsHeader({ entries }: { entries: SearchEntry[] }) {
   return (
     <header className="fixed inset-x-0 top-0 z-40 select-none">
-      <div className="frost-card mx-auto mt-4 flex max-w-7xl items-center gap-4 rounded-2xl px-5 py-3">
+      <div className="hive-card mx-auto mt-4 flex max-w-7xl items-center gap-4 rounded-2xl px-5 py-3">
         <Link href="/" className="flex items-center gap-3">
           <Image
             src={logo}
@@ -18,12 +18,12 @@ export default function DocsHeader({ entries }: { entries: SearchEntry[] }) {
             className="select-none"
           />
           <span className="font-semibold tracking-tight">
-            cold<span className="text-ice">luau</span>
+            lar<span className="text-hive">vae</span>
           </span>
         </Link>
         <Link
           href="/docs"
-          className="rounded-md border border-ice/20 px-2 py-0.5 font-mono text-[0.7rem] tracking-wide text-ice/80 uppercase transition-colors hover:bg-ice/10"
+          className="rounded-md border border-hive/20 px-2 py-0.5 font-mono text-[0.7rem] tracking-wide text-hive/80 uppercase transition-colors hover:bg-hive/10"
         >
           docs
         </Link>
@@ -32,15 +32,15 @@ export default function DocsHeader({ entries }: { entries: SearchEntry[] }) {
           <DocsSearch entries={entries} />
           <Link
             href="/"
-            className="hidden text-sm text-muted transition-colors hover:text-ice sm:block"
+            className="hidden text-sm text-muted transition-colors hover:text-hive sm:block"
           >
             Home
           </Link>
           <a
-            href="https://github.com/coldluau/cli"
+            href="https://github.com/larvae-luau/larvae"
             target="_blank"
             rel="noreferrer"
-            className="rounded-lg border border-ice/25 px-3 py-1.5 text-sm font-medium text-ice transition-colors hover:bg-ice/10"
+            className="rounded-lg border border-hive/25 px-3 py-1.5 text-sm font-medium text-hive transition-colors hover:bg-hive/10"
           >
             GitHub
           </a>

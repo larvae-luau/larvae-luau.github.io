@@ -1,20 +1,20 @@
 ---
 title: Realms and clones
-description: Why coldluau refuses to emit a require that would break in a running game
+description: Why larvae refuses to emit a require that would break in a running game
 category: Concepts
 order: 2
 updated: 2026-07-29
 ---
 
-A require can resolve perfectly on disk and still be wrong in a running game. coldluau maps both ends of every require into the DataModel and refuses to emit something that would break at runtime.
+A require can resolve perfectly on disk and still be wrong in a running game. larvae maps both ends of every require into the DataModel and refuses to emit something that would break at runtime.
 
-This is the part of coldluau that has no equivalent anywhere else, so it gets the longest page.
+This is the part of larvae that has no equivalent anywhere else, so it gets the longest page.
 
 ## The problem in one sentence
 
 A path on disk is a fact about your filesystem. A require in a Roblox place is a fact about a live DataModel, where trees get cloned per player, half the tree never reaches the client, and lookups are case sensitive. Resolving the first correctly tells you almost nothing about the second.
 
-coldluau knows both. It resolves the require the way the Luau RFC says to, then asks a second question: given where this file lands in the DataModel and where the target lands, will this actually work?
+larvae knows both. It resolves the require the way the Luau RFC says to, then asks a second question: given where this file lands in the DataModel and where the target lands, will this actually work?
 
 Three answers make it say no.
 
@@ -41,10 +41,10 @@ local state = require("@game/StarterPlayer/StarterPlayerScripts/state")
 
 The running script is the clone inside `Players.You.PlayerScripts`. The path above points somewhere else entirely, at the `StarterPlayer` template that was never started. Luau caches module results per module instance, so the clone gets one copy of `state` and the template copy gets another. Two modules, same source, separate state. Nothing errors, the values are just silently not shared.
 
-coldluau emits a relative require instead, which follows the clone:
+larvae emits a relative require instead, which follows the clone:
 
 ```luau
--- emitted by coldluau, resolves inside the clone
+-- emitted by larvae, resolves inside the clone
 local state = require("./state")
 ```
 
@@ -65,7 +65,7 @@ That is an error, no opt out. The fix is to move the shared code somewhere share
 
 Roblox splits the DataModel into what replicates and what does not. `ServerScriptService` and `ServerStorage` never reach a client. A client side require into either one cannot resolve, no matter how the path is spelled.
 
-coldluau works out which realms each file is reachable from, using the DataModel map derived from your Rojo project, and grades the require accordingly.
+larvae works out which realms each file is reachable from, using the DataModel map derived from your Rojo project, and grades the require accordingly.
 
 | requiring code | target in ServerScriptService or ServerStorage |
 |---|---|
@@ -79,7 +79,7 @@ Client reachable code requiring a server container is an **error**. The output c
 local Secrets = require("@game/ServerStorage/Secrets")
 ```
 
-Shared code doing the same is a **warning**. Shared code can legitimately be required from the server only, in which case the require is fine, and coldluau cannot prove which way it goes. So it tells you and gets out of the way.
+Shared code doing the same is a **warning**. Shared code can legitimately be required from the server only, in which case the require is fine, and larvae cannot prove which way it goes. So it tells you and gets out of the way.
 
 ```luau
 -- in src/ReplicatedStorage/shared/audit.luau
@@ -94,7 +94,7 @@ This one bites on macOS and Windows and never on the CI box, which is the worst 
 
 Most developer machines have a case insensitive filesystem. So `require("./mymodule")` happily opens `MyModule.luau` at build time. Roblox instance lookup is case sensitive and will not.
 
-coldluau canonicalizes every emitted path segment to the real on disk casing.
+larvae canonicalizes every emitted path segment to the real on disk casing.
 
 Before, source as written, resolving fine on a case insensitive disk:
 
@@ -120,10 +120,10 @@ local m = require(script.Parent:FindFirstChild("MyModule"))
 
 The validation runs on every require, on both ends, on every build. It is not a separate lint pass you remember to run, and it is not skippable for the error class, because there is no correct output to emit.
 
-`coldluau check` runs the same analysis and writes nothing, which makes it the CI gate:
+`larvae check` runs the same analysis and writes nothing, which makes it the CI gate:
 
 ```shell
-coldluau check
+larvae check
 ```
 
 ## The honest claim
@@ -132,7 +132,7 @@ Nothing else in the ecosystem fully checks this.
 
 darklua rewrites requires but does not model realms, does not know that Starter containers clone, and does not canonicalize casing against the DataModel. luau-lsp understands your files and your `.luaurc` aliases, which is why go to definition works, but it is not modelling the runtime DataModel either, so it has nothing to say about a client file reaching into `ServerStorage`.
 
-coldluau can check it because it already built the map, the filesystem to DataModel mounts that come out of parsing your Rojo project. Once you have that map, refusing to emit a broken require is nearly free. See [Rojo integration](/docs/concepts/rojo-integration) for where the map comes from.
+larvae can check it because it already built the map, the filesystem to DataModel mounts that come out of parsing your Rojo project. Once you have that map, refusing to emit a broken require is nearly free. See [Rojo integration](/docs/concepts/rojo-integration) for where the map comes from.
 
 ## Related
 

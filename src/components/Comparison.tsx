@@ -5,42 +5,42 @@ import Reveal from '@/components/Reveal'
 const ROWS = [
   {
     dimension: 'Parallelism',
-    coldluau: 'All cores, every stage',
+    larvae: 'All cores, every stage',
     darklua: 'Single-threaded since 2021 (#55)',
   },
   {
     dimension: 'Rewriting',
-    coldluau: 'Byte range splices, no second tree',
+    larvae: 'Byte range splices, no second tree',
     darklua: 'Two tree representations, double allocation',
   },
   {
     dimension: 'Rojo project files',
-    coldluau: 'One, the build project is derived',
+    larvae: 'One, the build project is derived',
     darklua: 'Two, kept in sync by hand',
   },
   {
     dimension: 'Incremental builds',
-    coldluau: 'Resolution-aware cache + watch mode',
+    larvae: 'Resolution-aware cache + watch mode',
     darklua: 'None (#228 open)',
   },
   {
     dimension: 'Runtime validation',
-    coldluau: 'Realm and clone aware, refuses broken requires',
+    larvae: 'Realm and clone aware, refuses broken requires',
     darklua: 'None, disk resolution only',
   },
   {
     dimension: 'Native string requires',
-    coldluau: 'First-class output target with aliases',
+    larvae: 'First-class output target with aliases',
     darklua: 'Instance chains from a sourcemap only',
   },
   {
     dimension: 'Rule coverage',
-    coldluau: "34 shipped, 27 of darklua's names plus 7 it does not have",
+    larvae: "34 shipped, 27 of darklua's names plus 7 it does not have",
     darklua: '32 rules today',
   },
   {
     dimension: 'Custom transforms',
-    coldluau: 'Luau extensions, planned in M3',
+    larvae: 'Luau extensions, planned in M3',
     darklua: 'Fork the project',
   },
 ]
@@ -53,7 +53,7 @@ export default function Comparison() {
     >
       <Reveal className="mb-14 text-center">
         <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
-          darklua, <span className="ice-text">left in the cold</span>
+          Where it <span className="hive-text">pulls ahead</span>
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-muted">
           These are structural differences. The numbers below are the receipts.
@@ -61,24 +61,33 @@ export default function Comparison() {
       </Reveal>
 
       <Reveal>
-        <div className="frost-card overflow-hidden rounded-2xl">
-          <div className="grid grid-cols-[1fr_1.2fr_1.2fr] gap-x-4 border-b border-ice/15 bg-ice/5 px-6 py-4 text-sm font-semibold">
+        <div className="hive-card overflow-hidden rounded-2xl">
+          <div className="grid grid-cols-[1fr_1.2fr_1.2fr] gap-x-4 border-b border-hive/15 bg-hive/5 px-6 py-4 text-sm font-semibold">
             <span className="select-none text-muted">&nbsp;</span>
-            <span className="text-ice">coldluau</span>
+            <span className="text-hive">larvae</span>
             <span className="text-muted">darklua</span>
           </div>
           {ROWS.map((row, i) => (
             <Reveal key={row.dimension} delay={i * 0.05}>
-              <div className="grid grid-cols-[1fr_1.2fr_1.2fr] gap-x-4 border-b border-ice/8 px-6 py-4 text-sm last:border-b-0">
+              <div className="grid grid-cols-[1fr_1.2fr_1.2fr] gap-x-4 border-b border-hive/8 px-6 py-4 text-sm last:border-b-0">
                 <span className="font-medium">{row.dimension}</span>
                 <span className="text-foreground/90">
-                  <span
+                  <svg
+                    viewBox="0 0 12 12"
                     aria-hidden="true"
-                    className="mr-2 select-none text-ice"
+                    className="mr-2 inline-block h-2.5 w-2.5 shrink-0 align-[0.02em] text-hive"
                   >
-                    ❄
-                  </span>
-                  {row.coldluau}
+                    <title>yes</title>
+                    <circle
+                      cx="6"
+                      cy="6"
+                      r="4.2"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                    />
+                  </svg>
+                  {row.larvae}
                 </span>
                 <span className="text-muted">{row.darklua}</span>
               </div>

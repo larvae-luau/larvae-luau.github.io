@@ -9,7 +9,7 @@ import {
   SITE_TAGLINE,
   SITE_TITLE,
 } from '@/lib/site'
-import ogImage from '../../public/coldluau-og.png'
+import ogImage from '../../public/larvae-og.png'
 import './globals.css'
 
 const geistSans = Geist({
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
         url: ogImage.src,
         width: ogImage.width,
         height: ogImage.height,
-        alt: 'coldluau logo',
+        alt: 'larvae logo',
       },
     ],
   },
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#87fdff',
+  themeColor: '#10e694',
   colorScheme: 'dark',
 }
 

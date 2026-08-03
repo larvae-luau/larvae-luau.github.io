@@ -140,11 +140,11 @@ export default function DocsSearch({ entries }: { entries: SearchEntry[] }) {
         type="button"
         onClick={() => setOpen(true)}
         data-testid="docs-search-trigger"
-        className="flex select-none items-center gap-2 rounded-lg border border-ice/15 bg-ice/5 px-3 py-1.5 text-sm text-muted transition-colors hover:border-ice/35 hover:text-ice sm:w-64"
+        className="flex select-none items-center gap-2 rounded-lg border border-hive/15 bg-hive/5 px-3 py-1.5 text-sm text-muted transition-colors hover:border-hive/35 hover:text-hive sm:w-64"
       >
         <span aria-hidden="true">⌕</span>
         <span className="flex-1 text-left">Search docs</span>
-        <kbd className="hidden rounded border border-ice/20 px-1.5 py-0.5 font-mono text-[0.65rem] text-ice/70 sm:inline">
+        <kbd className="hidden rounded border border-hive/20 px-1.5 py-0.5 font-mono text-[0.65rem] text-hive/70 sm:inline">
           ⌘K
         </kbd>
       </button>
@@ -165,10 +165,10 @@ export default function DocsSearch({ entries }: { entries: SearchEntry[] }) {
               exit={{ opacity: 0, y: -8, scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 260, damping: 24 }}
               onClick={(event) => event.stopPropagation()}
-              className="frost-card w-full max-w-xl overflow-hidden rounded-2xl"
+              className="hive-card w-full max-w-xl overflow-hidden rounded-2xl"
             >
-              <div className="flex items-center gap-3 border-b border-ice/10 px-4 py-3">
-                <span aria-hidden="true" className="select-none text-ice">
+              <div className="flex items-center gap-3 border-b border-hive/10 px-4 py-3">
+                <span aria-hidden="true" className="select-none text-hive">
                   ⌕
                 </span>
                 <input
@@ -186,7 +186,7 @@ export default function DocsSearch({ entries }: { entries: SearchEntry[] }) {
                 <button
                   type="button"
                   onClick={close}
-                  className="select-none rounded border border-ice/20 px-1.5 py-0.5 font-mono text-[0.65rem] text-muted transition-colors hover:text-ice"
+                  className="select-none rounded border border-hive/20 px-1.5 py-0.5 font-mono text-[0.65rem] text-muted transition-colors hover:text-hive"
                 >
                   esc
                 </button>
@@ -209,15 +209,15 @@ export default function DocsSearch({ entries }: { entries: SearchEntry[] }) {
                     type="button"
                     onMouseEnter={() => setActive(index)}
                     onClick={() => go(hit.entry.slug)}
-                    className={`block w-full border-b border-ice/5 px-4 py-3 text-left transition-colors last:border-b-0 ${
-                      index === active ? 'bg-ice/10' : 'hover:bg-ice/5'
+                    className={`block w-full border-b border-hive/5 px-4 py-3 text-left transition-colors last:border-b-0 ${
+                      index === active ? 'bg-hive/10' : 'hover:bg-hive/5'
                     }`}
                   >
                     <span className="flex items-baseline gap-2">
                       <span className="text-sm font-medium text-foreground">
                         {hit.entry.title}
                       </span>
-                      <span className="select-none font-mono text-[0.65rem] tracking-wide text-ice/60 uppercase">
+                      <span className="select-none font-mono text-[0.65rem] tracking-wide text-hive/60 uppercase">
                         {hit.entry.category}
                       </span>
                     </span>

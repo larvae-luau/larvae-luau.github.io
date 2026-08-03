@@ -6,11 +6,11 @@ order: 5
 updated: 2026-07-29
 ---
 
-coldluau caches its work between runs, which darklua has no equivalent for. The interesting part is not the caching, it is the cache key, because a per file content hash alone would be unsound.
+larvae caches its work between runs, which darklua has no equivalent for. The interesting part is not the caching, it is the cache key, because a per file content hash alone would be unsound.
 
 ## Why a content hash is not enough
 
-Require resolution reads more than the file being processed. It reads the Rojo project file, `coldluau.toml`, every `.luaurc` on the way up the tree, and the set of paths that exist on disk.
+Require resolution reads more than the file being processed. It reads the Rojo project file, `larvae.toml`, every `.luaurc` on the way up the tree, and the set of paths that exist on disk.
 
 So the correct output for a file can change without that file changing at all.
 
@@ -47,7 +47,7 @@ A per file content hash would happily serve the stale answer in both cases.
 So the cache key includes a **resolution epoch**, a hash of everything resolution reads:
 
 - the Rojo project file
-- `coldluau.toml`
+- `larvae.toml`
 - every `.luaurc`
 - the set of source paths
 
@@ -55,15 +55,15 @@ When the epoch changes, every file is reprocessed. When it does not, only files 
 
 This is deliberately coarse. Touching a `.luaurc` rebuilds the whole tree even if only one file cared, and adding a single new source file changes the path set and does the same. The tradeoff is bought on purpose: coarse, never stale. A cold full rebuild of a few thousand files runs in tens of milliseconds, so being clever here would buy milliseconds and risk correctness.
 
-The cache lives in `cache_dir`, `.coldluau` by default, next to the derived Rojo project.
+The cache lives in `cache_dir`, `.larvae` by default, next to the derived Rojo project.
 
 ```toml
 [process]
 cache = true
-cache_dir = ".coldluau"
+cache_dir = ".larvae"
 ```
 
-Set `cache = false` to disable it entirely. Deleting `.coldluau` is also safe, the next run rebuilds it.
+Set `cache = false` to disable it entirely. Deleting `.larvae` is also safe, the next run rebuilds it.
 
 Cache hits show up in the summary, and the count only appears when it is non zero:
 
@@ -82,7 +82,7 @@ Those two together mean the cache is only ever an optimization over work whose a
 ## Watch mode
 
 ```shell
-coldluau process --watch
+larvae process --watch
 ```
 
 Ctrl-C to stop. Three behaviors worth knowing.
@@ -101,7 +101,7 @@ processed 127 file(s): 1 stale removed
 local Signal = require("@pkg/sig
 ```
 
-If coldluau wrote that through, or wrote nothing, every downstream require of that module would start failing inside the running game, and you would watch a half typed save cascade errors through a session that was fine a second ago. Instead the previous good output for that file stays on disk until the file lexes again. rojo sees no change, the game keeps running, and you finish typing.
+If larvae wrote that through, or wrote nothing, every downstream require of that module would start failing inside the running game, and you would watch a half typed save cascade errors through a session that was fine a second ago. Instead the previous good output for that file stays on disk until the file lexes again. rojo sees no change, the game keeps running, and you finish typing.
 
 ## Related
 

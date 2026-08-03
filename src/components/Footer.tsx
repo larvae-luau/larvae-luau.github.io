@@ -4,7 +4,7 @@ import logo from '@/lib/logo'
 
 export default function Footer() {
   return (
-    <footer className="relative select-none border-t border-ice/10 px-6 py-12">
+    <footer className="relative select-none border-t border-hive/10 px-6 py-12">
       <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-6 sm:flex-row">
         <div className="flex items-center gap-3">
           <Image
@@ -15,23 +15,22 @@ export default function Footer() {
             className="rounded-md"
           />
           <span className="text-sm text-muted">
-            cold<span className="text-ice">luau</span> · the cold, fast Luau
-            preprocessor
+            lar<span className="text-hive">vae</span> · the Luau toolchain
           </span>
         </div>
         <div className="flex items-center gap-6 text-sm text-muted">
           <a
-            href="https://github.com/coldluau/cli"
+            href="https://github.com/larvae-luau/larvae"
             target="_blank"
             rel="noreferrer"
-            className="transition-colors hover:text-ice"
+            className="transition-colors hover:text-hive"
           >
             GitHub
           </a>
-          <Link href="/docs" className="transition-colors hover:text-ice">
+          <Link href="/docs" className="transition-colors hover:text-hive">
             Docs
           </Link>
-          <a href="#top" className="transition-colors hover:text-ice">
+          <a href="#top" className="transition-colors hover:text-hive">
             Back to top ↑
           </a>
         </div>

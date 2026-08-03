@@ -6,11 +6,11 @@ order: 1
 updated: 2026-07-29
 ---
 
-coldluau reads one require syntax and can write three. What you write never changes, what comes out is a config choice.
+larvae reads one require syntax and can write three. What you write never changes, what comes out is a config choice.
 
 ## Input is always Luau RFC semantics
 
-Whatever target you pick, the input side is identical. coldluau resolves requires the way the Luau RFC says to, so your source stays portable and your editor tooling keeps working.
+Whatever target you pick, the input side is identical. larvae resolves requires the way the Luau RFC says to, so your source stays portable and your editor tooling keeps working.
 
 That means all of the following are understood:
 
@@ -28,13 +28,13 @@ local json = require("../lib/json")
 local sibling = require("@self/helper")
 ```
 
-Aliases can come from `.luaurc` or from `[aliases]` in `coldluau.toml`. `.luaurc` can only express filesystem paths, so a DataModel target has to live in `coldluau.toml`. See [configuration](/docs/reference/configuration).
+Aliases can come from `.luaurc` or from `[aliases]` in `larvae.toml`. `.luaurc` can only express filesystem paths, so a DataModel target has to live in `larvae.toml`. See [configuration](/docs/reference/configuration).
 
 A require that is not RFC valid, ex: a bare `require("util")` with no `./`, is always an error. See [failure classes](/docs/concepts/failure-classes).
 
 ## The three targets
 
-Set the target once in `coldluau.toml`.
+Set the target once in `larvae.toml`.
 
 ```toml
 [requires]

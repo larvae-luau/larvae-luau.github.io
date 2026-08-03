@@ -20,7 +20,7 @@ describe('CodeShowcase', () => {
     ).toBeInTheDocument()
   })
 
-  it('always displays the coldluau.toml alias config', () => {
+  it('always displays the larvae.toml alias config', () => {
     render(<CodeShowcase />)
     expect(screen.getByText(/\[aliases\]/)).toBeInTheDocument()
   })

@@ -6,13 +6,13 @@ order: 3
 updated: 2026-07-29
 ---
 
-Every require diagnostic falls into one of three groups. Which group it lands in is not a preference, it follows from whether coldluau can still produce correct output.
+Every require diagnostic falls into one of three groups. Which group it lands in is not a preference, it follows from whether larvae can still produce correct output.
 
 That is why `strict = true` is a small switch rather than a big one. It moves exactly one group, and it cannot touch the other two.
 
 ## Always errors, no opt out
 
-These fail because **the output cannot be correct**. There is no string coldluau could emit that would work, so there is nothing to downgrade a warning to.
+These fail because **the output cannot be correct**. There is no string larvae could emit that would work, so there is nothing to downgrade a warning to.
 
 | failure | why there is no correct output |
 |---|---|
@@ -23,7 +23,7 @@ These fail because **the output cannot be correct**. There is no string coldluau
 | module requiring itself | resolves to the file doing the requiring |
 | alias cycle | expansion never terminates |
 | require is not RFC valid | ex: a bare `require("util")` with no `./` |
-| `.luau` / `.lua` ambiguity | both files could match, coldluau will not guess |
+| `.luau` / `.lua` ambiguity | both files could match, larvae will not guess |
 
 There is no config key that turns any of these into a warning, by design. Emitting a require that is known to be broken is worse than failing the build.
 
@@ -44,13 +44,13 @@ Ambiguity, where `util.luau` and `util.lua` both sit next to the requiring file:
 local util = require("./util")
 ```
 
-`.luau` wins over `.lua` when only the extensionless form is on disk, but when both candidate files exist the request is ambiguous and coldluau reports it rather than picking one. Delete or rename one of them.
+`.luau` wins over `.lua` when only the extensionless form is on disk, but when both candidate files exist the request is ambiguous and larvae reports it rather than picking one. Delete or rename one of them.
 
 The realm and Starter container rules have their own page, they are the two that need the most explaining. See [realms and clones](/docs/concepts/realms-and-clones).
 
 ## Warnings by default, errors under strict
 
-These are cases where coldluau can emit correct output but has good reason to think something is off.
+These are cases where larvae can emit correct output but has good reason to think something is off.
 
 | warning | what it means |
 |---|---|
@@ -64,12 +64,12 @@ Both are emitted as warnings by default so a build in progress is not blocked. B
 strict = true
 ```
 
-The missing file case matters because the require may be pointing at something Rojo injects, or at a file that has not been written yet, or at a genuine typo, and coldluau cannot tell those apart. The casing case matters because a case insensitive filesystem resolved it and Roblox will not, so the source is portable only by accident. In both, coldluau still knows what to write, which is exactly what makes them downgradable.
+The missing file case matters because the require may be pointing at something Rojo injects, or at a file that has not been written yet, or at a genuine typo, and larvae cannot tell those apart. The casing case matters because a case insensitive filesystem resolved it and Roblox will not, so the source is portable only by accident. In both, larvae still knows what to write, which is exactly what makes them downgradable.
 
 `strict = true` is the right default for CI:
 
 ```shell
-coldluau check
+larvae check
 ```
 
 ## Left alone on purpose
@@ -82,7 +82,7 @@ local m = require(path)
 local n = require(`@x/{y}`)
 ```
 
-coldluau cannot know what a runtime value resolves to, so guessing would be worse than doing nothing. These are copied through verbatim.
+larvae cannot know what a runtime value resolves to, so guessing would be worse than doing nothing. These are copied through verbatim.
 
 What it does instead is **count them**, so the blind spot is visible rather than invisible:
 
@@ -90,7 +90,7 @@ What it does instead is **count them**, so the blind spot is visible rather than
 processed 128 file(s): 84 require(s) rewritten, 2 dynamic require(s) left untouched, 3 copied
 ```
 
-`coldluau check` reports the same count. If that number is higher than you expected, the realm and clone validation is covering less of your codebase than you thought, and the uncovered requires are the dynamic ones.
+`larvae check` reports the same count. If that number is higher than you expected, the realm and clone validation is covering less of your codebase than you thought, and the uncovered requires are the dynamic ones.
 
 Note that `quotes` still applies to dynamic requires that are plain strings, since requoting is a lexical change and does not depend on resolving anything.
 

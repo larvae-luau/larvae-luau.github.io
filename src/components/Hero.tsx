@@ -9,8 +9,8 @@ import {
 } from 'motion/react'
 import Image from 'next/image'
 import { type ReactNode, useState } from 'react'
-import IceButton from '@/components/IceButton'
-import IcyBackdrop from '@/components/IcyBackdrop'
+import GlowButton from '@/components/GlowButton'
+import HiveBackdrop from '@/components/HiveBackdrop'
 import Tilt from '@/components/Tilt'
 import { useDisabledEffects } from '@/lib/debug-flags'
 import logo from '@/lib/logo'
@@ -56,12 +56,12 @@ function ScrollFade({ children }: { children: ReactNode }) {
   )
 }
 
-const HEADLINE = ['Preprocess', 'Luau', 'at', 'sub-zero', 'speed.']
+const HEADLINE = ['One', 'toolchain', 'for', 'all', 'of', 'Luau.']
 
 const INSTALLS = [
-  { id: 'lpm', command: 'lpm tool add coldluau' },
-  { id: 'lpx', command: 'lpx coldluau' },
-  { id: 'cargo', command: 'cargo install coldluau' },
+  { id: 'lpm', command: 'lpm tool add larvae' },
+  { id: 'lpx', command: 'lpx larvae' },
+  { id: 'cargo', command: 'cargo install larvae' },
 ] as const
 
 type InstallId = (typeof INSTALLS)[number]['id']
@@ -106,14 +106,14 @@ export default function Hero() {
             aria-hidden="true"
             className={`pointer-events-none absolute -inset-10 rounded-full ${
               lite
-                ? 'bg-[radial-gradient(circle,rgba(135,253,255,0.20),transparent_45%),radial-gradient(circle,rgba(90,167,255,0.22),transparent_70%)]'
-                : 'bg-[radial-gradient(circle,rgba(90,167,255,0.22),transparent_70%)]'
+                ? 'bg-[radial-gradient(circle,rgba(16,230,148,0.20),transparent_45%),radial-gradient(circle,rgba(166,255,87,0.22),transparent_70%)]'
+                : 'bg-[radial-gradient(circle,rgba(166,255,87,0.22),transparent_70%)]'
             }`}
           />
           <Tilt max={14}>
             <Image
               src={logo}
-              alt="coldluau logo"
+              alt="larvae logo"
               width={130}
               height={130}
               priority
@@ -121,7 +121,7 @@ export default function Hero() {
               className={`relative select-none ${
                 lite
                   ? ''
-                  : 'filter-[drop-shadow(0_0_18px_rgba(135,253,255,0.4))]'
+                  : 'filter-[drop-shadow(0_0_18px_rgba(16,230,148,0.4))]'
               }`}
             />
           </Tilt>
@@ -141,9 +141,9 @@ export default function Hero() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         data-testid="release-badge"
-        className="mb-5 select-none rounded-full border border-ice/20 bg-ice/5 px-4 py-1.5 font-mono text-xs tracking-widest text-ice uppercase transition-colors hover:border-ice/40 hover:bg-ice/10"
+        className="mb-5 select-none rounded-full border border-hive/20 bg-hive/5 px-4 py-1.5 font-mono text-xs tracking-widest text-hive uppercase transition-colors hover:border-hive/40 hover:bg-hive/10"
       >
-        Rust-powered Luau preprocessor · {release.label}
+        The Luau toolchain, in Rust · {release.label}
       </motion.a>
 
       <motion.h1
@@ -157,7 +157,7 @@ export default function Hero() {
             key={w}
             variants={lite ? liteWord : word}
             className={`motion-blur inline-block ${i > 0 ? 'ml-[0.28em]' : ''} ${
-              w === 'sub-zero' ? 'ice-text' : ''
+              w === 'Luau.' ? 'hive-text' : ''
             }`}
           >
             {w}
@@ -171,9 +171,9 @@ export default function Hero() {
         transition={{ delay: 0.7, duration: 0.6 }}
         className="mt-6 max-w-2xl text-lg text-muted text-pretty"
       >
-        Parallel, incremental, and realm aware, with native Roblox string
-        requires that no other tool emits. Written in Rust, designed to leave
-        darklua out in the cold.
+        Transformers today, formatting and linting next, in one parallel Rust
+        binary. It starts with the require rewriting nothing else in the
+        ecosystem does, and it refuses to emit one that would break at runtime.
       </motion.p>
 
       <motion.div
@@ -182,16 +182,16 @@ export default function Hero() {
         transition={{ delay: 0.9, duration: 0.6 }}
         className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
       >
-        <IceButton href="/docs/getting-started/quick-start">
+        <GlowButton href="/docs/getting-started/quick-start">
           Get started
-        </IceButton>
-        <IceButton
-          href="https://github.com/coldluau/cli"
+        </GlowButton>
+        <GlowButton
+          href="https://github.com/larvae-luau/larvae"
           variant="ghost"
           external
         >
           View on GitHub
-        </IceButton>
+        </GlowButton>
       </motion.div>
 
       <motion.div
@@ -207,9 +207,9 @@ export default function Hero() {
            the longest command overrun a phone by about thirty pixels. Tighter
            spacing and a step down in type buy that back without truncating,
            and max-w-full keeps the chip inside the viewport regardless. */
-        className="frost-card relative mt-12 flex max-w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2.5 font-mono text-xs text-muted sm:gap-4 sm:px-4 sm:text-sm"
+        className="hive-card relative mt-12 flex max-w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2.5 font-mono text-xs text-muted sm:gap-4 sm:px-4 sm:text-sm"
       >
-        <div className="flex shrink-0 select-none gap-1 border-r border-ice/10 pr-3">
+        <div className="flex shrink-0 select-none gap-1 border-r border-hive/10 pr-3">
           {INSTALLS.map((option) => (
             <motion.button
               key={option.id}
@@ -219,13 +219,13 @@ export default function Hero() {
               className={`relative rounded-md px-2 py-1 text-xs transition-colors ${
                 installer === option.id
                   ? 'text-background'
-                  : 'text-muted hover:text-ice'
+                  : 'text-muted hover:text-hive'
               }`}
             >
               {installer === option.id && (
                 <motion.span
                   layoutId="install-pill"
-                  className="absolute inset-0 rounded-md bg-ice"
+                  className="absolute inset-0 rounded-md bg-hive"
                   transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                 />
               )}
@@ -243,7 +243,7 @@ export default function Hero() {
             className="whitespace-nowrap"
           >
             {/* the prompt is chrome: dragging the line copies just the command */}
-            <span aria-hidden="true" className="select-none text-ice">
+            <span aria-hidden="true" className="select-none text-hive">
               ${' '}
             </span>
             {active.command}
@@ -259,7 +259,7 @@ export default function Hero() {
        which is every phone, and the overflow then splits evenly across the top
        and bottom edges. min-h-svh means the section just grows instead. */
     <section className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden px-6 py-24">
-      <IcyBackdrop />
+      <HiveBackdrop />
 
       {lite ? (
         <div className={CONTENT_CLASS}>{content}</div>
@@ -274,7 +274,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 1, 0] }}
           transition={{ delay: 1.6, duration: 2.4, repeat: Infinity }}
-          className="absolute bottom-8 z-10 select-none text-2xl text-ice/60"
+          className="absolute bottom-8 z-10 select-none text-2xl text-hive/60"
           aria-hidden="true"
         >
           ↓
