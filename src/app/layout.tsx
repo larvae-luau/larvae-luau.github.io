@@ -86,8 +86,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
+    /* The stylesheet sets `scroll-behavior: smooth` so the in-page nav anchors
+       glide. Next has to suppress that for the scroll-to-top it runs on a route
+       change, or the reset animates from wherever you were and the incoming
+       page's own layout cancels it partway, which is why /docs used to open
+       partly scrolled. It only reaches in to do that when this attribute marks
+       the element as smooth by intent. */
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

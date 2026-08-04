@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Hero from '@/components/Hero'
+import HiveBackdrop from '@/components/HiveBackdrop'
 import Reveal from '@/components/Reveal'
 import Tilt from '@/components/Tilt'
 import { LITE_MOTION_QUERY } from '@/lib/use-lite-motion'
@@ -79,6 +80,27 @@ describe('entrance blurs', () => {
     const words = screen.getByRole('heading', { level: 1 }).children
     expect(words.length).toBeGreaterThan(0)
     for (const word of words) expect(word).toHaveClass('motion-blur')
+  })
+})
+
+describe('the hero bloom', () => {
+  /** Tailwind emits the blur as a class, so the count is the surface count. */
+  function blurredSurfaces(): NodeListOf<Element> {
+    const { container } = render(<HiveBackdrop />)
+    return container.querySelectorAll('[class*="blur-"]')
+  }
+
+  it('stacks three blurred layers for a mouse', () => {
+    expect(blurredSurfaces()).toHaveLength(3)
+  })
+
+  it('folds them into one unblurred paint for a finger', () => {
+    useTouchDevice()
+    // These sit at the very top of the hero and are the worst thing there: a
+    // blur under a scroll-linked opacity is a surface iOS re-rasterizes rather
+    // than reuses, every frame, three times over. The blur is also the
+    // redundant half, since a radial gradient already fades out on its own.
+    expect(blurredSurfaces()).toHaveLength(0)
   })
 })
 
