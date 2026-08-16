@@ -108,9 +108,7 @@ describe('Hero on a coarse pointer', () => {
   it('still renders the headline, logo, and install chip', () => {
     useTouchDevice()
     render(<Hero />)
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Luau',
-    )
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Luau')
     expect(screen.getByAltText(/larvae logo/i)).toBeInTheDocument()
     expect(screen.getByTestId('install-command').textContent).toContain(
       'lpm tool add larvae',

@@ -171,9 +171,9 @@ export default function Hero() {
         transition={{ delay: 0.7, duration: 0.6 }}
         className="mt-6 max-w-2xl text-lg text-muted text-pretty"
       >
-        One parallel Rust binary. Requires that cannot break, style that
-        cannot drift, and worms that teach it languages beyond Luau. It starts
-        with the require rewriting nothing else in the ecosystem does.
+        One parallel Rust binary. Requires that cannot break, style that cannot
+        drift, and worms that teach it languages beyond Luau. It starts with the
+        require rewriting nothing else in the ecosystem does.
       </motion.p>
 
       <motion.div
