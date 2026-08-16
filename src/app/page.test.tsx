@@ -12,8 +12,9 @@ describe('Home page', () => {
   it('renders the hero headline', () => {
     render(<Home />)
     const heading = screen.getByRole('heading', { level: 1 })
-    expect(heading).toHaveTextContent('One')
-    expect(heading).toHaveTextContent('toolchain')
+    expect(heading).toHaveTextContent('Format')
+    expect(heading).toHaveTextContent('lint')
+    expect(heading).toHaveTextContent('ship')
     expect(heading).toHaveTextContent('Luau')
   })
 

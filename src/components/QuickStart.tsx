@@ -25,7 +25,7 @@ cargo install larvae`,
   {
     title: 'Initialize',
     code: 'larvae init',
-    body: 'Writes a starter larvae.toml with the editor schema line, and offers to add .larvae/ and dist/ to your .gitignore. Refuses if a config already exists.',
+    body: "Writes a starter larvae.toml with every fmt option and lint at its default as comments, offers to add .larvae/ and dist/ to your .gitignore, and turns Luau's own lints off so nothing reports twice.",
   },
   {
     title: 'Process, then serve',
@@ -35,12 +35,15 @@ rojo serve .larvae/build.project.json`,
   },
 ]
 
-const CLI = `larvae process     # rewrite requires, run rules
-larvae process -w  # rebuild on change
-larvae check       # validation, the CI gate
-larvae init        # write a starter larvae.toml
-larvae schema      # refresh the editor schema line
-larvae self        # install, update, uninstall`
+const CLI = `larvae process   # rewrite requires, run rules; -w rebuilds on change
+larvae check     # the whole-project analysis, the CI gate
+larvae fmt       # format in place, stylua parity
+larvae lint      # 49 lints with selene's spellings
+larvae bundle    # the project as one file, modules load on demand
+larvae lsp       # diagnostics and formatting for the editor
+larvae init      # write a starter larvae.toml
+larvae worm      # develop an extension
+larvae self      # install, update, uninstall, code`
 
 export default function QuickStart() {
   return (

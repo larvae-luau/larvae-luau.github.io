@@ -11,10 +11,9 @@ export const SITE_NAME = 'larvae'
 export const SITE_TITLE = 'larvae · the Luau toolchain'
 
 export const SITE_DESCRIPTION =
-  'A Luau toolchain written in Rust. Transformers today, with native Roblox string requires and realm aware validation, and formatting and linting on the way.'
+  'Format, lint, and ship Luau. One parallel Rust binary: requires that cannot break, style that cannot drift, and worms that teach it languages beyond Luau.'
 
-export const SITE_TAGLINE =
-  'Transformers, formatting, and linting for Luau in one Rust binary, starting with the require rewriting nothing else does.'
+export const SITE_TAGLINE = 'Format, lint, and ship Luau.'
 
 export const REPO_URL = 'https://github.com/larvae-luau/larvae'
 

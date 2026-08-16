@@ -56,7 +56,7 @@ function ScrollFade({ children }: { children: ReactNode }) {
   )
 }
 
-const HEADLINE = ['One', 'toolchain', 'for', 'all', 'of', 'Luau.']
+const HEADLINE = ['Format,', 'lint,', 'and', 'ship', 'Luau.']
 
 const INSTALLS = [
   { id: 'lpm', command: 'lpm tool add larvae' },
@@ -171,9 +171,9 @@ export default function Hero() {
         transition={{ delay: 0.7, duration: 0.6 }}
         className="mt-6 max-w-2xl text-lg text-muted text-pretty"
       >
-        Transformers today, formatting and linting next, in one parallel Rust
-        binary. It starts with the require rewriting nothing else in the
-        ecosystem does, and it refuses to emit one that would break at runtime.
+        One parallel Rust binary. Requires that cannot break, style that
+        cannot drift, and worms that teach it languages beyond Luau. It starts
+        with the require rewriting nothing else in the ecosystem does.
       </motion.p>
 
       <motion.div

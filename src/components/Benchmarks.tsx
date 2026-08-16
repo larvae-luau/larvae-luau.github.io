@@ -62,7 +62,7 @@ const WORKLOADS = [
   {
     term: 'darklua default',
     definition:
-      'darklua’s own default stack plus its dense generator, which larvae has neither of yet',
+      'darklua’s own default stack plus its dense generator, unmatched on larvae’s side',
   },
 ]
 
@@ -261,26 +261,13 @@ export default function Benchmarks() {
         </div>
       </Reveal>
 
-      <Reveal delay={0.2} className="mt-6">
-        <div className="hive-card flex flex-wrap items-center justify-center gap-x-10 gap-y-3 rounded-2xl p-6 text-center">
-          <p className="select-none font-mono text-xs tracking-widest text-hive/70 uppercase">
-            stripped binary
-          </p>
-          <p className="font-mono text-sm">
-            <span className="text-hive">larvae 4.8 MB</span>
-            <span className="select-none text-muted"> against </span>
-            <span className="text-foreground/80">darklua 19.2 MB</span>
-          </p>
-        </div>
-      </Reveal>
-
-      <Reveal delay={0.25}>
+      <Reveal delay={0.2}>
         <p className="mx-auto mt-6 max-w-2xl text-center text-xs leading-relaxed text-muted">
           On the matched rows larvae is also doing require rewriting that
           darklua is not. darklua can convert requires from a rojo sourcemap,
           but that needs a separate rojo run, so it is left off rather than
           timed unfairly. No speedup is claimed against darklua’s default stack,
-          because larvae has neither that rule set nor a dense generator yet.
+          because that run is not matched rule for rule.
         </p>
       </Reveal>
     </section>

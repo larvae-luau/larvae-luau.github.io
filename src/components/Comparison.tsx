@@ -35,12 +35,17 @@ const ROWS = [
   },
   {
     dimension: 'Rule coverage',
-    larvae: "34 shipped, 27 of darklua's names plus 7 it does not have",
+    larvae: "36 shipped, 27 of darklua's names plus 9 it does not have",
     darklua: '32 rules today',
   },
   {
+    dimension: 'Formatting & linting',
+    larvae: 'Built in, with stylua and selene parity',
+    darklua: 'Separate tools',
+  },
+  {
     dimension: 'Custom transforms',
-    larvae: 'Luau extensions, planned in M3',
+    larvae: 'Worms: Luau, wasm, or a native binary',
     darklua: 'Fork the project',
   },
 ]
