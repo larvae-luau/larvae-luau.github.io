@@ -3,7 +3,7 @@ title: Realms and clones
 description: Why larvae refuses to emit a require that would break in a running game
 category: Concepts
 order: 2
-updated: 2026-07-29
+updated: 2026-08-16
 ---
 
 A require can resolve perfectly on disk and still be wrong in a running game. larvae maps both ends of every require into the DataModel and refuses to emit something that would break at runtime.
@@ -125,6 +125,8 @@ The validation runs on every require, on both ends, on every build. It is not a 
 ```shell
 larvae check
 ```
+
+Realm violations and unresolvable requires are reported unconditionally. The `[check]` table holds levels for project questions that are matters of degree, ex: require cycles, but no level touches these two, because they are wrong rather than untidy. See [failure classes](/docs/concepts/failure-classes).
 
 ## The honest claim
 

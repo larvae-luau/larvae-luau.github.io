@@ -1,35 +1,57 @@
 ---
 title: Editor setup
-description: Config completion through the JSON schema, and go to definition through .luaurc
+description: One command for config completion, a language server for diagnostics and formatting, and go to definition through .luaurc
 category: Concepts
 order: 6
-updated: 2026-07-29
+updated: 2026-08-16
 ---
 
-Two small pieces of setup, one for editing `larvae.toml` and one for editing Luau. Neither takes more than a minute.
+Three pieces: `larvae self code` for editing `larvae.toml`, `larvae lsp` for editing Luau, and one `.luaurc` alias for go to definition. None takes more than a minute.
 
 ## Config completion
 
-`larvae.toml` ships with a JSON Schema, and one comment line at the top of the file is what connects them.
-
 ```shell
-larvae schema
+larvae self code
 ```
 
-That adds or refreshes the `#:schema` line at the top of an existing `larvae.toml`, pointing at the `larvae.schema.json` for your version.
+The command sets up completion and hover docs for `larvae.toml`. Its first choice is to write an **Even Better TOML** association into the editor's user settings. The pattern matches `larvae.toml` in every location, so one entry covers every project on the machine. When that extension is absent, the command falls back to writing a `#:schema` line at the top of the file, which any Taplo based editor reads.
 
-The command is idempotent, it replaces a stale schema URL rather than adding a second line, and errors if there is no `larvae.toml`. `larvae init` adds the line for you, so reach for `schema` only when you wrote the config by hand or after upgrading larvae.
+The schema is `crates/larvae/larvae.schema.json`, served from the repo. It contains a description for every key, the enum values, and the defaults. A test, `crates/larvae/tests/schema.rs`, checks the lint list against the registry and the `[fmt]` keys against the struct, so the schema cannot differ from the code. The editor is therefore the reference that most people use.
 
-### What you get
-
-Install **Even Better TOML** or **Taplo**, both of which read `#:schema`. Then in `larvae.toml` you get:
+What you get in `larvae.toml`:
 
 - completion for every table and key
 - hover docs on each key, the same text as the [configuration reference](/docs/reference/configuration)
 - enum completion on value fields, ex: `target` offers `roblox-string`, `path` and `roblox-instance`
 - inline errors on unknown keys, before you run anything
 
-That last one is worth the setup on its own. Unknown keys are hard errors at load time, and keys for planned features error with the milestone they land in, so the schema surfaces both in the editor instead of on the next build.
+That last one is worth the setup on its own. An unknown key in `larvae.toml` is a hard error at load time, because larvae owns the file and an unknown key is a typo. The schema surfaces it in the editor instead of on the next build.
+
+### Projects with worms
+
+A project with [worms](/docs/worms/what-a-worm-is) gets more. larvae merges the declarations of the loaded worms into a copy of the schema at `<cache_dir>/larvae.schema.json`, and `larvae self code` writes both the copy and a **workspace** association that points at it. The editor then completes a worm's lints, format options, rules, and settings, and shows the description of each one.
+
+The workspace association holds an absolute `file://` URL, so the entry belongs to a developer and not to the repository.
+
+The command rewrites the generated copy whenever one is on disk, and not only when the project has worms. A copy can outlive the reason it exists: an older larvae wrote it, or a worm did and the project since removed that worm. The editor settings still point at that file, so without the rewrite the editor would complete against a version of larvae that no longer exists.
+
+### The reload step
+
+The command ends by telling you to run **Developer: Reload Window**. The editor holds the schema in memory, so a new file on disk does not change what the editor already parsed. larvae cannot do this step for you, because the command line of the editor runs no editor command.
+
+## Diagnostics and formatting
+
+```shell
+larvae lsp
+```
+
+The language server speaks over stdio and serves diagnostics and formatting. It runs the same code paths as `larvae lint` and `larvae fmt`, so the terminal and the editor cannot disagree about a finding or a layout.
+
+The editor follows the same [exclusion lists](/docs/reference/configuration) as the commands. When a file is excluded, larvae clears its diagnostics; it does not keep the diagnostics that were there before you added the exclude.
+
+A buffer claimed by a worm is routed to that worm, through the same code the commands use. The server never downloads a worm, because a keystroke cannot wait for the network; the first fetch happens in the terminal. A worm failure becomes one diagnostic against the file, and the server keeps serving.
+
+See [formatting](/docs/reference/formatting) and [linting](/docs/reference/linting) for what the server reports.
 
 ## Go to definition on aliases
 
@@ -71,4 +93,5 @@ luau-lsp cannot read that, so go to definition on `@pkg` stops working. If you n
 ## Related
 
 - [configuration](/docs/reference/configuration), every key the schema describes
+- [using worms](/docs/worms/using-worms), the declarations that get merged into the schema
 - [require targets](/docs/concepts/require-targets), how aliases are resolved on the build side

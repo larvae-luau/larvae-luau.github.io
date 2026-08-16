@@ -3,7 +3,7 @@ title: Require targets
 description: One input semantics, three output targets, and the one caveat that can break a correct looking build
 category: Concepts
 order: 1
-updated: 2026-07-29
+updated: 2026-08-16
 ---
 
 larvae reads one require syntax and can write three. What you write never changes, what comes out is a config choice.
@@ -40,6 +40,14 @@ Set the target once in `larvae.toml`.
 [requires]
 target = "roblox-string"
 ```
+
+The root key `target` is a short form of the same key, so the first line of a config needs no table header:
+
+```toml
+target = "roblox-string"
+```
+
+They are one key with two spellings. A config that writes both gets an error, larvae never merges them.
 
 | target | emits | use it for |
 |---|---|---|
@@ -107,7 +115,7 @@ local util = require(script.Parent:FindFirstChild("util"))
 | `wait_for_child` | `script.Parent:WaitForChild("Foo")` |
 | `property` | `script.Parent.Foo`, falls back to `["name"]` when the name is not an identifier |
 
-Kebab spellings work too: `find-first-child`, `wait-for-child`, `property-instance`.
+`find_first_child` and `property` do not wait for replication. `larvae check` has a gate for that: `[check] early_require` warns when a client script requires through an indexing style that does not wait, because such a require can run before the target has replicated. It is reported once per file, because the fix is one config line. See [failure classes](/docs/concepts/failure-classes).
 
 ## The roblox-string caveat, read this one
 
@@ -141,7 +149,9 @@ After, with `roblox-instance` and `wait_for_child`, which yields until the insta
 local Signal = require(game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("signal"))
 ```
 
-Today the target is per project. Mixing native string requires with instance requires for just the early replication code is **planned (M2)** as `[requires.overrides]`, a per glob target.
+The target does not have to be per project. `[requires.overrides]` sets a target per glob, so just the early replication code can take `roblox-instance` while the rest of the project keeps native strings. See [configuration](/docs/reference/configuration) for the key.
+
+And `[check] early_require` warns when a client script ends up on an indexing style that does not wait for replication, so the gap this section describes is caught rather than remembered.
 
 ## Related
 

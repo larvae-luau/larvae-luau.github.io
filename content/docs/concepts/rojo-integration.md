@@ -3,7 +3,7 @@ title: Rojo integration
 description: One project file instead of the hand synced pair
 category: Concepts
 order: 4
-updated: 2026-07-29
+updated: 2026-08-16
 ---
 
 darklua users maintain two nearly identical Rojo project files: one pointing at `src` so sourcemaps and editor tooling work, and one pointing at `dist` so serving works. Every tree change has to be made twice, and the second one is the one you forget.
@@ -84,7 +84,7 @@ local util = require("@game/ReplicatedStorage/shared/util")
 
 The same map is what powers realm and Starter container validation, since it is how larvae knows a file is client reachable or lives inside a cloning container. See [realms and clones](/docs/concepts/realms-and-clones).
 
-This is why `[requires.mounts]` is rarely written by hand. It exists as an override and as an escape hatch for projects with no Rojo project file, not as something you are expected to maintain:
+This is why `[requires.mounts]` is rarely written by hand. Because larvae reads `default.project.json` itself, the mounts are already known. The key exists as an override and as an escape hatch for projects with no Rojo project file, not as something you are expected to maintain:
 
 ```toml
 # almost never needed, the project file already says this
@@ -99,7 +99,7 @@ This is why `[requires.mounts]` is rarely written by hand. It exists as an overr
 | no project file | no derived project, `process` needs mounts or errors with instructions |
 | model tree project | relative only rewriting, `@game` paths are meaningless there |
 | several project files | `[rojo].project` picks one |
-| `$path` to another project file | copied verbatim with a warning, nested projects are post M2 |
+| `$path` to another project file | copied verbatim with a warning, larvae does not follow nested projects |
 
 A model tree project, one whose root is not a `DataModel`, has no `game` to anchor against. larvae still rewrites requires, but only to relative forms.
 

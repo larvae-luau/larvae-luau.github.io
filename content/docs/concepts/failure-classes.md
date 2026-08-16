@@ -3,7 +3,7 @@ title: Failure classes
 description: Why strict is not one big switch
 category: Concepts
 order: 3
-updated: 2026-07-29
+updated: 2026-08-16
 ---
 
 Every require diagnostic falls into one of three groups. Which group it lands in is not a preference, it follows from whether larvae can still produce correct output.
@@ -26,6 +26,8 @@ These fail because **the output cannot be correct**. There is no string larvae c
 | `.luau` / `.lua` ambiguity | both files could match, larvae will not guess |
 
 There is no config key that turns any of these into a warning, by design. Emitting a require that is known to be broken is worse than failing the build.
+
+`larvae check` reports unresolvable requires and realm violations unconditionally. The `[check]` table carries `allow` / `warn` / `deny` levels, but its keys are project questions that are matters of degree: `cycles`, which are legal at runtime, `unused_modules`, and `early_require`. No level touches the failures in the table above, because they are wrong rather than untidy. See [configuration](/docs/reference/configuration) for the `[check]` table.
 
 Two examples. Not RFC valid, because a bare name has no meaning in RFC require semantics:
 
@@ -92,18 +94,26 @@ processed 128 file(s): 84 require(s) rewritten, 2 dynamic require(s) left untouc
 
 `larvae check` reports the same count. If that number is higher than you expected, the realm and clone validation is covering less of your codebase than you thought, and the uncovered requires are the dynamic ones.
 
+The same blind spot reaches `larvae bundle`. Reachability comes from the require graph, so a module reached only through a dynamic require is dropped by tree shaking; such a require is reported, and a project that needs those modules sets `tree_shake = false`. See [configuration](/docs/reference/configuration).
+
 Note that `quotes` still applies to dynamic requires that are plain strings, since requoting is a lexical change and does not depend on resolving anything.
 
 ## Where syntax errors fit
 
-Syntax errors are their own thing and only `check` reports them, because only `check` parses.
+Syntax errors are their own class, and the rule that decides them is short: **larvae accepts the files that Luau accepts, and refuses the files that Luau refuses.** The check gate is only as good as its agreement with the compiler.
 
-| command | parses | reports syntax errors |
-|---|---|---|
-| `process` | no | no |
-| `check` | yes | yes |
+One construct makes the rule earn its keep, because its two readings are both reasonable and Luau picks neither:
 
-`process` splices byte ranges into the original source and never needs a full parse, which is part of why it is fast. So a file with a syntax error still gets its requires rewritten, and it is `check` that tells you the file does not parse. See the [CLI reference](/docs/reference/cli).
+```lua
+print(1)
+(f)()
+```
+
+Luau reports "Ambiguous syntax: this looks like an argument list for a function call, but could also be a start of new statement; use ';' to separate statements". The token stream reads as one call of the line above, and it reads as two statements.
+
+larvae reports the same case. An earlier larvae read it as a call, and two things went wrong. `larvae check` passed a file that the real compiler rejects, so the check said less than the compiler. And `larvae fmt` joined the two lines into the reading that larvae chose, which is a decision that the author never made. A `(` on the line of the callee is not ambiguous, so a wrapped argument list and a chained call still parse.
+
+Which command surfaces a syntax error follows from what each command needs. `check`, `fmt`, and `lint` parse, so all three report the same refusals, and the editor reports them too, through the same code paths. `process` needs only a lex to rewrite requires and parses when an enabled rule needs a tree, so a file with a syntax error can still get its requires rewritten, and it is `check` that tells you the file does not parse. See the [CLI reference](/docs/reference/cli).
 
 ## Related
 

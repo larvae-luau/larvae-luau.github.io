@@ -3,7 +3,7 @@ title: Incremental builds and watch mode
 description: A cache key that includes everything require resolution reads
 category: Concepts
 order: 5
-updated: 2026-07-29
+updated: 2026-08-16
 ---
 
 larvae caches its work between runs, which darklua has no equivalent for. The interesting part is not the caching, it is the cache key, because a per file content hash alone would be unsound.
@@ -64,6 +64,8 @@ cache_dir = ".larvae"
 ```
 
 Set `cache = false` to disable it entirely. Deleting `.larvae` is also safe, the next run rebuilds it.
+
+The cache directory holds more than the cache. Installed [worms](/docs/worms/using-worms) land in `<cache_dir>/worms/<name>/<version>`, so later builds do no network, and the merged schema that [editor setup](/docs/concepts/editor-setup) points at is written to `<cache_dir>/larvae.schema.json`. A cache hit also short-circuits a worm: a fresh claimed file never calls its front-end at all. See [how a build runs with worms](/docs/worms/build-pipeline).
 
 Cache hits show up in the summary, and the count only appears when it is non zero:
 
