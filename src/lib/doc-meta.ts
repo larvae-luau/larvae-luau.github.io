@@ -8,6 +8,7 @@ export const CATEGORY_ORDER = [
   'Getting started',
   'Reference',
   'Concepts',
+  'Worms',
   'Project',
 ]
 

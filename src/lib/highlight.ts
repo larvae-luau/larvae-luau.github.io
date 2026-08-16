@@ -1,4 +1,4 @@
-export type Lang = 'luau' | 'toml' | 'shell' | 'json' | 'yaml' | 'text'
+export type Lang = 'luau' | 'rust' | 'toml' | 'shell' | 'json' | 'yaml' | 'text'
 
 export type TokenType =
   | 'plain'
@@ -43,6 +43,13 @@ const SPECS: Record<Exclude<Lang, 'text'>, LangSpec> = {
       /(--[^\n]*)|('[^'\n]*'|"[^"\n]*")|\b(local|const|function|return|end|if|then|elseif|else|for|while|do|and|or|not|nil|true|false)\b|\b(require|script|game|workspace)\b|\b(\d+(?:\.\d+)?)\b/g,
     groups: ['comment', 'string', 'keyword', 'builtin', 'number'],
   },
+  // A macro call is tokenized as a builtin, since in worm snippets the macro
+  // is the API surface, not an ordinary call.
+  rust: {
+    pattern:
+      /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\\n]|\\.)*")|\b(fn|let|mut|const|static|if|else|match|loop|while|for|in|return|break|continue|use|mod|pub|crate|impl|trait|struct|enum|type|where|as|dyn|ref|move|unsafe|async|await|self|Self|true|false)\b|([A-Za-z_]\w*!)|\b(String|str|Vec|Option|Some|None|Result|Ok|Err|bool|char|usize|isize|u8|u16|u32|u64|i8|i16|i32|i64|f32|f64)\b|\b(\d+(?:\.\d+)?)\b/g,
+    groups: ['comment', 'string', 'keyword', 'builtin', 'builtin', 'number'],
+  },
   toml: {
     pattern:
       /(#[^\n]*)|(^\[[^\]\n]*\])|('[^'\n]*'|"[^"\n]*")|(^[A-Za-z0-9_.-]+(?=\s*=))/gm,
@@ -67,6 +74,8 @@ const SPECS: Record<Exclude<Lang, 'text'>, LangSpec> = {
 const ALIASES: Record<string, Lang> = {
   luau: 'luau',
   lua: 'luau',
+  rust: 'rust',
+  rs: 'rust',
   toml: 'toml',
   shell: 'shell',
   sh: 'shell',

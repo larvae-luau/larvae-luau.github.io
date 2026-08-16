@@ -52,6 +52,49 @@ if ready then return 42 end`
   })
 })
 
+describe('tokenize · rust', () => {
+  const code = `// a worm rule
+larvae_worm::rules! {
+    "strip_debug" => |node: larvae_worm::Node| {
+        if node.text().starts_with("dprint") {
+            node.remove();
+        }
+    },
+}`
+
+  it('reassembles to the exact input', () => {
+    const joined = tokenize(code, 'rust')
+      .map((t) => t.text)
+      .join('')
+    expect(joined).toBe(code)
+  })
+
+  it('classifies keywords, strings, and comments', () => {
+    expect(typesOf(code, 'rust', 'if')).toEqual(['keyword'])
+    expect(typesOf(code, 'rust', '"strip_debug"')).toEqual(['string'])
+    expect(typesOf(code, 'rust', '// a worm rule')).toEqual(['comment'])
+  })
+
+  it('classifies a macro call as a builtin, since that is the API', () => {
+    expect(typesOf(code, 'rust', 'rules!')).toEqual(['builtin'])
+  })
+
+  it('classifies the types a worm signature uses', () => {
+    const signature = 'fn compile(source: &str) -> anyhow::Result<String>'
+    expect(typesOf(signature, 'rust', 'fn')).toEqual(['keyword'])
+    expect(typesOf(signature, 'rust', 'str')).toEqual(['builtin'])
+    expect(typesOf(signature, 'rust', 'Result')).toEqual(['builtin'])
+    expect(typesOf(signature, 'rust', 'String')).toEqual(['builtin'])
+  })
+
+  it('does not match keywords inside identifiers', () => {
+    const tokens = tokenize('let iffy = reference;', 'rust')
+    expect(
+      tokens.filter((t) => t.type === 'keyword').map((t) => t.text),
+    ).toEqual(['let'])
+  })
+})
+
 describe('tokenize · toml', () => {
   const code = `# larvae.toml
 [aliases]
@@ -158,6 +201,7 @@ describe('tokenize · text', () => {
 describe('resolveLang', () => {
   it('maps markdown fence aliases onto supported languages', () => {
     expect(resolveLang('lua')).toBe('luau')
+    expect(resolveLang('rs')).toBe('rust')
     expect(resolveLang('bash')).toBe('shell')
     expect(resolveLang('sh')).toBe('shell')
     expect(resolveLang('yml')).toBe('yaml')
@@ -165,7 +209,7 @@ describe('resolveLang', () => {
   })
 
   it('falls back to plain text for unknown or missing languages', () => {
-    expect(resolveLang('rust')).toBe('text')
+    expect(resolveLang('python')).toBe('text')
     expect(resolveLang(undefined)).toBe('text')
     expect(resolveLang('')).toBe('text')
   })
