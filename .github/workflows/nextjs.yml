@@ -88,6 +88,22 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+      # Resolved here rather than inside next.config, so a failed lookup
+      # prints its reason in this log instead of silently shipping the
+      # placeholder badge. The build still falls back to its own fetch when
+      # these outputs are empty.
+      - name: Resolve latest CLI release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if json=$(gh api repos/larvae-luau/larvae/releases/latest 2>lookup.err); then
+            echo "tag=$(jq -r .tag_name <<<"$json")" >> "$GITHUB_OUTPUT"
+            echo "url=$(jq -r .html_url <<<"$json")" >> "$GITHUB_OUTPUT"
+            echo "badge shows $(jq -r .tag_name <<<"$json")"
+          else
+            echo "::warning::release lookup failed, badge shows the placeholder: $(cat lookup.err)"
+          fi
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
         env:
@@ -95,6 +111,8 @@ jobs:
           # is 60 an hour across all of them, which a release lookup can lose a
           # race to. The default token reads public releases fine.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_URL: ${{ steps.release.outputs.url }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

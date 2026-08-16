@@ -22,12 +22,18 @@ async function latestRelease(): Promise<{ tag: string; url: string } | null> {
       signal: AbortSignal.timeout(5000),
     })
     // 404 is the ordinary answer for a repo that has never tagged anything.
-    if (!res.ok) return null
+    if (!res.ok) {
+      console.warn(
+        `release lookup answered ${res.status}, badge shows the placeholder`,
+      )
+      return null
+    }
     const data = (await res.json()) as Record<string, unknown>
     if (typeof data.tag_name !== 'string') return null
     if (typeof data.html_url !== 'string') return null
     return { tag: data.tag_name, url: data.html_url }
-  } catch {
+  } catch (error) {
+    console.warn('release lookup failed, badge shows the placeholder:', error)
     return null
   }
 }
