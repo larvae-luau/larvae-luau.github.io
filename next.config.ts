@@ -45,6 +45,15 @@ export default async function config(): Promise<NextConfig> {
     images: {
       unoptimized: true,
     },
+    experimental: {
+      // Turbopack's persistent dev cache lives in .next/dev, which on this
+      // repo sits on an ntfs-3g mount Next itself flags as slow. A cache that
+      // gets written badly there survives restarts and every rebuild after it
+      // panics with "Next.js package not found", which the dev overlay answers
+      // by reloading the page, forever. Cold and warm starts both measure
+      // ~400ms here, so the cache buys nothing worth that failure mode.
+      turbopackFileSystemCacheForDev: false,
+    },
     env: {
       RELEASE_TAG: release?.tag ?? '',
       RELEASE_URL: release?.url ?? '',
