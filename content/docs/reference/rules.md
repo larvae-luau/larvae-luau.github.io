@@ -1,24 +1,16 @@
 ---
 title: Rules
-description: Thirty four rules shipped, including twenty seven darklua names and seven larvae only
+description: Thirty six rules shipped, twenty seven under darklua's names and nine larvae only
 category: Reference
 order: 3
-updated: 2026-07-30
+updated: 2026-08-16
 ---
 
 Rules are the transforms larvae applies to each output file. They live in the `[rules]` table of `larvae.toml`.
 
-**Every darklua rule name is accepted**, and most of them now run. A `.darklua.json` rule list ports over unchanged, no renaming and no guessing.
+There are 36 rules: 9 that only larvae has, and 27 that match darklua name for name, so a `.darklua.json` rule list ports over unchanged. Every rule is off until the config turns it on. A rule takes `true`, or a table with the options its row names.
 
-| darklua's 32 names | count | what happens |
-|---|---:|---|
-| implemented as rules | 27 | run under the same name with matching options |
-| live elsewhere in larvae | 3 | load fails naming where the feature moved |
-| still planned | 2 | load fails naming the milestone |
-
-On top of those 27, larvae ships **7 rules darklua has no equivalent for**, for 34 in total.
-
-Nothing is silently ignored, which is the policy the rest of [configuration](/docs/reference/configuration) follows. A rule list that loads is a rule list that ran.
+An unknown rule name is an error, never ignored, which is the policy the rest of [configuration](/docs/reference/configuration) follows. A rule list that loads is a rule list that ran.
 
 ```toml
 [rules]
@@ -27,253 +19,98 @@ compute_expression = true
 const_requires = true
 ```
 
-## darklua parity
+## larvae's own rules
 
-All 27 shipped. Names and options match darklua, so a ported config behaves the way the reader expects.
+Nine rules under larvae's own names. Seven have no darklua equivalent at all; `remove_comments` and `append_text_comment` sit here rather than in the parity set because larvae's defaults differ from darklua's.
 
-### Declarations and calls
-
-| rule | before | after |
+| Rule | Value | What it does |
 |---|---|---|
-| `remove_method_definition` | `function M:go() end` | `function M.go(self) end` |
-| `remove_method_call` | `obj:go(1)` | `obj.go(obj, 1)` |
-| `convert_function_to_assignment` | `function M.go() end` | `M.go = function() end` |
-| `convert_local_function_to_assign` | `local function go() end` | `local go = function() end` |
-| `convert_index_to_field` | `t["key"]` | `t.key` |
-| `remove_compound_assignment` | `x += 1` | `x = x + 1` |
-| `remove_function_call_parens` | `require("./a")` | `require"./a"` |
-| `make_assignment_local` | `x = 1` | `local x = 1` |
-| `group_local_assignment` | `local a = 1` then `local b = 2` | `local a, b = 1, 2` |
-| `remove_nil_declaration` | `local x = nil` | `local x` |
-| `remove_assertions` | `assert(cond, "msg")` | removed |
-| `remove_debug_profiling` | `debug.profilebegin("f")` | removed |
+| `const_requires` | bool | Turn `local X = require(...)` into `const X = require(...)`. Skips multi bindings and annotated locals. |
+| `remove_comments` | bool or table | Remove comments. `true`, or a table with `except` regexes for comments to keep. Defaults to `["^--!"]` so Luau directives survive; set `[]` to match darklua. |
+| `append_text_comment` | table | Insert a comment at the start or end of every file. Exactly one of `text` (the literal comment) or `file` (read the comment from this path), and `location` = `"start"` (default) or `"end"`. |
+| `add_luau_directive` | string | Write a Luau directive at the top of every file, ex: `"strict"` emits `--!strict`. An existing directive of the same family is left alone. |
+| `remove_calls` | list or table | Remove statement position calls to the named functions, ex: `print` or `debug.profilebegin`. Names may be dotted paths; method calls and computed callees are never matched, and a call whose value is used is left alone. |
+| `use_get_service` | bool | Rewrite `game.Players` into `game:GetService("Players")` for the known services, which keeps working when a service is renamed or not created yet. A local named `game` defeats it. |
+| `dedupe_requires` | bool | Top level `local X = require(...)` statements that resolve to the same module collapse, the later ones become aliases of the first. Skips const, annotated and multi binding locals. |
+| `inject_module_path` | string | Name of a constant defined at the top of every file that references it, holding that file's DataModel path, ex: `"@game/ReplicatedStorage/shared/util"`. Warns when no mount covers the file. |
+| `freeze_module` | bool | Wrap a module's returned table in `table.freeze`, only when nothing can write to it, so field writes, rebinds and metatable patterns turn the rule off for that file. |
 
-### Expressions and types
-
-| rule | before | after |
-|---|---|---|
-| `remove_types` | `local x: number = 1` | `local x = 1` |
-| `remove_attribute` | `@native function f() end` | `function f() end` |
-| `remove_if_expression` | `if cond then 1 else 2` | `cond and 1 or 2` |
-| `remove_interpolated_string` | `` `hi {name}` `` | `"hi " .. name` |
-| `convert_luau_number` | `0b1010`, `1_000` | `10`, `1000` |
-| `convert_square_root_call` | `math.sqrt(x)` | `(x ^ 0.5)` |
-| `compute_expression` | `1 + 2` | `3` |
-
-### Control flow
-
-| rule | before | after |
-|---|---|---|
-| `remove_floor_division` | `a // b` | `math.floor(a / b)` |
-| `filter_after_early_return` | statements after `return` | removed |
-| `remove_unused_if_branch` | `if false then f() end` | removed |
-| `remove_unused_while` | `while false do f() end` | removed |
-| `remove_empty_do` | `do end` | removed |
-| `remove_continue` | `continue` | loop restructured so the body ends instead |
-
-### Comments
-
-| rule | before | after |
-|---|---|---|
-| `remove_comments` | `-- note` | removed, `--!` directives kept |
-| `append_text_comment` | end of file | a comment you supply |
-
-### Rules with options
-
-| rule | options |
-|---|---|
-| `remove_assertions` | `preserve_arguments_side_effects`, default true |
-| `remove_debug_profiling` | `preserve_arguments_side_effects`, default true |
-| `remove_interpolated_string` | `strategy`, `"string"` or `"tostring"` |
-| `remove_attribute` | `match`, a list of regexes, empty means all |
-| `remove_comments` | `except`, a regex list, defaults to keeping `--!` directives |
-| `append_text_comment` | `text` or `file`, plus `location`, `start` or `end` |
+In particular `remove_comments` keeps `--!` directives by default, because removing a Luau directive silently changes how the code runs. Set `except = []` to match darklua.
 
 ```toml
 [rules]
-remove_assertions = { preserve_arguments_side_effects = false }
-remove_interpolated_string = { strategy = "tostring" }
+add_luau_directive = "strict"
+remove_calls = ["print", "warn", "debug.profilebegin"]
 
 [rules.append_text_comment]
 text = "generated by larvae, do not edit"
 location = "start"
 ```
 
-## Where larvae differs from darklua
+## The darklua parity set
 
-These are conservative on purpose. A reader diffing larvae output against darklua output will notice them, so they are worth knowing up front.
+All 27 run under darklua's own names, so a ported config behaves the way the reader expects.
 
-- `remove_if_expression` only rewrites when the then value can never be falsy, meaning a literal number, string, table, `true`, or function. darklua wraps the other cases in a helper function, larvae skips them
-- `remove_continue` skips `repeat` loops, and skips loops that also `break` at the same level. Both need transforms retain lines cannot express
-- `convert_square_root_call` always parenthesises, `(x ^ 0.5)`. Noisier than darklua, identical meaning
-- `remove_unused_if_branch` unwraps a surviving branch to bare statements only when it declares nothing, otherwise it becomes `do ... end` so bindings do not leak
-- `compute_expression` folds whole number results and plain string concatenation only. Fractions never fold, so there are no float surprises
-- `group_local_assignment` merges onto one line and leaves the blank lines behind, keeping line numbers stable
-- `remove_comments` keeps `--!` directives by default. **darklua removes them**, which silently changes how the code runs. Set `except = []` to match darklua exactly
-- `remove_empty_do` treats a lone `;` as content, so `do ; end` survives, and nested empties shed one layer per run rather than recursing
-- `remove_method_definition` is skipped when `convert_function_to_assignment` is enabled, because both would insert `self`
+| Rule | Value | What it does |
+|---|---|---|
+| `compute_expression` | bool | Fold constant expressions to their value. Only folds when the result prints back exactly, so fractions, values past exact double range and strings holding escapes are left alone. |
+| `convert_function_to_assignment` | bool | Rewrite `function foo()` into `foo = function()`, and `function o:m()` into `o.m = function(self)`. Attributed functions are left alone. |
+| `convert_index_to_field` | bool | Rewrite `t["field"]` into `t.field`, and the same for table constructor keys, when the literal spells a valid name that is not a reserved word. |
+| `convert_local_function_to_assign` | bool | Rewrite `local function f()` into `local f = function()`, only when the body never mentions `f`, since the local form is in scope inside itself. |
+| `convert_luau_number` | bool | Rewrite binary literals like `0b1010` as hex and strip digit separators, both being Luau only syntax. |
+| `convert_square_root_call` | bool | Rewrite `math.sqrt(x)` into `(x ^ 0.5)`. The result is always parenthesised so it survives being the base of another power. |
+| `filter_after_early_return` | bool | Delete the statements after a `do ... return ... end` block, which can never run. Stops if a type alias is among them, since an exported one is visible outside the block. |
+| `group_local_assignment` | bool | Merge a run of adjacent local declarations into one. Conservative, it stops at a call, a dependency between them, an annotation, a comment or anything but whitespace in between. |
+| `make_assignment_local` | bool | Turn a `const` declaration back into a `local` one, the inverse of `const_requires`, for output that has to stay plain Lua. |
+| `remove_assertions` | bool or table | Remove `assert(...)` statements. |
+| `remove_attribute` | bool or table | Strip function attributes, ex: `@native`. `true` removes every one, or a table with `match` regexes tested against the attribute name without its `@`. |
+| `remove_compound_assignment` | bool | Expand `x += 1` into `x = x + 1` for every compound operator. Targets that would have to run code twice, ex: a computed key holding a call, are left alone. |
+| `remove_continue` | bool | Rewrite a loop containing `continue` into the `repeat ... until true` form with `continue` spelled `break`. Loops that also break at the same level, and repeat loops whose condition can read body locals, are left alone. |
+| `remove_debug_profiling` | bool or table | Remove `debug.profilebegin` and `debug.profileend` statements. |
+| `remove_empty_do` | bool | Drop `do end` blocks that contain nothing. A lone semicolon counts as content. Nested empties shed one layer per run. |
+| `remove_floor_division` | bool | Rewrite `a // b` into `math.floor(a / b)`, and `a //= b` into `a = math.floor(a / b)`. |
+| `remove_function_call_parens` | bool | Rewrite `f("x")` into `f"x"` and `f({})` into `f{}` when a call takes exactly one string or table argument. |
+| `remove_if_expression` | bool | Rewrite `if c then a else b` into `c and a or b`. Only applied when the then value can never be false or nil, otherwise the and/or form would not be equivalent and the expression is left alone. |
+| `remove_interpolated_string` | bool or table | Rewrite backtick strings into `string.format` calls. `true`, or a table with `strategy`: `"string"` wraps each value in `tostring` and formats with `%s`, `"tostring"` uses Luau's `%*`. Multi line and nested backtick strings are left alone. |
+| `remove_method_call` | bool | Rewrite `obj:m(x)` into `obj.m(obj, x)`. Only for a plain identifier receiver, anything else would be evaluated twice. |
+| `remove_method_definition` | bool | Rewrite `function C:m()` into `function C.m(self)`, making the implicit self parameter explicit. |
+| `remove_nil_declaration` | bool | Rewrite `local x = nil` into `local x` and drop trailing nil values from multi bindings. Skips const, which must keep a value. |
+| `remove_types` | bool | Strip every type annotation: bindings, parameters, return types, generic lists, type aliases and the tail of a `::` assertion. |
+| `remove_unused_if_branch` | bool | Prune if branches whose condition is a known constant. A branch that always runs is unwrapped, or becomes a `do` block when it declares locals so their scope is preserved. |
+| `remove_unused_variable` | bool or table | Remove unused locals and local functions. |
+| `remove_unused_while` | bool | Delete a while loop whose condition is a constant false. |
+| `rename_variables` | bool or table | Rename locals and params to short names. |
 
-## larvae only
-
-Seven rules darklua has no equivalent for.
-
-### `const_requires`
-
-darklua has no rule that emits Luau `const` at all, its `make_assignment_local` goes the other way.
-
-```toml
-[rules]
-const_requires = true
-```
-
-Before:
-
-```luau
-local Signal = require("./signal")
-```
-
-After:
-
-```luau
-const Signal = require("./signal")
-```
-
-Multi bindings (`local a, b = ...`) and annotated locals (`local x: Foo = ...`) are skipped, because a token level rule cannot tell those apart safely. Scope tracking in M2 makes it exact.
-
-### `add_luau_directive`
+`remove_unused_variable` and `rename_variables` also accept `apply_to` and `skip` globs in their table form, which limit the rule to files:
 
 ```toml
 [rules]
-add_luau_directive = "strict"
+rename_variables = { apply_to = ["src/**"], skip = ["src/vendor/**"] }
 ```
-
-Writes `--!strict` at the top of every output file. An existing directive of the same family wins, so a file that already says `--!nonstrict` is left alone. An unrelated directive like `--!native` does not block it.
-
-### `remove_calls`
-
-One configurable rule covering what darklua needs two rules for, and more.
-
-```toml
-[rules]
-remove_calls = ["print", "warn", "assert", "debug.profilebegin"]
-```
-
-Before:
-
-```luau
-print("loading")
-local total = sum(values)
-```
-
-After:
-
-```luau
-local total = sum(values)
-```
-
-Statement position calls only, so `local x = print("a")` is untouched. Names may be plain or dotted. It honors `preserve_arguments_side_effects`, default true.
-
-### `use_get_service`
-
-The most common Roblox lint, made automatic.
-
-```toml
-[rules]
-use_get_service = true
-```
-
-Before:
-
-```luau
-local Players = game.Players
-```
-
-After:
-
-```luau
-local Players = game:GetService("Players")
-```
-
-Knows 43 services. It turns itself off for any file that binds `game` to something else, and never rewrites an assignment target.
-
-### `dedupe_requires`
-
-```toml
-[rules]
-dedupe_requires = true
-```
-
-Before:
-
-```luau
-local Signal = require("@pkg/signal")
-local SignalAgain = require("@pkg/signal")
-```
-
-After:
-
-```luau
-local Signal = require("@pkg/signal")
-local SignalAgain = Signal
-```
-
-Top level `local NAME = require(...)` shapes only. Two specs that emit different final strings do not dedupe even when they resolve to the same module.
-
-### `inject_module_path`
-
-```toml
-[rules]
-inject_module_path = "MODULE_PATH"
-```
-
-Injects a local holding the file's own DataModel path, for logging and telemetry.
-
-```luau
-local MODULE_PATH = "@game/ReplicatedStorage/Packages/signal"
-```
-
-Only larvae can do this, because only larvae has the DataModel map. Files that already bind the name are skipped.
-
-### `freeze_module`
-
-```toml
-[rules]
-freeze_module = true
-```
-
-Wraps a returned module table in `table.freeze` when it is provably safe.
-
-Before:
-
-```luau
-return M
-```
-
-After:
-
-```luau
-return table.freeze(M)
-```
-
-Treat this as opt in hardening rather than a default. It skips modules that write fields through `function M.foo() end`, rebind, use `setmetatable`, or touch `__index`.
-
-## Planned
-
-Two darklua names are left. Both parse and fail at load time naming their milestone.
-
-| rule | status |
-|---|---|
-| `remove_unused_variable` | needs scope tracking, M2 |
-| `rename_variables` | needs scope tracking, M2 |
-
-Both need a binding table that knows which `x` refers to which declaration. Shipping them without it risks renaming a captured variable or deleting a local that is actually read, so they wait. The same work lets `const_requires` and `freeze_module` drop their conservative guards.
 
 ## darklua rules that are not rules here
 
+Three darklua names are deliberately not larvae rules, because larvae already does each job elsewhere. Naming one in `[rules]` is an error, and the error points at the larvae way to do the same thing.
+
 | darklua rule | where it lives in larvae |
 |---|---|
-| `convert_require` | the [`[requires]` table](/docs/reference/configuration), richer than the rule, works today |
-| `inject_global_value` | `[defines]`, planned (M2) |
-| `remove_spaces` | `generator = "dense"`, planned (M2) |
+| `convert_require` | the [`[requires]` table](/docs/reference/configuration) |
+| `inject_global_value` | `[defines]` |
+| `remove_spaces` | `generator = "dense"` |
 
-Naming one of these in `[rules]` fails at load time and tells you where the feature went.
+## When rules run
+
+`[process] run_order` (default `1`) positions larvae's own rules relative to worms, so a worm saying `"before"` or `"after"` has something to be relative to. See [configuration](/docs/reference/configuration).
+
+## Rules that come from a worm
+
+A [worm](/docs/worms/what-a-worm-is) can ship rules of its own. They are switched on under `[worms.<name>].rules`, never in `[rules]`:
+
+```toml
+[worms.markup]
+repo = "someone/markup-worm"
+version = "2.1.0"
+rules = { tidy = true }
+```
+
+`[rules]` is larvae's own table and is typed against the names on this page, so a worm's rule cannot shadow a builtin. Namespaced under its worm, a worm rule can share a name with one of larvae's and mean something different. Switching on a rule a worm does not declare is an error naming it. See [using worms](/docs/worms/using-worms).

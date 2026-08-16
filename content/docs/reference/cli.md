@@ -3,18 +3,20 @@ title: CLI reference
 description: Every larvae command, flag, exit code, and environment variable
 category: Reference
 order: 1
-updated: 2026-07-30
+updated: 2026-08-16
 ---
 
-larvae has five commands: `process`, `check`, `init`, `schema`, and `self`. That is the whole surface. There is no `serve`, no `build`, and no `minify` command, and larvae never runs rojo for you.
+larvae has nine commands: `process`, `check`, `fmt`, `lint`, `bundle`, `lsp`, `init`, `worm`, and `self`. That is the whole surface. There is no `serve` command and no `schema` command, and larvae never runs rojo for you.
 
 Running `larvae` with no arguments prints the logo beside the help text, fastfetch style. `larvae --help` does the same. `larvae <cmd> -h` prints that command's help.
+
+Four commands share flags. `process`, `check`, `fmt`, and `lint` accept `--config <path>`, which names a config file other than `./larvae.toml`. `process` and `check` also accept `--profile <name>`, which merges `[profile.<name>]` over the config, see [configuration](/docs/reference/configuration).
 
 ## Commands
 
 ### `process`
 
-Reads `[process].input`, applies transforms, and writes the result to `[process].output`. It also keeps the derived Rojo project fresh at `.larvae/build.project.json`.
+Rewrites requires, applies [rules](/docs/reference/rules), and writes the output tree. It also keeps the derived Rojo project fresh at `.larvae/build.project.json`.
 
 ```shell
 larvae process
@@ -23,10 +25,8 @@ larvae process
 | flag | meaning |
 |---|---|
 | `--config <PATH>` | config file, defaults to `./larvae.toml` when present |
+| `--profile <NAME>` | merge `[profile.<name>]` over the config |
 | `--watch`, `-w` | rebuild on change, Ctrl-C to stop |
-| `--profile <NAME>` | **planned (M2)**, errors today |
-
-`--profile` is not usable yet. Passing it today is an error, not a no-op. Build profiles land in M2.
 
 The output summary looks like this:
 
@@ -47,29 +47,97 @@ So a clean rebuild with nothing to do prints a much shorter line than a first ru
 
 Dynamic requires like `require(path)` are left alone on purpose and counted rather than rewritten, see [failure classes](/docs/concepts/failure-classes).
 
-With `--watch`, larvae rebuilds on change, mirrors deletions by pruning stale outputs, and keeps the last good output when a file fails to lex. A half typed save does not cascade require failures through a live rojo session.
+With `--watch`, larvae rebuilds on change, mirrors deletions by pruning stale outputs, and keeps the last good output when a file fails to parse. A half typed save does not cascade require failures through a live rojo session.
 
 ### `check`
 
-Runs the same analysis as `process`, writes nothing, and exits non zero if there are errors. This is the CI gate.
+Runs the same analysis as `process`, writes nothing, and exits non zero if there are errors. This is the CI gate, and it is the command that answers questions about the whole require graph: the per file questions belong to `lint`.
 
 ```shell
 larvae check
 ```
-
-It does two things `process` does not:
-
-1. Parses every file and reports **syntax errors**. `process` does not parse, it splices byte ranges.
-2. Never uses the cache, so every diagnostic is reported on every run.
-
-That second point is deliberate. A cached clean file would otherwise report nothing on the second run, which is useless behavior for a CI gate.
 
 ```yaml
 # in CI
 - run: larvae check
 ```
 
-Because `check` parses everything, it is the only command that can report a syntax error at all. `process` never parses, so it is unaffected by parser gaps.
+`check` never skips a file through the cache, so every diagnostic is reported on every run. That is deliberate, because a cached clean file would otherwise report nothing on the second run, which is useless behavior for a CI gate.
+
+larvae's parser accepts the files that Luau accepts and refuses the files that Luau refuses, ambiguous syntax included, so `check` never passes a file that the real compiler rejects.
+
+What fails the run is configured in [`[check]`](/docs/reference/configuration): each analysis has a level, `allow`, `warn`, or `deny`, and only a `deny` fails CI. Two findings are unconditional and no level lowers them, because they are wrong rather than untidy:
+
+- an unresolvable require
+- a realm violation, see [realms and clones](/docs/concepts/realms-and-clones)
+
+### `fmt`
+
+Formats files in place. A file claimed by a [worm](/docs/worms/what-a-worm-is) is formatted through that worm.
+
+```shell
+larvae fmt
+```
+
+| flag | meaning |
+|---|---|
+| `--config <PATH>` | config file, defaults to `./larvae.toml` when present |
+| `--check` | write nothing, fail when a file would change |
+| `--stdin` | format one file from stdin to stdout |
+| `--stdin-filepath <PATH>` | the path the stdin content notionally lives at, which routes it to a worm by extension |
+
+`fmt` works with no `larvae.toml` at all. It also reads an existing `stylua.toml` or `.stylua.toml` as it is, so a project that already formats with stylua keeps its settings, see [configuration](/docs/reference/configuration).
+
+Excludes apply to files that a walk finds, not to files that you name. `larvae fmt` with no arguments, or with a directory argument, skips excluded files. `larvae fmt Packages/thing.luau` formats the file, because a user who names a file means that file. A tool that silently does nothing to a named file is worse than a tool that touches an excluded file.
+
+The options live in `[fmt]`, documented on [formatting](/docs/reference/formatting).
+
+### `lint`
+
+Reports suspicious code. A file claimed by a worm is linted through that worm.
+
+```shell
+larvae lint
+```
+
+| flag | meaning |
+|---|---|
+| `--config <PATH>` | config file, defaults to `./larvae.toml` when present |
+| `--explain <LINT>` | describe one lint, a worm's lint as `worm.name` |
+| `--stdin` | lint one file from stdin |
+| `--stdin-filepath <PATH>` | routes stdin to a worm by extension, as in `fmt` |
+
+`lint` works with no `larvae.toml` at all. It also reads an existing `selene.toml` for lint settings, see [configuration](/docs/reference/configuration).
+
+A lint reads one file in isolation, which is why `larvae lint` works on stdin, in the editor, and with no config. A question about the whole project, such as a require cycle, runs under `larvae check` instead.
+
+Individual findings are silenced with `-- larvae: allow(...)` flag comments, and selene's spelling works too. The lint list, the levels, and the flag comment rules live on [linting](/docs/reference/linting).
+
+The same named file rule as `fmt` applies: excludes affect the walk, never a file you name.
+
+### `bundle`
+
+Writes the project as one file. Modules load on demand through a lazy registry, so bundling cannot move a side effect.
+
+```shell
+larvae bundle --entry src/main.luau
+```
+
+| flag | meaning |
+|---|---|
+| `--entry <PATH>` | the module the bundle starts from, beats `[bundle] entry` |
+
+Without `--entry` and without `[bundle] entry` in the config, the command errors. The output path and tree shaking are configured in [`[bundle]`](/docs/reference/configuration), and the bundle is printed by the `[process]` `generator`, so a dense bundle is one config line away.
+
+### `lsp`
+
+Sends diagnostics and formatting to an editor over stdio.
+
+```shell
+larvae lsp
+```
+
+The server runs through the same code the commands use, so the terminal and the editor cannot disagree. It follows the same exclude lists as every command, and it routes a claimed buffer to its worm. It never downloads a worm, because a keystroke cannot wait for the network; the first fetch happens in the terminal. See [editor setup](/docs/concepts/editor-setup).
 
 ### `init`
 
@@ -79,28 +147,50 @@ Writes a starter `larvae.toml` in the current directory. It refuses to run if on
 larvae init
 ```
 
-Two things it does beyond writing the file:
+The starter config holds the root short forms `input`, `output`, and `target`, a `[process]` table with the input directories it detected, `[requires]`, and `[fmt]` and `[lint]` with every option and every lint at its default, as comments. Both lists are generated from the code, so they cannot drift from it. The reason for the comments: a config is also the place where a user discovers that an option exists.
 
-- Adds the `#:schema` line automatically, which is what gives editors completion and hover docs
-- Manages `.gitignore`. If one exists it appends the missing entries, if not it asks before creating one. The entries are `.larvae/` and `dist/`
+Detection folds sibling Rojo mounts into the directory that holds them, so `src/client`, `src/server`, and `src/shared` become `input = "src"`. A package directory never becomes an input; it becomes an alias instead, unless `.luaurc` already defines one.
 
-A project with a `default.project.json` and `.luaurc` aliases needs no `larvae.toml` at all, so `init` is a convenience rather than a required first step.
+When the project already has a `stylua.toml` or a `selene.toml`, `init` writes a note pointing at that file instead of keys, because written defaults would silently override settings the project already made. It also offers to add `.larvae/` and `dist/` to `.gitignore`.
 
-### `schema`
+`init` also writes `"lint": { "*": false }` into `.luaurc`, because larvae covers all 28 of the Luau compiler's lints and with both linters on each finding arrives twice under two names. Three promises about that edit:
 
-Adds or refreshes the `#:schema` line at the top of an existing `larvae.toml`.
+- The edit is textual, it does not parse the file and write it again, so every other byte survives, comments included.
+- The command changes nothing when the file already sets `lint`, because that is a project with an opinion.
+- The command creates no `.luaurc` when the project has none.
 
-```shell
-larvae schema
+### `worm`
+
+For developing a [worm](/docs/worms/what-a-worm-is), larvae's extension format. It works with no project and nothing installed, so you can write one before wiring it into a build.
+
+| subcommand | what it does |
+|---|---|
+| `worm run <dir> <file>` | transform one file through the worm and print the result |
+| `worm run --fmt <dir> <file>` | format the file, and report when a second pass changes the output |
+| `worm run --lint <dir> <file>` | print the worm's findings at the manifest defaults |
+| `worm info <dir>` | print what the manifest declares, without running it |
+| `worm types` | write the Luau definitions for a language server |
+
+`info` reads the manifest and prints it back, which is the fastest way to check a `worm.toml` is what you meant:
+
+```text
+$ larvae worm info myworm
+luaux init.luau
+  form       Luau
+  api        1
+  requires   Larvae
+  claims     .luaux
+  run_order  before larvae's rules
+  rule       strip_debug (default false)
 ```
 
-That line is what Even Better TOML and Taplo read to give completion and hover documentation for every config key. The command is idempotent, it replaces a stale schema URL rather than adding a second line, and it errors if there is no `larvae.toml` to edit.
+`run` reports the line count on every run, not just failures, because a transform must keep the line count and that is the property most easily broken by accident and hardest to notice. `run --fmt` reports idempotence for the same reason: a formatter that changes its own output on a second pass is broken in a way no single run shows.
 
-You do not need to run it after `init`, since `init` already adds the line. Run it on a config that predates the schema, or after upgrading larvae.
+`worm types` writes `worm.d.luau` and adds it to `.vscode/settings.json` under `luau-lsp.types.definitionFiles`, so a Luau worm typechecks in the editor with nothing installed. See [writing a worm in Luau](/docs/worms/writing-in-luau).
 
 ### `self`
 
-Manages the larvae binary itself.
+Manages the larvae binary itself, and the editor support around it.
 
 | subcommand | what it does |
 |---|---|
@@ -108,6 +198,7 @@ Manages the larvae binary itself.
 | `self update` | check GitHub releases, download and swap in the newer build |
 | `self update --force` | update even when another tool manages the binary |
 | `self uninstall` | prompt, then remove `~/.larvae` |
+| `self code` | set up editor schema support for `larvae.toml` |
 
 `self install` copies the **running** binary to `~/.larvae/bin/larvae`. PATH handling then differs by platform, on purpose:
 
@@ -124,6 +215,8 @@ It honors `GITHUB_TOKEN` for the releases API, which matters on shared runners w
 
 `self uninstall` asks `Remove <dir>?` and defaults to **no**, so pressing enter cancels.
 
+`self code` gives your editor completion and hover docs for every `larvae.toml` key. Its first choice is an Even Better TOML association in the editor's user settings; when that extension is absent it writes a `#:schema` line at the top of the file, which any Taplo based editor reads. A project with worms gets the merged schema too, so the editor also completes each worm's lints, options, and rules. The full story is on [editor setup](/docs/concepts/editor-setup).
+
 ## Exit codes
 
 | code | meaning |
@@ -131,7 +224,7 @@ It honors `GITHUB_TOKEN` for the releases API, which matters on shared runners w
 | `0` | success |
 | `1` | errors were reported, or the command failed |
 
-Usage mistakes come from clap and also exit non zero. Warnings alone are not errors, but `strict = true` promotes some of them into errors and therefore into a non zero exit, see [failure classes](/docs/concepts/failure-classes).
+Usage mistakes come from clap and also exit non zero. Warnings alone are not errors: `larvae check` fails only on a `deny` level finding or an unconditional error, and `[requires] strict = true` promotes some warnings into errors and therefore into a non zero exit, see [failure classes](/docs/concepts/failure-classes). `larvae fmt --check` exits non zero when it finds a difference.
 
 ## Environment variables
 
@@ -139,7 +232,7 @@ Usage mistakes come from clap and also exit non zero. Warnings alone are not err
 |---|---|
 | `NO_COLOR` | disables all color, output goes plain |
 | `COLUMNS` | overrides detected terminal width for the help layout |
-| `GITHUB_TOKEN` | used by `self update` for the releases API |
+| `GITHUB_TOKEN` | used by `self update` and by private worm release downloads |
 
 Color is also disabled automatically when output is piped, so `larvae check > log.txt` is plain text without any flag. You only need `NO_COLOR` for a terminal that larvae would otherwise colorize.
 
@@ -158,4 +251,7 @@ Serving is rojo's job. See [Rojo integration](/docs/concepts/rojo-integration) f
 
 - [configuration](/docs/reference/configuration) for every `larvae.toml` key the commands above read
 - [rules](/docs/reference/rules) for the transforms `process` and `check` apply
+- [formatting](/docs/reference/formatting) for every `[fmt]` option
+- [linting](/docs/reference/linting) for every lint, its level, and flag comments
+- [what a worm is](/docs/worms/what-a-worm-is) for what `larvae worm` develops
 - [migrating from darklua](/docs/project/migrating-from-darklua) if you are coming from `.darklua.json`

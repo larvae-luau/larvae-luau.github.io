@@ -1,38 +1,100 @@
 ---
 title: Configuration
-description: Every larvae.toml key, its default, and what it does
+description: Every larvae.toml key, the other files larvae reads, and how they merge
 category: Reference
 order: 2
-updated: 2026-07-30
+updated: 2026-08-16
 ---
 
-Configuration lives in `larvae.toml` next to your Rojo project. Two facts come first, because they shape everything else on this page.
+Configuration lives in `larvae.toml` next to your Rojo project. The file is optional: `larvae fmt` and `larvae lint` work with no `larvae.toml` at all, and a project with a `default.project.json` and `.luaurc` aliases can run `larvae process` on defaults alone. Every table below exists to override a default, never to satisfy one.
 
-## Every key is optional
+## The files larvae reads
 
-There is no required key and no required table. A project with a `default.project.json` and `.luaurc` aliases needs no `larvae.toml` at all: `larvae process` discovers `.luau` and `.lua` files under `src`, honors the `.luaurc` aliases it finds, and rewrites to native string requires. Every table below exists to override a default, never to satisfy one.
+| file | role |
+|---|---|
+| `larvae.toml` | the project's config, optional |
+| `stylua.toml` / `.stylua.toml` | read as it is, so a project that already formats with stylua keeps its settings |
+| `selene.toml` | read the same way for lint settings |
+| `.luaurc` | aliases, merged with `[aliases]` per key |
+| `default.project.json` | Rojo mounts, which is why `[requires] mounts` is rarely necessary |
 
-## Unknown keys are hard errors
+## The rule about unknown keys
 
-larvae refuses to load a config it does not fully understand. An unknown key fails at load time rather than being skipped. Keys for planned features fail too, and the error names the milestone they land in:
+The behavior looks inconsistent until the reason is clear:
 
-```text
-[bundle] is not implemented yet (lands in M3)
-```
+- **In `larvae.toml`, an unknown key is an error.** larvae owns this file, so an unknown key is a typo. If larvae ignored a typo silently, you would think a setting is on when it is not.
+- **In `stylua.toml` and `selene.toml`, larvae ignores an unknown key.** These files belong to other tools, and those tools add options on their own schedule. If larvae rejected the whole file because of one unknown line, the project would lose every setting because of a key that was never larvae's.
 
-Nothing is silently ignored. This is deliberate. A typo in a key name, or a config copied from a future version of the docs, should tell you it is not doing anything rather than quietly producing a build that does not match what you wrote.
+You can also write both tools' settings directly in `larvae.toml` and delete the extra files:
+
+- `[fmt]` accepts every stylua option under its own name. It also accepts stylua's `syntax` key and ignores it, because larvae only formats Luau.
+- `[lint]` accepts selene's `config` as a second name for `options`, accepts selene's `exclude`, and accepts selene's `std` spellings (`lua51` through `lua54`, `luajit`, and chains such as `roblox+testez`, where the first name decides).
+
+Values in `larvae.toml` use larvae's spelling, which is kebab case: `quote_style = "auto-prefer-double"`, not stylua's `"AutoPreferDouble"`. larvae converts the PascalCase form only when it reads that form from `stylua.toml` itself. When a value is unknown, the error message lists the valid values.
+
+When a tool's file and `larvae.toml` set the same key, `larvae.toml` wins, because it is the more specific file. For lists (`rules`, `globals`, `exclude`), larvae adds its entries to selene's entries and does not replace them.
+
+## Naming
+
+One rule, stated once: keys are snake case, values are kebab case, and each table is named after the command it configures, so `[fmt]` configures `larvae fmt`. Keys belong to larvae, and values read as prose.
 
 ## Editor support
 
-The canonical annotated config is `larvae.example.toml`, and `larvae.schema.json` is the JSON Schema behind editor completion. Both ship with the tool.
+`larvae self code` sets up completion and hover docs for every key, either through an Even Better TOML association or a `#:schema` line that any Taplo based editor reads. A project with worms gets each worm's declarations merged into the schema too. See [editor setup](/docs/concepts/editor-setup).
 
-The `#:schema` line at the top of `larvae.toml` points editors at that schema, which is what gives you completion and hover docs in Even Better TOML or Taplo. `larvae init` writes the line for you, and `larvae schema` adds or refreshes it on an existing file.
+## The top level
 
-## Tables
+### `extends`
 
-### `[aliases]`
+`extends` names a base config that this file layers over, by path relative to this file:
 
-The headline feature, and entirely optional. Entries here merge over `.luaurc` per key, so you can keep most aliases in `.luaurc` and override or extend individual ones here.
+```toml
+extends = "./shared/larvae.base.toml"
+```
+
+The base loads first, and this file wins key by key with the merge rules of `[profile]`: tables merge per key, arrays and scalars replace whole. A base can extend another base, and a loop is an error. The `[profile]` tables of a base merge too, so one base can hold the profiles of a whole workspace; `--profile` applies after the chain resolves. A monorepo keeps its shared lines in one base this way, and an edit to the base reaches every package.
+
+Only the path form works; a registry form is refused with a message. Globs and paths inside a base stay relative to the project that loads it, not to the base file.
+
+### `input`, `output`, `target`
+
+Short forms of `[process] input`, `[process] output`, and `[requires] target`, so the first line of a config needs no table header:
+
+```toml
+input = "src"
+output = "dist"
+target = "roblox-string"
+```
+
+Each pair is one key with two spellings. A config that writes both spellings of one key gets an error, larvae never merges them. TOML reads a root key only before the first table header, so the short forms come first in the file. `larvae init` writes them.
+
+### `exclude` and `include`
+
+Lists of globs relative to the project root. The root `exclude` removes a file from every command: the process walk, the formatter, the linter, and the editor. The root `include` cancels the root `exclude`, and only that.
+
+Each area can override the pair for itself. `[fmt] include` and `[lint] include` bring a file back for that one command, over every exclude. `[fmt] exclude` and `[lint] exclude` remove a file for that one command, over the root `include`, because the local list is more specific than the global one. selene's own `exclude` in `selene.toml` is read too.
+
+Four layers decide one file, and the most specific layer wins:
+
+1. **The include of the area.** A match is read, over every exclude.
+2. **The exclude of the area.** A match is skipped for that area alone.
+3. **The root `include`.** A match cancels the root `exclude`, and only that.
+4. **The root `exclude`.** A match is skipped for every command.
+
+So a project writes `exclude = ["gen"]` once at the root, and the linter alone reads one file back with `[lint] include = ["gen/keep.luau"]`. The formatter still skips the whole tree.
+
+Two behaviors are decisions, not accidents:
+
+1. **A match on any parent directory counts.** `exclude = ["Packages"]` and `exclude = ["Packages/**"]` do the same thing, so you do not have to remember which spelling the tool accepts.
+2. **Excludes apply to files that a walk finds, not to files that you name.** `larvae fmt` with no arguments, or with a directory argument, skips excluded files. `larvae fmt Packages/thing.luau` formats the file, because a user who names a file means that file. A tool that silently does nothing to a named file is worse than a tool that touches an excluded file.
+
+The editor follows the same lists. larvae clears the diagnostics of an excluded file rather than keeping the ones that were there before you added the exclude.
+
+The root lists also apply to `larvae process`: a file the root `exclude` matches is not transformed and not copied. `[process] exclude` is the area exclude of that walk and follows the same order, so it wins over the root `include`. `[process] include` is not part of the order above; it is a filter with a different job, described under `[process]`.
+
+## `[aliases]`
+
+Entries here merge over `.luaurc` per key, so you can keep most aliases in `.luaurc` and override or extend individual ones here.
 
 ```toml
 [aliases]
@@ -52,27 +114,28 @@ Both exist because `.luaurc` can only express filesystem paths. A DataModel targ
 Rules for alias names:
 
 - Case insensitive, so `pkg` and `Pkg` are the same alias
-- Allowed characters are letters, digits, dot, underscore, and dash
 - `@self` and `@game` are reserved and cannot be redefined
-
-Aliases may point at other aliases. Chains resolve, and cycles are detected and reported as errors rather than hanging or resolving to something arbitrary.
 
 Keeping aliases in `.luaurc` is also what gives luau-lsp go to definition on `require("@pkg/thing")`, since `.luaurc` is the file the language server reads.
 
-### `[process]`
+## `[process]`
 
 Controls what is read, what is written, and how it is printed.
 
 | key | default | meaning |
 |---|---|---|
-| `input` | `"src"` | root scanned for source files |
-| `output` | `"dist"` | mirror of input with transforms applied |
-| `include` | `["**/*.luau", "**/*.lua"]` | globs relative to input |
-| `exclude` | `[]` | globs skipped entirely, not even copied |
-| `generator` | `"retain-lines"` | output printer, `dense` and `readable` are **planned (M2)** |
-| `quotes` | `"preserve"` | `preserve`, `double`, or `single` |
-| `cache` | `true` | incremental builds |
+| `input` | `"src"` | one directory or a list |
+| `output` | `"dist"` | where the output tree goes |
+| `include` | `["**/*.luau", "**/*.lua"]` | globs relative to the project root, picks which found files are transformed; the rest are copied |
+| `exclude` | `[]` | globs relative to the project root, skipped fully: not transformed and not copied. A directory name is enough |
+| `generator` | `"retain-lines"` | how the output prints, see below |
+| `quotes` | `"preserve"` | quote style for require strings in the output |
+| `strip_flags` | `true` | removes flag comments from the output, see below |
+| `cache` | `true` | incremental builds by content hash |
 | `cache_dir` | `".larvae"` | cache and derived project location |
+| `run_order` | `1` | the position of larvae's own rules relative to worms |
+
+When there is one input root, larvae flattens it into the output. When there are several roots, each root keeps its own directory so two roots cannot collide.
 
 ```toml
 [process]
@@ -81,47 +144,53 @@ output = "dist"
 quotes = "double"
 ```
 
-Only `retain-lines` is available today. Setting `generator = "dense"` or `generator = "readable"` is an error until M2.
+### `generator`
 
-#### `quotes`
+| value | output |
+|---|---|
+| `retain-lines` | the output keeps the lines of the input, so stack traces map to the source |
+| `dense` | the minifier, tuned by `[minify]` |
+| `readable` | the formatter, in the `[fmt]` style of the project |
 
-`quotes` requotes **every** require string in the output. That includes rewritten requires, untouched pass throughs, and the strings inside generated Instance expressions. `preserve` keeps whatever the source used, which is the default.
+The generator also prints the `larvae bundle` output.
 
-```toml
-[process]
-quotes = "double"
-```
+### `strip_flags`
 
-#### Copy through for non matching files
+A flag comment is a comment addressed to larvae, such as `-- larvae: allow(unused_variable)`. Flags are build time instructions, so shipped flags are shipped build instructions, and `process` removes them by default. Ordinary comments are untouched and line numbers stay the same, so `retain-lines` output still matches the source. Set `strip_flags = false` when people read the output, for example a library published as source.
 
-Files under `input` that do not match `include` are **copied through unchanged**. So json, txt, and model files land in `output` alongside the transformed Luau, and the derived Rojo project stays self consistent. These files show up in the `N copied` count on the `process` summary.
+When `[rules] remove_comments` is on, that rule controls every comment in the file and `strip_flags` does nothing, so an `except` pattern that keeps flags keeps them. Flag comments are documented in full on [linting](/docs/reference/linting).
 
-`exclude` is the stronger option: an excluded path is skipped entirely and not even copied.
+### Copy through for non matching files
 
-### `[requires]`
+Files the walk keeps that do not match `include` are **copied through unchanged**. So json, txt, and model files land in `output` alongside the transformed Luau, and the derived Rojo project stays self consistent. These files show up in the `N copied` count on the `process` summary. `exclude` is the stronger option: an excluded path is skipped entirely and not even copied.
 
-Controls what the rewritten requires look like.
+### `run_order`
 
-| key | default | meaning |
-|---|---|---|
-| `target` | `"roblox-string"` | `roblox-string`, `path`, or `roblox-instance` |
-| `indexing_style` | `"find_first_child"` | instance target only |
-| `mounts` | derived from the Rojo project | filesystem to DataModel map |
-| `strict` | `false` | upgrade warnings to errors |
-| `sourcemap` | none | **planned (M2)** |
-| `overrides` | none | **planned (M2)**, per glob target |
+You rarely need to touch this. It exists so a worm saying `"before"` or `"after"` has something to be relative to, see [using worms](/docs/worms/using-worms).
 
-The three targets each get a full treatment on [require targets](/docs/concepts/require-targets), including the caveat that native string requires have no wait semantics.
+## `[requires]`
 
-`mounts` is rarely written by hand, because parsing your Rojo project gives larvae the filesystem to DataModel map for free, see [Rojo integration](/docs/concepts/rojo-integration).
+Controls what the rewritten requires look like. `target` is the most important key, and the root key `target` is its short form.
+
+| key | meaning |
+|---|---|
+| `target` | `roblox-string` (native `@game/...` strings, the default), `path` (relative filesystem paths, for Lune), or `roblox-instance` (Instance expressions) |
+| `sourcemap` | a sourcemap file to read paths from |
+| `mounts` | filesystem to DataModel map, rarely written by hand |
+| `strict` | upgrade warnings to errors |
+| `instance_input` | how instance style requires in the input are read |
+| `overrides` | per glob target |
+| `indexing_style` | `roblox-instance` only, see below |
+
+The three targets each get a full treatment on [require targets](/docs/concepts/require-targets).
+
+`mounts` is rarely necessary, because larvae reads `default.project.json` and gets the filesystem to DataModel map for free, see [Rojo integration](/docs/concepts/rojo-integration).
 
 `strict = true` promotes the warning class into errors, see [failure classes](/docs/concepts/failure-classes) for exactly which diagnostics move.
 
-`sourcemap` and `overrides` are not usable yet. Both are hard errors today and land in M2.
+### `indexing_style`
 
-#### `indexing_style`
-
-Applies only when `target = "roblox-instance"`. All three values are shipped.
+Applies only when `target = "roblox-instance"`.
 
 | value | emits |
 |---|---|
@@ -135,9 +204,7 @@ target = "roblox-instance"
 indexing_style = "wait_for_child"
 ```
 
-Kebab spellings work too, so `find-first-child`, `wait-for-child`, and `property-instance` are accepted as aliases for the three values above. Note the kebab spelling of `property` is `property-instance`.
-
-### `[rojo]`
+## `[rojo]`
 
 Points larvae at your project file and says where the derived one goes.
 
@@ -146,16 +213,23 @@ Points larvae at your project file and says where the derived one goes.
 | `project` | `"default.project.json"` | source of truth project file |
 | `build_project` | `<cache_dir>/build.project.json` | where the derived project is written |
 
-```toml
-[rojo]
-project = "default.project.json"
-```
-
 `project` is the key to set when a repository holds several project files, since larvae needs to know which one is the source of truth. The derived project is what you hand to rojo, larvae never runs rojo itself. See [Rojo integration](/docs/concepts/rojo-integration).
 
-### `[rules]`
+## `[defines]`
 
-Transforms applied to each output file. Thirty four rules ship today, 27 of them under darklua's own names, and every darklua rule name is accepted so that a `.darklua.json` rule list ports over unchanged. Two names are still **planned (M2)**.
+Compile time constants. larvae replaces the name with a literal everywhere the name appears.
+
+```toml
+[defines]
+DEBUG = false
+VERSION = "1.4.0"
+```
+
+If you are porting a darklua config, `inject_global_value` maps onto this table.
+
+## `[rules]`
+
+Transforms applied to each output file. There are 36 rules, and every rule is off until the config turns it on. A rule takes `true`, or a table with its options.
 
 ```toml
 [rules]
@@ -164,26 +238,107 @@ remove_comments = { except = ["^--!"] }
 add_luau_directive = "strict"
 ```
 
-Full documentation for each rule, its options, and its before and after Luau lives on [rules](/docs/reference/rules).
+An unknown rule name is an error, larvae never ignores a name. Three darklua names are deliberately not larvae rules, and the error points at the larvae way to do the same thing: `convert_require` (the `[requires]` table), `inject_global_value` (`[defines]`), and `remove_spaces` (`generator = "dense"`).
 
-## Planned tables, all hard errors today
+Every rule, its options, and its before and after Luau lives on [rules](/docs/reference/rules).
 
-None of these are usable. Each errors at load time naming its milestone.
+A worm's rules do **not** live here. They live under `[worms.<name>] rules`, so a worm cannot shadow a builtin rule. See [using worms](/docs/worms/using-worms).
 
-| table | status |
+## `[fmt]`
+
+Options for `larvae fmt`. The table accepts every stylua option under larvae's spelling, options beyond stylua such as `magic_trailing_comma` and `require_binding`, plus `exclude` and `include` as described under [the top level](#exclude-and-include). stylua's `syntax` key is accepted and ignored, because larvae only formats Luau.
+
+A worm adds format options under its own key: `[fmt.<worm>]` is a table of the options that worm declares. An unknown key at the top level of `[fmt]` is refused with a message, because only a worm can own a name that larvae does not.
+
+Every option and its default lives on [formatting](/docs/reference/formatting).
+
+## `[lint]`
+
+Options for `larvae lint`.
+
+| key | meaning |
 |---|---|
-| `[defines]` | **planned (M2)** |
-| `[profile.<name>]` | **planned (M2)** |
-| `[[extensions]]` | **planned (M3)** |
-| `[bundle]` | **planned (M3)** |
-| `[check]` | **planned (M3)** |
-| `[minify]` | **planned (M4)** |
+| `std` | the standard library, `"roblox"` by default; selene's spellings are accepted |
+| `globals` | extra globals |
+| `exclude`, `include` | per area lists, see [the top level](#exclude-and-include) |
+| `[lint.rules]` | lint levels: `allow`, `warn`, or `deny` |
+| `[lint.options]` | per lint options, also named `[lint.config]` under selene's name |
 
-If you are porting a darklua config, `inject_global_value` maps onto `[defines]`, which means that part of the port has to wait for M2. See [migrating from darklua](/docs/project/migrating-from-darklua).
+A worm's lints live under `[lint.rules.<worm>]`, and each name reads `<worm>.<name>` in a message, in `--explain`, and in an `allow` comment.
+
+`[lint]` holds per file questions only: a lint reads one file in isolation, which is why `larvae lint` works on stdin, in the editor, and with no config. A question about the whole project, such as a require cycle, lives in `[check]` below and runs under `larvae check`. The split follows the tools it mirrors: selene lints, `cargo check` checks. The two tables share one level vocabulary.
+
+Every lint, its default level, its options, and the flag comment rules live on [linting](/docs/reference/linting).
+
+## `[check]`
+
+The CI gate. `larvae check` runs the analyses that need the whole require graph, and this table decides what fails the run. Each key is a level, the same `allow` / `warn` / `deny` that `[lint.rules]` uses, and only a `deny` fails CI. A cycle spans many files, so no `allow` comment can carry the decision; the level in this table is the only switch.
+
+| key | default | meaning |
+|---|---|---|
+| `cycles` | `"warn"` | modules that require each other, directly or through a chain. The report names the whole cycle. A cycle is legal at runtime and common in Roblox code, so the default does not fail the build |
+| `unused_modules` | `"allow"` | modules that nothing requires. Off by default, because a module reached only through a dynamic require, or from outside the project, would be a false positive. A Script or a LocalScript is never reported, because Roblox runs those |
+| `early_require` | `"warn"` | client scripts that require through an indexing style that does not wait for replication. Only meaningful for the `roblox-instance` target. Reported once per file, because the fix is one config line |
+| `entries` | `[]` | extra entry points, as paths relative to the project root. A module in this list counts as one the project runs, so it is never reported as unused |
+
+`larvae check` also reports unresolvable requires and realm violations unconditionally. Those are wrong rather than untidy, so no level lowers them.
+
+## `[bundle]`
+
+`larvae bundle` writes the project as one file. Modules load on demand through a lazy registry, so bundling cannot move a side effect.
+
+| key | default | meaning |
+|---|---|---|
+| `entry` | none | the module the bundle starts from, relative to the project root. `--entry` on the command line beats this key; without either, the command errors |
+| `output` | `"bundle.luau"` | where the single file goes, relative to the project root |
+| `tree_shake` | `true` | drop the modules that the entry cannot reach. Reachability comes from the require graph, so a module reached only through a dynamic require is dropped; such a require is reported, and a project that needs those modules turns this off |
+
+## `[minify]`
+
+Tuning for `generator = "dense"`, which is the minifier. The dense generator re-emits the tokens of the finished output with the least whitespace that lexes the same. The token stream cannot change, so the program cannot change meaning; comments are trivia and do not survive. Under another generator the table is inert configuration.
+
+| key | default | meaning |
+|---|---|---|
+| `column_span` | `120` | the column where the emitter breaks the line. A minified file on one line makes every reported line number useless, so the emitter breaks near a column instead. A token wider than the span, such as a long string, stays whole |
+| `rename_variables` | `false` | give every local a short name while minifying. The same rule as `[rules] rename_variables`, turned on for dense builds only, so one profile can hold the whole minify story |
+
+A typical release profile:
+
+```toml
+[profile.ship.process]
+generator = "dense"
+
+[profile.ship.minify]
+rename_variables = true
+```
+
+## `[worms]`
+
+Extensions, one table per worm. The key is the worm's name and must match `name` in the worm's own `worm.toml`, because the key also namespaces the worm's rules and its settings.
+
+```toml
+[worms]
+xml = "luau-xml/worm@0.1.0"          # short form: owner/repo@version
+vide = { cargo = "vide-worm@0.2.0" } # a crate on crates.io, built on this machine
+
+[worms.mine]
+path = "build/myworm"                # a directory, for development
+```
+
+A worm's settings live under `[worms.<name>.config]`, its rules under `[worms.<name>] rules`, its lint levels under `[lint.rules.<name>]`, and its format options under `[fmt.<name>]`. An older larvae used a top level `[config.<name>]` table; that spelling now causes an error that names the new location.
+
+Every key, the three install channels, and inheritance are documented on [using worms](/docs/worms/using-worms).
+
+## `[profile.<name>]`
+
+This table holds the same keys as the root. larvae merges it over the base when you pass `--profile <name>` to `process` or `check`. Tables merge per key. Arrays and scalars are replaced whole, because if larvae appended to lists instead, a profile could not state that it does not append.
 
 ## Related pages
 
 - [CLI reference](/docs/reference/cli) for the commands that read this file
 - [rules](/docs/reference/rules) for `[rules]` in full
-- [require targets](/docs/concepts/require-targets) for `[requires].target`
+- [formatting](/docs/reference/formatting) for `[fmt]` in full
+- [linting](/docs/reference/linting) for `[lint]` and flag comments in full
+- [using worms](/docs/worms/using-worms) for `[worms]` in full
+- [require targets](/docs/concepts/require-targets) for `[requires] target`
 - [incremental builds](/docs/concepts/incremental-builds) for `cache` and `cache_dir`
