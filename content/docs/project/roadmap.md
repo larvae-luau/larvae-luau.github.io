@@ -1,123 +1,46 @@
 ---
 title: Roadmap
-description: What is coming in M2, M3, and M4, and the gaps we know about
+description: What is still ahead, published benchmarks, a 1.0 freeze, and four worm gaps
 category: Project
 order: 3
-updated: 2026-08-03
+updated: 2026-08-16
 ---
 
 Where larvae is going, so you can tell whether to adopt now or wait.
 
-> **Nothing on this page is usable yet.** Every item below is unimplemented. Config keys for planned features are hard errors at load time, and the error names the milestone the feature lands in, ex: `[bundle] is not implemented yet (lands in M3)`. Nothing is silently ignored, so a config written against this page will fail loudly rather than build something wrong.
+The old milestones on this page have shipped. larvae now formats (`larvae fmt`), lints (`larvae lint`), bundles (`larvae bundle` and `[bundle]`), minifies (`generator = "dense"` and `[minify]`), serves an editor (`larvae lsp`), gates CI through `[check]`, reads and emits instance requires, overlays config per environment with `[profile.<name>]`, and loads [worms](/docs/worms/what-a-worm-is). For what works today, see [configuration](/docs/reference/configuration), [rules](/docs/reference/rules), and the [CLI reference](/docs/reference/cli).
 
-For what does work today, see [configuration](/docs/reference/configuration) and [rules](/docs/reference/rules).
+What remains is short, and this page lists all of it.
 
-## Next up (M2)
+## Published benchmarks and the 1.0 freeze
 
-The biggest release. It closes the darklua parity gap and unblocks most of the rule surface.
+The numbers on the [performance](/docs/project/performance) page are reproducible with `scripts/bench.sh`, but they were measured on a development machine. Published benchmarks on fixed hardware are planned, so the quoted figures stop depending on whose laptop ran them.
 
-### Instance requires as input
+Alongside them, a 1.0 release freezes semantics: what each rule does to a file stops changing except by a new option. Until then a minor release may tighten a rule's guards, which can change output bytes.
 
-The darklua migration path. Converts `require(script.Parent.Foo)` into string requires. darklua has had this open as a request since 2024.
+## Worms, the parts that are not built
 
-This is the single item that decides adoption for existing darklua codebases. See [migrating from darklua](/docs/project/migrating-from-darklua).
+[Worms](/docs/worms/what-a-worm-is) ship today, in their Luau, wasm, and native forms. Four things about them do not.
 
-### Scope tracking
+### The raw transform role
 
-A binding table that knows which `x` refers to which declaration. It unblocks the last two darklua rule names, `rename_variables` and `remove_unused_variable`, which cannot ship safely without it. It also lets `const_requires` and `freeze_module` drop the conservative guards they carry today. See [rules](/docs/reference/rules).
+Text in and edits out, with none of the guarantees the rule role carries. Designed and not built. A worm today is a front-end, a set of rules, or both.
 
-### `[defines]`
+### Requires emitted by a late rule
 
-Compile time constants that constant fold, so `if __DEV__ then ... end` disappears entirely in release builds. This is where darklua's `inject_global_value` goes.
+A rule emitting a require that was not in the source is only resolved if that worm runs `"before"`. larvae does not schedule an extra resolution pass after a worm that runs late, so a rule generating requires should ask for `"before"` today. See [using worms](/docs/worms/using-worms).
 
-### Build profiles
+### Tier two edits
 
-`--profile release` overlays config per environment through `[profile.<name>]` tables. One source tree building for both Roblox and Lune.
+Where a worm synthesizes structure rather than splicing bytes. Not built, so a worm today edits what is already there.
 
-### `[requires.overrides]`
+### An `api` compatibility window
 
-Per glob targets, so one project can mix native string requires with instance requires for its early replication code. Useful because native string requires have no wait semantics, see [require targets](/docs/concepts/require-targets).
-
-### Sourcemap support
-
-Sharper DataModel mapping when the project file rearranges the tree.
-
-### Dense and readable generators
-
-Two more output printers alongside today's `retain-lines`. `dense` is where darklua's `remove_spaces` goes.
-
-### Wally and npmluau walkthroughs
-
-Plus multiple input roots.
-
-### Formatting
-
-`larvae fmt`, one opinionated formatter for Luau so a project needs no separate tool for it. Not released yet, and nothing in the config accepts formatter keys today.
-
-### Linting
-
-`larvae lint`, diagnostics over the same parse the transforms already do, so linting costs almost nothing once a file is in memory. Also not released yet.
-
-Together with the transforms that ship today, these are what make larvae a toolchain rather than a preprocessor. Neither is usable at the moment, so treat any mention of them as a plan rather than a feature.
-
-## After that (M3)
-
-### Bundling
-
-Everything into one file, with deterministic and documented module init order, including cycles. darklua explicitly does not guarantee require side effect ordering. Configured through `[bundle]`.
-
-### Cross module dead code elimination
-
-Using the require graph. Possible because larvae already resolves every require target.
-
-### Luau extensions
-
-Write your own transforms in Luau and they run inside the same traversal as builtin rules. No forking required. Configured through `[[extensions]]`.
-
-### `check` as a full CI gate
-
-Require cycles, unused modules, early require warnings, and the realm diagnostics as first class checks. Configured through `[check]`.
-
-## Later (M4)
-
-- Minifier with a trace map, so crash reports stay readable. Configured through `[minify]`
-- Published benchmarks and a 1.0 semantics freeze
-
-## Rules being considered beyond darklua parity
-
-Not scheduled, listed because they show the direction:
-
-- `remove_calls`, one rule covering print, warn, assert and profiling
-- `use_get_service`, `game.ReplicatedStorage` becomes `game:GetService("ReplicatedStorage")`
-- `dedupe_requires`
-- `inject_module_path`
-- `freeze_module`
-
-The pattern is that all of these lean on things larvae knows and darklua does not: resolved require targets and the DataModel map. They are not rules darklua could add.
-
-## Known gaps
-
-Things that are true today and worth knowing before you hit them.
-
-### No differential testing against the official parser
-
-larvae's parser has not been differentially tested against the official Luau C++ parser yet. New Luau syntax could surface as a false syntax error in `check`.
-
-`process` is unaffected, it does not parse. So a build keeps working even if `check` reports a syntax error it should not.
-
-### Generic type arguments followed by `=`
-
-A generic type argument list immediately followed by `=` needs a space:
-
-```luau
-type X<T>= number   -- error, >= lexes as one operator
-type X<T> = number  -- fine
-```
-
-`>=` lexes as a single operator, so the closing angle bracket is consumed. The error message says so.
+`api` in `worm.toml` is exact equality today, so a worm built against `api = 1` is rejected by a host speaking `api = 2`. Whether a window is accepted instead is undecided.
 
 ## Related
 
-- [performance](/docs/project/performance), where the M4 published benchmarks fit
-- [migrating from darklua](/docs/project/migrating-from-darklua), what the M2 Instance require work unblocks
+- [what a worm is](/docs/worms/what-a-worm-is), the extension system the four gaps live in
+- [performance](/docs/project/performance), the numbers the published benchmarks will pin down
+- [migrating from darklua](/docs/project/migrating-from-darklua), the migration path, no longer blocked on anything here
 - [incremental builds](/docs/concepts/incremental-builds), how the cache works today

@@ -3,7 +3,7 @@ title: Installation
 description: Install larvae with lpm, lpx, cargo, or a prebuilt binary
 category: Getting started
 order: 1
-updated: 2026-07-30
+updated: 2026-08-16
 ---
 
 larvae ships as a single binary with no runtime dependencies. Pick one of the routes below, they all end with a `larvae` you can run.
@@ -74,9 +74,9 @@ That asymmetry is deliberate. Editing someone's shell profile without asking is 
 
 Running `self install` twice is safe. It also warns when another tool already manages the larvae binary, because a second copy can shadow the first on PATH and leave you running a version you did not expect.
 
-## The three self subcommands
+## The four self subcommands
 
-`self install`, `self update` and `self uninstall` are separate alternatives, not steps to run in order. You pick the one that matches what you want to do right now.
+`self install`, `self update`, `self uninstall` and `self code` are separate alternatives, not steps to run in order. You pick the one that matches what you want to do right now.
 
 ### self update
 
@@ -103,6 +103,16 @@ larvae self uninstall
 ```
 
 It prompts with `Remove <dir>?` first, and the default answer is **no**, so pressing enter cancels.
+
+### self code
+
+Sets up your editor for `larvae.toml`: completion, hover docs, and the valid values for every key.
+
+```shell
+larvae self code
+```
+
+It is a one time step per machine, not part of installing the binary, which is why it is its own subcommand. What it writes and why is covered in [editor setup](/docs/concepts/editor-setup).
 
 ## Verify the install
 

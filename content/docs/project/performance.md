@@ -3,7 +3,7 @@ title: Performance
 description: Matched comparisons against darklua, the incremental columns, and the four reasons behind them
 category: Project
 order: 1
-updated: 2026-07-30
+updated: 2026-08-16
 ---
 
 Running the same 10 rules over the same tree, both tools cold, larvae is **14x faster** than darklua. With rules off on darklua's side it is 17x to 75x, but the matched number is the one worth quoting, and it is still measured while larvae does require rewriting that darklua is not doing at all.
@@ -16,7 +16,7 @@ Three workloads are timed, because a single number would hide what is being comp
 
 | workload | what runs |
 |---|---|
-| same rules | both tools run 10 matching rules with `retain_lines` |
+| same rules | both tools run 10 matching rules with `retain-lines` |
 | parse only | darklua runs no rules, larvae still rewrites every require |
 | darklua default | darklua's default stack plus its dense generator |
 
@@ -36,7 +36,7 @@ On every row larvae is also resolving and rewriting requires, which darklua is n
 | 1 file, 3.5 MB | same rules | 140 ms | 1450 ms | 10.3x |
 | 1 file, 3.5 MB | darklua default | n/a | 1605 ms | - |
 
-**No speedup is claimed on the darklua default rows.** larvae has neither that rule set nor a dense generator yet, so there is nothing to compare against. Those figures are there to show what darklua costs in the configuration most of its users actually run.
+**No speedup is claimed on the darklua default rows.** darklua's default stack is not mirrored rule for rule on larvae's side, so there is no matched workload to time against it. larvae now ships its own minifier, the `dense` generator tuned by `[minify]`, but these tables predate it, so a matched dense comparison waits for the published benchmark run. Those figures are there to show what darklua costs in the configuration most of its users actually run.
 
 ### The large file is the narrowest win
 
@@ -73,8 +73,10 @@ Both stripped:
 
 | tool | size |
 |---|---|
-| larvae | 4,777 KB |
+| larvae | 7,500 KB |
 | darklua | 19,162 KB |
+
+larvae's own machinery is 4,777 KB of that. The rest is [worms](/docs/worms/what-a-worm-is): roughly 1 MB of wasm interpreter and 1.7 MB of embedded Luau VM, shipped in the binary whether or not a project loads one. That is the price of a worm being a single artifact that runs everywhere instead of a per platform build matrix.
 
 ## Why it is faster
 
@@ -88,7 +90,7 @@ Files are processed in parallel with rayon. darklua is single threaded and has b
 
 Rewrites are byte range splices into the original source. Untouched bytes are never re-printed. A file with two requires and ten thousand lines of untouched code costs about as much as the two requires.
 
-This is also why the `retain_lines` generator is the default: output line numbers match input line numbers because the untouched bytes are literally the same bytes.
+This is also why the `retain-lines` generator is the default: output line numbers match input line numbers because the untouched bytes are literally the same bytes.
 
 ### An incremental cache
 
@@ -108,10 +110,11 @@ The benchmark script lives at `scripts/bench.sh`. It generates the synthetic wor
 
 Numbers on your machine will differ, in particular the parallel columns scale with core count. The shape holds: the parse and print baseline is the floor darklua cannot go below, and larvae spends most of its time not parsing.
 
-Published benchmarks on fixed hardware are **planned (M4)**, alongside the 1.0 semantics freeze. See the [roadmap](/docs/project/roadmap).
+Published benchmarks on fixed hardware are **planned**, alongside the 1.0 semantics freeze. See the [roadmap](/docs/project/roadmap).
 
 ## Related
 
 - [incremental builds](/docs/concepts/incremental-builds), what the cache keys on and when it rebuilds everything
+- [what a worm costs](/docs/worms/what-a-worm-costs), the per node numbers for extensions
 - [CLI reference](/docs/reference/cli), the difference between `process` and `check`
 - [configuration](/docs/reference/configuration), `cache` and `generator` keys
