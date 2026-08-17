@@ -37,6 +37,7 @@ quote_style = "auto-prefer-double"
 | [`block_newline_gaps`](#block-newline-gaps) | `"never"` | `preserve` keeps a blank line just inside a block. |
 | [`require_binding`](#require-binding) | `"preserve"` | Which keyword binds a required module. |
 | [`semicolons`](#semicolons) | `"never"` | Whether a statement ends with one. |
+| [`if_expression`](#if-expression) | `{ expand = "never", ... }` | How an `if` expression lays out. |
 | [`final_newline`](#final-newline) | `true` | Whether the file ends with a newline. |
 
 ## stylua parity
@@ -102,7 +103,41 @@ if ready then start() end
 
 ### `sort_requires`
 
-Default `{ enabled = false, grouping = "flat" }`. Sorts top level requires when enabled.
+Default `{ enabled = false, grouping = "flat" }`. Sorts the run of requires at the top of a file. stylua has the `enabled` half of this option; `grouping` is larvae's addition.
+
+```toml
+[fmt]
+sort_requires = { enabled = true, grouping = "by-kind" }
+```
+
+#### `sort_requires.enabled`
+
+Default `false`. Off, nothing about the requires moves. On, the run of top level requires is sorted; the rest of the file is untouched.
+
+#### `sort_requires.grouping`
+
+Default `"flat"`. How the sorted requires are laid out:
+
+- `"flat"` writes one sorted run, which is what stylua does.
+- `"by-kind"` groups by what the require points at: aliases first, then absolute paths, then relative ones, with a blank line between each group.
+
+```luau
+-- grouping = "flat", one sorted run
+local Config = require("./config")
+local Signal = require("@pkg/signal")
+local Storage = require("@game/ReplicatedStorage/storage")
+```
+
+```luau
+-- grouping = "by-kind": aliases, then absolute, then relative
+local Signal = require("@pkg/signal")
+
+local Storage = require("@game/ReplicatedStorage/storage")
+
+local Config = require("./config")
+```
+
+A worm can hold this option at its default for the files it claims with `fmt_except = ["sort_requires"]`; see [using worms](/docs/worms/using-worms).
 
 ## Options beyond stylua
 
@@ -190,21 +225,77 @@ do_setup();
 (handlers[name])()
 ```
 
+### `if_expression`
+
+Lays out Luau's `if` expression. stylua has no option for it, so a long one runs off to the right. Five keys, and the default writes what larvae always wrote:
+
+| Key | Default | Selects |
+|---|---|---|
+| `expand` | `"never"` | `"never"`, `"always"`, or `"when-large"` |
+| `width` | `60` | the boundary that `when-large` measures against |
+| `style` | `"block"` | `"block"` or `"leading"`, the shape of an opened expression |
+| `placement` | `"same-line"` | whether the `if` stays on the line of the binding |
+| `indent` | `1` | the indent levels a continuation line takes |
+
+The two shapes:
+
+```luau
+-- style = "block"          -- style = "leading"
+local a = if bar then       local a = if bar
+    "baz"                       then "baz"
+else                            else "foo"
+    "foo"
+```
+
+Two points are easy to miss. A nested expression waits for `width` in every mode, `always` included: an `if` inside an `if` that opens with its parent gives a stair of keywords for an expression that reads well on one line, so the inner one waits until it earns the room. And the two styles write the same characters on one line, because the break between a keyword and its value is one space either way.
+
+#### `if_expression.expand`
+
+Default `"never"`, which keeps every `if` expression on one line. `"always"` opens each one, and `"when-large"` opens the ones wider than `width`.
+
+#### `if_expression.width`
+
+Default `60`. The boundary that `"when-large"` measures against, in columns.
+
+#### `if_expression.style`
+
+Default `"block"`. The shape of an opened expression, as shown above. `"block"` indents the values under their keywords; `"leading"` starts each continuation line with its keyword.
+
+#### `if_expression.placement`
+
+Default `"same-line"`. `"next-line"` ends the line after the `=` and starts the `if` below it. It applies to an expression that opens, and not to one that stays on one line, so `"when-large"` and `"next-line"` together move only the expressions that earned it.
+
+#### `if_expression.indent`
+
+Default `1`. The indent levels a continuation line takes.
+
 ### `final_newline`
 
 Default `true`. Selects whether the file ends with a newline. POSIX defines a line as text up to a newline, so a file without a final one ends in something that is not a line: `wc` counts one line less, and git prints "No newline at end of file" on each diff that touches the last line. The option covers that one newline. editorconfig calls the same setting `insert_final_newline`, and larvae accepts that name.
 
 Larvae removes whitespace at the end of every line whatever the option says, because a trailing space is invisible and has no reading in which the author wanted it.
 
+## What has no option
+
+A comment keeps the blank line below it. A comment is a paragraph of its own: the author who puts a blank line under a note separates it from the code that follows, and the author who does not attaches it to that code. The two say different things, so larvae keeps the difference. Several blank lines collapse to one, as they do between two statements.
+
 ## Spelling and unknown keys
 
 Values in `larvae.toml` use larvae's spelling, which is kebab case: `quote_style = "auto-prefer-double"`, not stylua's `"AutoPreferDouble"`. larvae converts the PascalCase form only when it reads that form from `stylua.toml` itself. When a value is unknown, the error message lists the valid values.
+
+### `syntax`
 
 stylua's `syntax` key is accepted and ignored, because larvae only formats Luau. Every other unknown key at the top level of `[fmt]` is refused with a message, because only a worm can own a name that larvae does not.
 
 ## Scope
 
-`[fmt]` also accepts `exclude` and `include`, lists of globs relative to the project root. `[fmt] include` brings a file back for the formatter alone, over every exclude; `[fmt] exclude` removes a file for the formatter alone, over the root `include`. The full order lives on [configuration](/docs/reference/configuration).
+### `exclude`
+
+A list of globs relative to the project root. `[fmt] exclude` removes a file for the formatter alone, over the root `include`.
+
+### `include`
+
+A list of globs relative to the project root. `[fmt] include` brings a file back for the formatter alone, over every exclude. The full order lives on [configuration](/docs/reference/configuration).
 
 ## Options that come from a worm
 

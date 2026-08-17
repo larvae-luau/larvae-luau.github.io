@@ -139,6 +139,20 @@ describe('Home page', () => {
     expect(benchmarks?.textContent).toContain('No speedup is claimed')
   })
 
+  it('shows the linter benchmark against selene with its caveats', () => {
+    render(<Home />)
+    const benchmarks = document.getElementById('benchmarks')
+    const table = screen.getByTestId('lint-table')
+    expect(table.textContent).toContain('matched')
+    expect(table.textContent).toContain('5.9x')
+    expect(benchmarks?.textContent).toContain(
+      '49 lints for larvae, 33 for selene',
+    )
+    // the flattering single-file figure is framed as throughput, not headline
+    expect(benchmarks?.textContent).toContain('279x')
+    expect(benchmarks?.textContent).toContain('floor on the gap')
+  })
+
   it('shows the incremental columns as larvae only', () => {
     render(<Home />)
     const table = screen.getByTestId('incremental-table')

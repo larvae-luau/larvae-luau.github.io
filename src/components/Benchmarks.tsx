@@ -50,6 +50,46 @@ const RUNS: Run[] = [
   },
 ]
 
+interface LintRun {
+  label: string
+  workload: 'matched' | 'defaults'
+  larvae: number
+  selene: number
+  speedup: string
+}
+
+/** matched = the 30 lints both tools implement; defaults = 49 vs 33. */
+const LINT_RUNS: LintRun[] = [
+  {
+    label: '3,000 files',
+    workload: 'matched',
+    larvae: 22,
+    selene: 121,
+    speedup: '5.5x',
+  },
+  {
+    label: '3,000 files',
+    workload: 'defaults',
+    larvae: 26,
+    selene: 121,
+    speedup: '4.6x',
+  },
+  {
+    label: '5,000 files',
+    workload: 'matched',
+    larvae: 34,
+    selene: 201,
+    speedup: '5.9x',
+  },
+  {
+    label: '5,000 files',
+    workload: 'defaults',
+    larvae: 37,
+    selene: 202,
+    speedup: '5.4x',
+  },
+]
+
 const WORKLOADS = [
   {
     term: 'same rules',
@@ -261,7 +301,71 @@ export default function Benchmarks() {
         </div>
       </Reveal>
 
-      <Reveal delay={0.2}>
+      <Reveal delay={0.2} className="mt-6">
+        <div className="hive-card rounded-2xl p-6">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <p className="mb-1 select-none font-mono text-xs tracking-widest text-hive/70 uppercase">
+                the linter, against selene
+              </p>
+              <p className="text-sm text-muted">
+                matched holds both tools to the 30 lints both implement,
+                defaults runs what each enables: 49 lints for larvae, 33 for
+                selene. 16 cores, median of 7.
+              </p>
+            </div>
+            <div className="shrink-0 text-right">
+              <span className="inline-block rounded-full border border-hive/25 bg-hive/10 px-3 py-1 font-mono text-sm font-semibold text-hive">
+                5.5&ndash;5.9x faster
+              </span>
+              <p className="mt-1 select-none font-mono text-[0.65rem] text-muted">
+                matched, both lint sets equal
+              </p>
+            </div>
+          </div>
+          <div data-testid="lint-table" className="code-scroll overflow-x-auto">
+            <table className="w-full min-w-[26rem] border-collapse font-mono text-xs">
+              <thead>
+                <tr className="select-none text-left text-muted">
+                  <th className="pb-2 font-normal">files</th>
+                  <th className="pb-2 font-normal">workload</th>
+                  <th className="pb-2 text-right font-normal">larvae</th>
+                  <th className="pb-2 text-right font-normal">selene</th>
+                  <th className="pb-2 text-right font-normal">speedup</th>
+                </tr>
+              </thead>
+              <tbody>
+                {LINT_RUNS.map((run) => (
+                  <tr
+                    key={`${run.label}-${run.workload}`}
+                    className="border-t border-hive/8"
+                  >
+                    <td className="py-2 text-foreground/80">{run.label}</td>
+                    <td className="py-2 text-muted">{run.workload}</td>
+                    <td className="py-2 text-right text-hive">
+                      {run.larvae} ms
+                    </td>
+                    <td className="py-2 text-right text-foreground/80">
+                      {run.selene} ms
+                    </td>
+                    <td className="py-2 text-right text-hive">{run.speedup}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-4 border-t border-hive/8 pt-4 text-xs leading-relaxed text-muted">
+            One 1 MB module lands at 279x, and it is deliberately not the
+            headline: selene&rsquo;s cost per byte climbs with file size while
+            larvae stays linear, so that row measures parser throughput, not a
+            build. The matched row also favours selene, it holds 3 of
+            selene&rsquo;s lints off against 19 of larvae&rsquo;s, so read the
+            5.5&ndash;5.9x as a floor on the gap.
+          </p>
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.25}>
         <p className="mx-auto mt-6 max-w-2xl text-center text-xs leading-relaxed text-muted">
           On the matched rows larvae is also doing require rewriting that
           darklua is not. darklua can convert requires from a rojo sourcemap,

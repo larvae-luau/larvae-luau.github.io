@@ -1,6 +1,6 @@
 ---
 title: Performance
-description: Matched comparisons against darklua, the incremental columns, and the four reasons behind them
+description: Matched comparisons against darklua and selene, the incremental columns, and the four reasons behind them
 category: Project
 order: 1
 updated: 2026-08-16
@@ -67,6 +67,55 @@ On the single large file, `check` at 80 ms is the only figure that costs more th
 
 `check` is not a build. It is whole project require validation, and it parses every file rather than splicing byte ranges. One 3.5 MB module is its worst case, there is nothing to parallelize and nothing to skip. Read that column as parser throughput, roughly 44 MB/s.
 
+## The linter, against selene
+
+Holding both tools to the 30 lints that both implement, larvae is **5.5x to 5.9x faster** than selene. That is the number to quote, not the 279x below.
+
+Two workloads are timed, for the same reason the darklua tables time three:
+
+| workload | what runs |
+|---|---|
+| matched | both tools hold to the 30 lints that both implement, the head to head |
+| defaults | each tool with what it enables: 49 lints for larvae, 33 for selene, what a user gets |
+
+Holding a lint off is not free on either side, so a row cannot be faked by leaving one tool at its defaults: selene drops from 29 ms to 21 ms on 1,500 files when 15 lints go to `allow`.
+
+`larvae lint` keeps no cache, so there is no cold and warm split here. Every run reads the whole tree.
+
+16 cores, median of 7:
+
+| Files | workload | larvae | selene | speedup |
+|---|---|---|---|---|
+| 3,000 | matched | 22 ms | 121 ms | 5.5x |
+| 3,000 | defaults | 26 ms | 121 ms | 4.6x |
+| 5,000 | matched | 34 ms | 201 ms | 5.9x |
+| 5,000 | defaults | 37 ms | 202 ms | 5.4x |
+| 1 file, 1 MB | matched | 48 ms | 13.4 s | 279x |
+
+### Why the 279x row is not the headline
+
+The last row is one module of about a megabyte, and it measures a scaling curve rather than a build. selene's cost per byte climbs with the size of a file: 278 ms at 124 KB, 1.0 s at 252 KB, 3.5 s at 510 KB, 18 s at 1 MB. Four times the bytes is sixty times the work. larvae stays linear over the same range, 10 ms to 117 ms. No project is one file, so read that row as parser throughput.
+
+### What makes the comparison honest
+
+**The matched set is computed, not written down.** larvae's half comes out of the schema larvae ships, so it cannot drift from the lints larvae has. selene has no command that prints its lints, and it ignores a name it does not know rather than refusing it, so a typo would leave a lint running on one side with nothing to say so. Its half is a list in the script, and a probe file checks that list on every run. A lint that selene reports and the list does not name stops the run.
+
+**The tree avoids what the two tools read differently.** `if a > 0 then x end` on one line is such a case: selene calls it `multiple_statements` and larvae does not, because larvae compares statements within a block and the body there is a block of its own. Two of those per file had selene format several thousand more diagnostics than larvae, and the timings then compared reporting volume rather than analysis.
+
+**Every tenth file carries a fault**, so the run measures the reporting path and not only a clean parse. Two of the faults are lints both tools have, and one is larvae's alone. The report prints the finding counts, and those counts are how a reader sees that the matched configs hold the other lints off instead of silently running everything:
+
+| Files | larvae default | larvae matched | selene default | selene matched |
+|---|---|---|---|---|
+| 5,000 | 2,500 | 2,000 | 2,500 | 2,500 |
+
+larvae reports 500 fewer under the matched set. That difference is `string_concat_in_loop`, which selene does not have.
+
+### Two limits to state
+
+**The matched row favours selene.** 30 of selene's 33 lints are in the shared set, so the row holds 3 of them off. It holds 19 of larvae's off. Most of the restriction lands on larvae, and larvae is still five times quicker, so treat the row as a floor on the gap.
+
+**The tree is synthetic.** The files are generated, of even size, and free of the constructs the two tools disagree about. The result is a throughput measurement on clean code. It is not a survey of real Roblox source.
+
 ## Binary size
 
 Both stripped:
@@ -106,7 +155,7 @@ larvae does not do that conversion. `process` does not even build a full AST for
 
 ## Reproducing it
 
-The benchmark script lives at `scripts/bench.sh`. It generates the synthetic workloads, runs both tools 7 times per cell, and prints the tables above with the median.
+Two scripts measure larvae against the tool it replaces. `scripts/bench_darklua.sh` compares `larvae process` against darklua, and `scripts/bench_selene.sh` compares the linter against selene. Each generates a synthetic tree, runs both tools over it, and prints the tables above with the median of 7 samples. `RUNS=15` raises the sample count, a number argument picks a size of your own, and the selene script runs larvae alone when selene is absent.
 
 Numbers on your machine will differ, in particular the parallel columns scale with core count. The shape holds: the parse and print baseline is the floor darklua cannot go below, and larvae spends most of its time not parsing.
 
