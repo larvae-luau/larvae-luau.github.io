@@ -38,7 +38,7 @@ rojo serve .larvae/build.project.json`,
 const CLI = `larvae process   # rewrite requires, run rules; -w rebuilds on change
 larvae check     # the whole-project analysis, the CI gate
 larvae fmt       # format in place, stylua parity
-larvae lint      # 49 lints with selene's spellings
+larvae lint      # 51 lints with selene's spellings
 larvae bundle    # the project as one file, modules load on demand
 larvae lsp       # diagnostics and formatting for the editor
 larvae init      # write a starter larvae.toml
