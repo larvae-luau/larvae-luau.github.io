@@ -3,7 +3,7 @@ title: Writing a worm in Luau
 description: No toolchain, typed against worm.d.luau, a file in your own repo
 category: Worms
 order: 4
-updated: 2026-08-16
+updated: 2026-08-19
 ---
 
 Nothing to install and no toolchain. A Luau worm is a file in your own repo that returns a table, and it runs in a VM embedded in larvae.
@@ -82,6 +82,14 @@ Range ends do not need to be exact. larvae pulls a `;` that sits just after a ra
 A lint reply is findings **without a severity**, plus the comment spans larvae needs to apply `allow` comments, plus an optional Luau shadow of the file. The host stamps the levels from `[lint.rules.<name>]`, applies the `allow` comments, and owns the exit code, so a worm lint behaves exactly like a builtin one from the user's side.
 
 The shadow is what `inherit_lints = true` runs the builtin lints against; without one, they run against your transform output. Returning a shadow is how a worm whose surface syntax is not Luau still gets `unused_variable` for free.
+
+## Answering the editor
+
+Two more entries on `frontend` answer the language server: `frontend.actions` for code actions and `frontend.definitions` for Luau type definitions. Both are optional. Leave them out and the worm answers with nothing rather than an error, the opposite of `format` and `lint`, where the manifest promises the capability and a missing answer is a broken promise worth a message. The editor asks on a keystroke, so a worm that only formats must cost a reply and not a line in the editor log every time the lightbulb opens. A worm that fails is passed over for the same reason: one broken worm must not take the lightbulb from the others.
+
+An action speaks in byte offsets, because the worm parsed the file, and larvae turns those into protocol positions. The title carries the worm's name, and an action that names the lint it repairs is grouped under that diagnostic.
+
+`frontend.definitions` returns Luau definition text, the answer to `larvae/definitions`. A worm that makes a data file requirable is the case that asks for it: `require("./items.json")` has a type, and the worm knows it. This is a different thing from `larvae worm types`, which writes the worm API definitions this page starts with.
 
 ## Kinds are a singleton union
 

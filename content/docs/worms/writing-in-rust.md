@@ -3,7 +3,7 @@ title: Writing a worm in Rust
 description: The larvae-worm crate, the wasm macros, and the native pipe protocol
 category: Worms
 order: 5
-updated: 2026-08-16
+updated: 2026-08-19
 ---
 
 Depend on `larvae-worm`. The crate is the guest side of the worm system and does not pull in larvae, because [larvae is the host, not a library](/docs/worms/what-a-worm-is). It gives a Rust author both shipping forms:
@@ -53,10 +53,16 @@ Rules change shape on native. A pipe crossing costs about 24 µs, so per node di
 
 Two channels fit the native form:
 
-- **crates.io.** `x = { cargo = "crate@1.0.0" }` in the user's config runs `cargo install`, so the worm builds from source on the user's machine and one published crate serves every platform. The binary must carry its own `worm.toml` and return it over the pipe when larvae asks, because `cargo install` ships no data files.
+- **crates.io.** `x = { cargo = "crate", version = "1.0.0" }` in the user's config runs `cargo install`, so the worm builds from source on the user's machine and one published crate serves every platform. The binary must carry its own `worm.toml` and return it over the pipe when larvae asks, because `cargo install` ships no data files.
 - **A GitHub release** with one zip per platform. larvae tries `<name>-worm-<arch>-<os>.zip` first, so that is the name to publish under. larvae makes the entry executable at install.
 
 See [using worms](/docs/worms/using-worms) for the resolution order and caching.
+
+## Answering the editor
+
+Both forms can answer code actions and Luau type definitions for the language server: on wasm the exports are `larvae_actions` and `larvae_definitions`, on native the `actions` and `definitions` ops. All are optional. A worm that leaves them out answers with nothing rather than an error, the opposite of `format` and `lint`, where the manifest promises the capability and a missing export is a broken promise worth a message. A worm that fails is passed over, because one broken worm must not take the lightbulb from the others.
+
+Actions speak in byte offsets, and larvae turns those into protocol positions. The title carries the worm's name, and an action that names the lint it repairs is grouped under that diagnostic. Definitions are Luau definition text, the answer to `larvae/definitions`: a worm that makes a data file requirable knows the type of `require("./items.json")`. The user's side is on [using worms](/docs/worms/using-worms).
 
 ## Pick the right form
 

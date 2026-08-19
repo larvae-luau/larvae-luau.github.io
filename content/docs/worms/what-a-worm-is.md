@@ -3,10 +3,10 @@ title: What a worm is
 description: larvae's extensions, three forms, four capabilities, and one contract from all of them
 category: Worms
 order: 1
-updated: 2026-08-16
+updated: 2026-08-19
 ---
 
-A worm is a larvae extension. You name it in `larvae.toml`, larvae fetches it from a GitHub release or crates.io or reads it from a directory, and it loads before any work starts.
+A worm is a larvae extension. You name it in `larvae.toml`, `larvae worm install` puts it on disk from a GitHub release or crates.io, and it loads before any work starts. A `path` worm is read from its directory instead. Installing is its own step: a command that finds a named worm missing reports it once and moves on, rather than downloading mid run.
 
 If you only read one sentence: **a worm is a `worm.toml` beside one artifact, the artifact is Luau source, a `wasm32` module, or a native executable, and every form answers the same four capabilities.**
 
@@ -37,6 +37,8 @@ Every form answers every capability. The manifest declares what the worm does, a
 
 The division of labor does not move with the form. **A worm never decides a severity, never renders, and never writes a file.** The host stamps lint levels, applies `allow` comments, and owns exit codes, so `[lint.rules.<worm>]` and a `-- larvae: allow(...)` comment work on a worm's findings exactly as they work on builtin ones. Format and lint cross once per file on every transport.
 
+Beside the four sit two optional editor answers, code actions and Luau type definitions. The manifest does not promise them, so a form with nothing to say answers with nothing rather than an error. The user's side is on [using worms](/docs/worms/using-worms); the exports are on the writing pages.
+
 ## Ranges do not need exact ends
 
 A format reply that names byte ranges does not have to place the range ends exactly. A worm draws the ranges from its own parse, and a worm that ends a range at the last token of a statement leaves the `;` that terminates the statement outside it.
@@ -48,7 +50,7 @@ larvae takes a `;` that sits just after a range into that range, and leaves a `;
 The short forms give a worm most of larvae for the cost of naming where the Luau is.
 
 - **Formatting.** A format reply that names the Luau ranges and nothing else gets each range formatted in the project style, and every other byte kept as the author wrote it. See [formatting](/docs/reference/formatting).
-- **Linting.** `inherit_lints = true` runs the 49 builtin lints on claimed files, against the Luau shadow the worm returns, or against its transform output when there is no shadow. The project narrows this with `[worms.<name>.inherit]`. See [linting](/docs/reference/linting).
+- **Linting.** `inherit_lints = true` runs the 51 builtin lints on claimed files, against the Luau shadow the worm returns, or against its transform output when there is no shadow. The project narrows this with `[worms.<name>.inherit]`. See [linting](/docs/reference/linting).
 - **Settings.** At init a worm receives the resolved `[fmt]` table and the lint levels, so it lays its own constructs out in the project style and the user states each setting one time.
 
 ## What worms cost you
