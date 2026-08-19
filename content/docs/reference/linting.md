@@ -1,12 +1,12 @@
 ---
 title: Linting
-description: All forty nine lints, their default levels, and the flag comments that silence them
+description: All fifty one lints, their default levels, and the flag comments that silence them
 category: Reference
 order: 5
-updated: 2026-08-16
+updated: 2026-08-19
 ---
 
-`larvae lint` reports suspicious code. It ships 49 lints, configured in the `[lint]` table of `larvae.toml`. The table is optional: `larvae lint` works with no config at all.
+`larvae lint` reports suspicious code. It ships 51 lints, configured in the `[lint]` table of `larvae.toml`. The table is optional: `larvae lint` works with no config at all.
 
 larvae covers all 28 lints of the Luau compiler, so `larvae init` turns Luau's own linter off in `.luaurc` and the project loses no report. With both linters on, each finding would arrive twice under two names, each needing its own comment to silence. [Quick start](/docs/getting-started/quick-start) describes that step.
 
@@ -20,9 +20,9 @@ shadowing = "allow"
 unused_variable = "deny"
 ```
 
-Three lints do not default to `warn`. `undefined_variable` denies, because the name is nil at runtime and the line that reads it throws. `high_cyclomatic_complexity` and `non_const_require` allow, and neither is a lint of the Luau compiler: a branch count is not a defect on its own, and `const` is newer than most codebases. Each Luau lint keeps the level that Luau gives it, so the change of linter changes no report.
+Five lints do not default to `warn`. `undefined_variable` denies, because the name is nil at runtime and the line that reads it throws. `high_cyclomatic_complexity`, `multiple_statements`, `non_const_require`, and `prefer_const` allow, and none is a lint of the Luau compiler: a branch count is not a defect on its own, a second statement on a line is a style choice, and `const` is larvae's own reading of Luau. Each Luau lint keeps the level that Luau gives it, so the change of linter changes no report.
 
-## The 49 lints
+## The 51 lints
 
 Each name links to its section below, so an editor or an extension can deep link to one lint.
 
@@ -53,13 +53,14 @@ Each name links to its section below, so an editor or an extension can deep link
 | [`misleading_and_or`](#misleading-and-or) | warn | `cond and false or b`, which always gives `b` because the middle is never truthy. |
 | [`mismatched_arg_count`](#mismatched-arg-count) | warn | Calling a function in this file with the wrong number of arguments. |
 | [`mixed_table`](#mixed-table) | warn | A table with both array entries and named keys. |
-| [`multiple_statements`](#multiple-statements) | warn | More than one statement on a line. |
+| [`multiple_statements`](#multiple-statements) | allow | More than one statement on a line. |
 | [`must_use`](#must-use) | warn | Calling a pure function and discarding what it returned. |
 | [`non_const_require`](#non-const-require) | allow | A required module bound with `local`, where `const` says it never changes. |
 | [`number_literal_overflow`](#number-literal-overflow) | warn | A hexadecimal or binary literal wider than 64 bits, which is truncated. |
 | [`parenthese_conditions`](#parenthese-conditions) | warn | Parentheses around a condition, which Luau does not need. |
 | [`placeholder_read`](#placeholder-read) | warn | Reading `_`, the name that says a value is discarded. |
-| [`restricted_module_paths`](#restricted-module-paths) | warn | Requiring a module the project has ruled out. |
+| [`prefer_const`](#prefer-const) | allow | A local that nothing reassigns, which `const` states outright. |
+| [`restricted_module_paths`](#restricted-module-paths) | warn | Requiring a module the project has ruled out. Quiet until the config names a path. |
 | [`roblox_incorrect_color3_new_bounds`](#roblox-incorrect-color3-new-bounds) | warn | `Color3.new` given a channel over 1, where the scale is 0 to 1. |
 | [`roblox_manual_fromscale_or_fromoffset`](#roblox-manual-fromscale-or-fromoffset) | warn | A `UDim2.new` that `fromScale` or `fromOffset` says more clearly. |
 | [`roblox_suspicious_udim2_new`](#roblox-suspicious-udim2-new) | warn | `UDim2.new` given two arguments, where it takes four. |
@@ -75,7 +76,8 @@ Each name links to its section below, so an editor or an extension can deep link
 | [`unknown_type`](#unknown-type) | warn | Comparing `type(x)` against a string that `type()` never returns. |
 | [`unreachable_code`](#unreachable-code) | warn | Statements after a return, break or continue, which never run. |
 | [`unscoped_variables`](#unscoped-variables) | warn | An assignment with no `local`, which creates a global. |
-| [`unused_variable`](#unused-variable) | warn | A name declared and never read. |
+| [`unused_function`](#unused-function) | warn | A `local function` that nothing calls, and a global `function f() end` that no line reads. |
+| [`unused_variable`](#unused-variable) | warn | A name declared and never read. A `local function` is [`unused_function`](#unused-function) instead. |
 | [`zero_step_loop`](#zero-step-loop) | warn | A numeric for whose step is zero, so the counter never moves. |
 
 `larvae lint --explain <name>` prints one lint's description. The schema contains all lints with their defaults, so an editor can offer them by name. `larvae init` writes only `std = "roblox"` and a pointer to `[lint.rules]`, not the lint list.
@@ -359,6 +361,8 @@ local cfg = { "fast", retries = 3 } -- an array entry and a named key in one tab
 
 ### `multiple_statements`
 
+Default level: `allow`, because a second statement on a line is a style choice rather than a defect. It is not a lint of the Luau compiler.
+
 More than one statement shares a line, and the second one is easy to miss.
 
 ```luau
@@ -381,7 +385,7 @@ string.upper(name) -- the returned string is discarded, nothing changes in place
 
 Default level: `allow`, because `const` is newer than most codebases. It is not a lint of the Luau compiler.
 
-A required module is bound with `local`, where `const` states that the binding never changes.
+A required module is bound with `local`, where `const` states that the binding never changes. The lint skips a name that the file reassigns, because `const` would then be a syntax error.
 
 ```luau
 local Signal = require("@game/ReplicatedStorage/packages/signal")
@@ -418,9 +422,45 @@ local _, first = next(scores)
 print(_) -- _ says the value is discarded, and here it is read
 ```
 
+### `prefer_const`
+
+Default level: `allow`, because `const` is larvae's own reading of Luau, so a codebase of ordinary `local` would report on nearly every line the first time it ran. It is not a lint of the Luau compiler.
+
+A local that nothing reassigns, which `const` states outright.
+
+```luau
+local retries = 3 -- nothing reassigns retries
+print(retries)
+
+-- fine: const retries = 3
+```
+
+Three forms are left alone, and each one is a place where `const` does not compile or does not exist. A declaration with no initialiser stays, because `const x` is "Missing initializer in const declaration". A `local function` and a `for` variable take no `const` at all. And `const` binds the declaration and not one name inside it, so `local a, b = 1, 2` is reported only when nothing reassigns either name; where one of them changes, there is no edit to suggest.
+
+#### `prefer_const` options
+
+| Option | Default | What it does |
+|---|---|---|
+| `mutated_tables_stay_local` | `false` | Keep `local` on a binding the file mutates through a field, such as `t.x = 1` or `table.insert(t, 1)`. |
+
+The option is off because `const` is correct on a mutated table. Luau enforces `const` against reassignment of the name and says nothing about the value, so this compiles:
+
+```luau
+const t = {}
+t.x = 1
+table.insert(t, 2)
+```
+
+The option is for a project that reads `local` as "this one changes" and wants the two keywords to carry that difference. With it on, larvae skips a binding the file changes through a field, an index, a nested chain, a compound assignment, or one of the `table` functions that mutates its first argument. `table.freeze` is not one of them, because it returns a copy, so a binding that only reaches `table.freeze` still reports.
+
+```toml
+[lint.options.prefer_const]
+mutated_tables_stay_local = true
+```
+
 ### `restricted_module_paths`
 
-The require names a module path the project has ruled out in its config, and the report carries the configured reason.
+The require names a module path the project has ruled out in its config, and the report carries the configured reason. The lint is quiet until `[lint.options.restricted_module_paths]` names something.
 
 ```luau
 local util = require("@game/ReplicatedStorage/legacy/util")
@@ -595,9 +635,23 @@ end
 -- fine: local counter = 0
 ```
 
+A `function f() end` declaration is not reported. It creates a global the same way, but neither selene nor the Luau compiler calls that an unscoped variable.
+
+### `unused_function`
+
+A `local function` that nothing calls, and a global `function f() end` that no line reads.
+
+```luau
+local function helper() -- nothing calls helper
+	return 1
+end
+```
+
+The declaring form decides which unused lint fires, not the value: `local function f() end` is `unused_function`, and `local f = function() end` is [`unused_variable`](#unused-variable), though both hold a function. Each carries its own level, so a project that keeps unused helpers around while still wanting unused locals reported can say so. Both lints read [`[lint.options.unused_variable]`](#unused-variable-options), because `ignore_pattern` means the same thing to either one, and `_helper` silences a function as it silences a variable.
+
 ### `unused_variable`
 
-The name is declared and never read, so the declaration does nothing for the program.
+The name is declared and never read, so the declaration does nothing for the program. The declaring form decides, not the value: a `local function` that nothing calls is [`unused_function`](#unused-function) instead, and the two lints carry their own levels while sharing the options below.
 
 ```luau
 local retries = 3 -- declared and never read
@@ -630,7 +684,7 @@ end
 | `exclude` | Globs the linter skips, relative to the project root. |
 | `include` | Globs the linter reads back, over every exclude. |
 | `[lint.rules]` | Levels by lint name. |
-| `[lint.options]` | Options for [`unused_variable`](#unused-variable-options), [`high_cyclomatic_complexity`](#high-cyclomatic-complexity-options), [`deprecated`](#deprecated-options), and [`restricted_module_paths`](#restricted-module-paths-options). Also spelled `[lint.config]`, selene's name. |
+| `[lint.options]` | Options for [`unused_variable`](#unused-variable-options), [`high_cyclomatic_complexity`](#high-cyclomatic-complexity-options), [`deprecated`](#deprecated-options), [`restricted_module_paths`](#restricted-module-paths-options), and [`prefer_const`](#prefer-const-options). Also spelled `[lint.config]`, selene's name. |
 
 `std` accepts selene's spellings: `lua51` through `lua54`, `luajit`, and chains such as `roblox+testez`, where the first name decides. A `selene.toml` on disk is read the same way, and for lists (`rules`, `globals`, `exclude`) larvae adds its entries to selene's and does not replace them. The exclusion order is on [configuration](/docs/reference/configuration).
 
@@ -650,7 +704,32 @@ local a, b = 1, 2
 
 A flag covers its own line and the line below it. People write both forms, and to guess which form an author meant is worse than to accept both.
 
-Only `allow(...)` is a flag. The comment `-- larvae: this one is load bearing` is a note to the next reader, and larvae treats it as an ordinary comment.
+### Switching the linter off over a span
+
+A second family holds a tool off over a span:
+
+```luau
+-- larvae: lint off
+local DEBUG = true
+local VERBOSE = false
+-- larvae: lint on
+```
+
+`off` runs to the matching `on`, or to the end of the file when no `on` follows. One marker therefore covers three needs:
+
+| Written | Holds |
+|---|---|
+| `-- larvae: lint off` at the top, no `on` | the whole file |
+| `-- larvae: lint off` then `-- larvae: lint on` | the lines between, markers included |
+| `-- larvae: lint off(5)` | the marker line and five lines below it |
+
+A `lint` marker holds every lint, where `allow(...)` names the lints it holds. Each subject reads its own markers only, so a `fmt off` does not quiet the linter. The `fmt` half of the family lives on [formatting](/docs/reference/formatting).
+
+A marker larvae cannot read is an ordinary comment. `-- larvae: lint off(five)` names no count, so it is not a flag: it stays in the file where a reader sees it, and the linter runs. That is deliberate, because were it a flag, `larvae process` would strip it from the build and the linter would hold off to the end of the file, with nothing to say why.
+
+These markers are flags, so `larvae process` strips them by default, as it strips `allow(...)`.
+
+Only `allow(...)` and this family are flags. The comment `-- larvae: this one is load bearing` is a note to the next reader, and larvae treats it as an ordinary comment.
 
 `larvae process` removes flags by default, because flags are build time instructions and shipped flags are shipped build instructions. Ordinary comments do not change and line numbers stay the same, so `retain-lines` output still matches the source. Set `[process] strip_flags = false` when people read the output, for example a library published as source. When `[rules] remove_comments` is on, that rule controls every comment in the file and `strip_flags` does nothing, so a project that keeps flags with an `except` pattern keeps them.
 

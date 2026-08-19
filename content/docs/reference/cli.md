@@ -3,7 +3,7 @@ title: CLI reference
 description: Every larvae command, flag, exit code, and environment variable
 category: Reference
 order: 1
-updated: 2026-08-16
+updated: 2026-08-19
 ---
 
 larvae has nine commands: `process`, `check`, `fmt`, `lint`, `bundle`, `lsp`, `init`, `worm`, and `self`. That is the whole surface. There is no `serve` command and no `schema` command, and larvae never runs rojo for you.
@@ -139,6 +139,8 @@ larvae lsp
 
 The server runs through the same code the commands use, so the terminal and the editor cannot disagree. It follows the same exclude lists as every command, and it routes a claimed buffer to its worm. It never downloads a worm, because a keystroke cannot wait for the network; the first fetch happens in the terminal. See [editor setup](/docs/concepts/editor-setup).
 
+A config that fails to resolve raises one editor warning with the reason, and the server serves defaults until the config loads. A project without a `larvae.toml` raises nothing, because a missing config is a normal state and not a fault.
+
 ### `init`
 
 Writes a starter `larvae.toml` in the current directory. It refuses to run if one already exists, so it will never clobber your config.
@@ -161,15 +163,26 @@ When the project already has a `stylua.toml` or a `selene.toml`, `init` writes a
 
 ### `worm`
 
-For developing a [worm](/docs/worms/what-a-worm-is), larvae's extension format. It works with no project and nothing installed, so you can write one before wiring it into a build.
+Manages the [worms](/docs/worms/what-a-worm-is) a project uses, and helps you develop one. The development subcommands work with no project and nothing installed, so you can write a worm before wiring it into a build.
 
 | subcommand | what it does |
 |---|---|
+| `worm add <spec>` | write the worm into `[worms]` at version `^`, without installing |
+| `worm install`, `i` | put every worm the config names on disk |
+| `worm remove <name>`, `rm` | take one out of the config and off the disk |
 | `worm run <dir> <file>` | transform one file through the worm and print the result |
 | `worm run --fmt <dir> <file>` | format the file, and report when a second pass changes the output |
 | `worm run --lint <dir> <file>` | print the worm's findings at the manifest defaults |
 | `worm info <dir>` | print what the manifest declares, without running it |
 | `worm types` | write the Luau definitions for a language server |
+
+`add` takes a short name that larvae knows, such as `luaux`, or `owner/repo`, and either with `@version` on the end. A short name expands through a list written into larvae: `luaux` is `larvae-luau/luaux-worm`. A name larvae does not know is refused rather than guessed, because guessing an owner points the fetch at a repository that may exist and may belong to someone else. `--cargo` takes the crate of that name instead of a GitHub release.
+
+The version `add` writes is `^`, which every install reads as the newest release there is. `add` still asks the repository for the newest release even though it writes `^`, because that call catches a typo in the name before it reaches the config. `add` does not install, because an edit to a file is instant and offline while a download is neither, and a user adding three worms wants one download rather than three.
+
+`install` is that download. It puts every worm the config names on disk and draws a progress bar. Under a pipe it prints one line per worm instead, because a carriage return in a log leaves the whole run on one unreadable line.
+
+There is no `worm update`. The version already says whether the project wants to move: `^` follows and a number holds. A command that bumps a pin the user wrote is a command that undoes the pin.
 
 `info` reads the manifest and prints it back, which is the fastest way to check a `worm.toml` is what you meant:
 
@@ -253,5 +266,5 @@ Serving is rojo's job. See [Rojo integration](/docs/concepts/rojo-integration) f
 - [rules](/docs/reference/rules) for the transforms `process` and `check` apply
 - [formatting](/docs/reference/formatting) for every `[fmt]` option
 - [linting](/docs/reference/linting) for every lint, its level, and flag comments
-- [what a worm is](/docs/worms/what-a-worm-is) for what `larvae worm` develops
+- [what a worm is](/docs/worms/what-a-worm-is) for what `larvae worm` manages and develops
 - [migrating from darklua](/docs/project/migrating-from-darklua) if you are coming from `.darklua.json`

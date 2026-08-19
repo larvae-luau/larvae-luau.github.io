@@ -3,7 +3,7 @@ title: Configuration
 description: Every larvae.toml key, the other files larvae reads, and how they merge
 category: Reference
 order: 2
-updated: 2026-08-16
+updated: 2026-08-19
 ---
 
 Configuration lives in `larvae.toml` next to your Rojo project. The file is optional: `larvae fmt` and `larvae lint` work with no `larvae.toml` at all, and a project with a `default.project.json` and `.luaurc` aliases can run `larvae process` on defaults alone. Every table below exists to override a default, never to satisfy one.
@@ -316,18 +316,22 @@ rename_variables = true
 
 Extensions, one table per worm. The key is the worm's name and must match `name` in the worm's own `worm.toml`, because the key also namespaces the worm's rules and its settings.
 
+A worm is a table. The old string form, `xml = "luau-xml/worm@0.1.0"`, is refused with a message that prints the table to write instead, because the version is a key of its own now and a pin packed both halves into one string.
+
 ```toml
 [worms]
-xml = "luau-xml/worm@0.1.0"          # short form: owner/repo@version
-vide = { cargo = "vide-worm@0.2.0" } # a crate on crates.io, built on this machine
+xml = { repo = "luau-xml/worm", version = "^" }
+vide = { cargo = "vide-worm", version = "0.2.0" } # a crate on crates.io, built on this machine
 
 [worms.mine]
 path = "build/myworm"                # a directory, for development
 ```
 
+`version` takes three forms. `"^"` takes the newest release on every install. `"^0.1.0"` takes the newest release semver calls compatible, so 0.1.x. `"0.1.0"` takes that release and never moves. A leading `v` is accepted and dropped. `larvae worm add` writes an entry, `larvae worm install` puts every worm on disk, and `larvae worm remove` takes one out; there is no `worm update`, because `^` follows and a number holds.
+
 A worm's settings live under `[worms.<name>.config]`, its rules under `[worms.<name>] rules`, its lint levels under `[lint.rules.<name>]`, and its format options under `[fmt.<name>]`. An older larvae used a top level `[config.<name>]` table; that spelling now causes an error that names the new location.
 
-Every key, the three install channels, and inheritance are documented on [using worms](/docs/worms/using-worms).
+Every key, the version forms, the three install channels, the managing commands, and inheritance are documented on [using worms](/docs/worms/using-worms).
 
 ## `[profile.<name>]`
 

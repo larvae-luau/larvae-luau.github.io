@@ -3,7 +3,7 @@ title: Formatting
 description: Every [fmt] option, its default, and what it does
 category: Reference
 order: 4
-updated: 2026-08-16
+updated: 2026-08-19
 ---
 
 `[fmt]` in `larvae.toml` configures `larvae fmt`. The table is optional: `larvae fmt` works with no config at all, and every option below has a default. `larvae init` writes only the four options users change most (`column_width`, `indent_type`, `indent_width`, `quote_style`); every other option keeps its default silently, and the schema serves the full list to the editor.
@@ -38,6 +38,8 @@ quote_style = "auto-prefer-double"
 | [`require_binding`](#require-binding) | `"preserve"` | Which keyword binds a required module. |
 | [`semicolons`](#semicolons) | `"never"` | Whether a statement ends with one. |
 | [`if_expression`](#if-expression) | `{ expand = "never", ... }` | How an `if` expression lays out. |
+| [`function_call`](#function-call) | `{ expand = "when-needed", ... }` | How the argument list of a call lays out. |
+| [`function_declaration`](#function-declaration) | `{ expand = "when-needed", ... }` | How the parameter list of a declaration lays out. |
 | [`final_newline`](#final-newline) | `true` | Whether the file ends with a newline. |
 
 ## stylua parity
@@ -247,6 +249,23 @@ else                            else "foo"
     "foo"
 ```
 
+A nested expression in parentheses takes the parentheses onto their own lines, and the operator before it stays where it is:
+
+```luau
+local option_line =
+    if option_index == selected then
+        `{index} {option}` .. (
+            if submit_on_click then
+                CONFIRM_TEXT
+            else
+                ""
+        )
+    else
+        `   {index} {option}`
+```
+
+The `..` does not move below, because the operand it joins already has lines of its own. A parenthesised expression that stays on one line keeps its parentheses against it, as every other one does.
+
 Two points are easy to miss. A nested expression waits for `width` in every mode, `always` included: an `if` inside an `if` that opens with its parent gives a stair of keywords for an expression that reads well on one line, so the inner one waits until it earns the room. And the two styles write the same characters on one line, because the break between a keyword and its value is one space either way.
 
 #### `if_expression.expand`
@@ -269,6 +288,81 @@ Default `"same-line"`. `"next-line"` ends the line after the `=` and starts the 
 
 Default `1`. The indent levels a continuation line takes.
 
+### `function_call`
+
+Lays out the argument list of a call. `function_call` and [`function_declaration`](#function-declaration) are separate tables, because a project that wants every call opened does not always want every declaration opened as well.
+
+| Key | Default | Values |
+|---|---|---|
+| `expand` | `"when-needed"` | `"when-needed"`, `"always"`, or `"never"` |
+| `style` | `"one-per-line"` | `"one-per-line"` or `"hug-last"` |
+| `indent` | `1` | a number |
+
+#### `function_call.expand`
+
+Default `"when-needed"`, which is the layout larvae always had: the list opens where the line does not fit. `"always"` opens every list, and `"never"` holds the list on one line. Under `"never"` a value inside the list can still open, so `f(t)` with a large table opens the table and leaves the list alone, and the line runs past `column_width`, because that is what the option asks for.
+
+#### `function_call.style`
+
+Default `"one-per-line"`, which gives each argument of an opened call its own line. `"hug-last"` keeps the arguments on the line of the call and opens the last one:
+
+```luau
+-- one-per-line                    -- hug-last
+Colors:Apply(                      Colors:Apply(frame, "Rarity", {
+    frame,                             Children = { stroke },
+    "Rarity",                      })
+    { Children = { stroke } }
+)
+```
+
+Two limits. The style applies where the last argument is a table, a function, or a string carrying its own newlines, because those are the values that read as a block; a call of plain arguments has nothing there to hold the shape and opens one per line instead. And the arguments before the last one do not break, so a long list of them runs past `column_width`. That is the trade the style asks for, and it is why `"one-per-line"` stays the default.
+
+#### `function_call.indent`
+
+Default `1`. The indent levels an opened argument takes.
+
+#### With `magic_trailing_comma`
+
+`expand` and [`magic_trailing_comma`](#magic-trailing-comma) govern different things, so a project can set both without one fighting the other. `expand` decides the argument list. The trailing comma decides the table. Under `"never"` the list stays on one line and the table opens inside it:
+
+```luau
+f(a, b, {
+	x = 1,
+})
+```
+
+Where the table is the last argument, that is what `"hug-last"` writes as well, by a different route. The two part company as soon as the table is not last: `"hug-last"` has no block at the end to hold the shape and opens one per line, while `"never"` keeps the list flat whatever sits where, and the arguments after the table carry on from the closing brace.
+
+```luau
+-- expand = "never"        -- style = "hug-last"
+f(a, {                     f(
+    x = 1,                     a,
+}, b)                          {
+                                   x = 1,
+                               },
+                               b
+                           )
+```
+
+A reader who meets an expanded call and wants it flat usually wants `magic_trailing_comma = false` instead of either of these. A trailing comma inside a table means "keep this open", and an open table opens the call around it, so a codebase that came from a formatter which left trailing commas everywhere sees calls open that are well inside `column_width`.
+
+### `function_declaration`
+
+Lays out the parameter list of a declaration. It is a separate table from [`function_call`](#function-call), because a project that wants every call opened does not always want every declaration opened as well. There is no `style` key; `hug-last` belongs to `function_call` only.
+
+| Key | Default | Values |
+|---|---|---|
+| `expand` | `"when-needed"` | `"when-needed"`, `"always"`, or `"never"` |
+| `indent` | `1` | a number |
+
+#### `function_declaration.expand`
+
+Default `"when-needed"`: the parameter list opens where the line does not fit. `"always"` opens every one, and `"never"` holds the list on one line, and the line runs past `column_width` when it must, because that is what the option asks for.
+
+#### `function_declaration.indent`
+
+Default `1`. The indent levels an opened parameter takes.
+
 ### `final_newline`
 
 Default `true`. Selects whether the file ends with a newline. POSIX defines a line as text up to a newline, so a file without a final one ends in something that is not a line: `wc` counts one line less, and git prints "No newline at end of file" on each diff that touches the last line. The option covers that one newline. editorconfig calls the same setting `insert_final_newline`, and larvae accepts that name.
@@ -278,6 +372,40 @@ Larvae removes whitespace at the end of every line whatever the option says, bec
 ## What has no option
 
 A comment keeps the blank line below it. A comment is a paragraph of its own: the author who puts a blank line under a note separates it from the code that follows, and the author who does not attaches it to that code. The two say different things, so larvae keeps the difference. Several blank lines collapse to one, as they do between two statements.
+
+## Holding the formatter off
+
+`-- larvae: fmt off` holds the formatter over a span. `off` runs to the matching `-- larvae: fmt on`, or to the end of the file when no `on` follows. One marker covers three needs:
+
+| Written | Holds |
+|---|---|
+| `-- larvae: fmt off` at the top, no `on` | the whole file |
+| `-- larvae: fmt off` ... `-- larvae: fmt on` | the lines between, markers included |
+| `-- larvae: fmt off(5)` | the marker line and five lines below it |
+
+```luau
+-- larvae: fmt off
+local identity = {
+    1, 0, 0,
+    0, 1, 0,
+    0, 0, 1,
+}
+-- larvae: fmt on
+```
+
+`format` says the same as `fmt`, in each of the three forms, because an author reaches for either name, and a marker larvae cannot read gives no message and no effect.
+
+stylua's `ignore start` and `ignore end` map onto `fmt off` and `fmt on`, so a project that comes from stylua keeps the markers already in its files.
+
+Two properties are worth knowing.
+
+A file held off in full comes back byte for byte. The general path re-emits a held statement from its own source, which keeps that statement exact, and it makes no promise about the space between two statements. A reader who holds the formatter off for a whole file means the file, so that case returns the source unchanged.
+
+A marker larvae cannot read is an ordinary comment. `fmt off(five)` names no count, so it is not a flag: it stays in the file where a reader sees it, and the formatter runs. Were it a flag, `larvae process` would strip it from the build and the formatter would hold off to the end of the file, with nothing to say why.
+
+These markers are flags, and `larvae process` strips them by default. Each subject reads its own markers only, so a `fmt off` does not quiet the linter. The lint half of this family lives on [linting](/docs/reference/linting).
+
+A file that a worm claims reads the markers too; [using worms](/docs/worms/using-worms) covers how.
 
 ## Spelling and unknown keys
 
