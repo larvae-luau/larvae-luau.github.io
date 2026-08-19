@@ -3,7 +3,7 @@ title: Editor setup
 description: One command for config completion, a language server for diagnostics and formatting, and go to definition through .luaurc
 category: Concepts
 order: 6
-updated: 2026-08-16
+updated: 2026-08-19
 ---
 
 Three pieces: `larvae self code` for editing `larvae.toml`, `larvae lsp` for editing Luau, and one `.luaurc` alias for go to definition. None takes more than a minute.
@@ -49,9 +49,39 @@ The language server speaks over stdio and serves diagnostics and formatting. It 
 
 The editor follows the same [exclusion lists](/docs/reference/configuration) as the commands. When a file is excluded, larvae clears its diagnostics; it does not keep the diagnostics that were there before you added the exclude.
 
-A buffer claimed by a worm is routed to that worm, through the same code the commands use. The server never downloads a worm, because a keystroke cannot wait for the network; the first fetch happens in the terminal. A worm failure becomes one diagnostic against the file, and the server keeps serving.
+A buffer claimed by a worm is routed to that worm, through the same code the commands use. The server never downloads a worm, because a keystroke cannot wait for the network; installs happen through `larvae worm install` in the terminal. A worm failure becomes one diagnostic against the file, and the server keeps serving.
 
 See [formatting](/docs/reference/formatting) and [linting](/docs/reference/linting) for what the server reports.
+
+### What the server answers
+
+| method | what comes back |
+|---|---|
+| `textDocument/publishDiagnostics` | The lints, and the findings of a worm for a file it claims. |
+| `textDocument/formatting` | One edit covering the document. A file that does not parse gets no reply, because a report on every keystroke is noise. |
+| `textDocument/documentSymbol` | The symbols of the file. |
+| `textDocument/codeAction` | The underscore fix for `unused_variable` and `unused_function`, plus what the worms of the project offer. |
+| `larvae/definitions` | Luau definition text that a worm supplies. |
+
+### Code actions
+
+larvae offers one fix today, for `unused_variable` and `unused_function`, and it is the sentence those lints already print: prefix the name with an underscore. The underscore is the convention Luau and selene both read, and larvae reads it too, so the name stops being reported and the code keeps working.
+
+The fix renames the declaration and every write of the name. A binding that is assigned and never read also reports, and prefixing the declaration alone there would leave the assignments pointing at a name nothing declares. That is a global, and a worse bug than the warning it silenced.
+
+The capability was advertised before larvae had any actions, because an editor decides at initialize whether it will ever ask.
+
+A worm offers actions here as well. The title of each action carries the worm's name, and an action that names the lint it repairs is grouped under that diagnostic.
+
+### larvae/definitions
+
+`larvae/definitions` is not in the protocol, which is why it carries larvae's name. The reply is Luau definition text that a worm supplies. A worm that makes a data file requirable is the case that asks for it: `require("./items.json")` has a type, the worm knows it, and neither larvae nor luau-lsp can work it out alone. This is a different thing from `larvae worm types`, which writes the definitions of the worm API for the people who write worms.
+
+### When something is missing
+
+A config that fails to resolve raises one editor warning with the reason, and the server serves defaults until it loads. A project without a `larvae.toml` raises nothing.
+
+The editor skips a worm that is not installed and says nothing, because it answers a keystroke and a download is not an answer. Install through `larvae worm install`, see [using worms](/docs/worms/using-worms).
 
 ## Go to definition on aliases
 

@@ -3,7 +3,7 @@ title: Failure classes
 description: Why strict is not one big switch
 category: Concepts
 order: 3
-updated: 2026-08-16
+updated: 2026-08-19
 ---
 
 Every require diagnostic falls into one of three groups. Which group it lands in is not a preference, it follows from whether larvae can still produce correct output.
@@ -114,6 +114,26 @@ Luau reports "Ambiguous syntax: this looks like an argument list for a function 
 larvae reports the same case. An earlier larvae read it as a call, and two things went wrong. `larvae check` passed a file that the real compiler rejects, so the check said less than the compiler. And `larvae fmt` joined the two lines into the reading that larvae chose, which is a decision that the author never made. A `(` on the line of the callee is not ambiguous, so a wrapped argument list and a chained call still parse.
 
 Which command surfaces a syntax error follows from what each command needs. `check`, `fmt`, and `lint` parse, so all three report the same refusals, and the editor reports them too, through the same code paths. `process` needs only a lex to rewrite requires and parses when an enabled rule needs a tree, so a file with a syntax error can still get its requires rewritten, and it is `check` that tells you the file does not parse. See the [CLI reference](/docs/reference/cli).
+
+### How the stance is verified
+
+larvae has a parser of its own, so "does it read Luau the way Luau does" is a question that only a comparison answers. luau-lsp carries the real parser and prints `SyntaxError:` apart from `TypeError:`, so it serves as the oracle. The type errors are not larvae's business, and the syntax errors are.
+
+`crates/larvae/tests/fixtures/parser` holds the verdicts, recorded rather than computed, so CI needs no Luau. Three directories:
+
+| directory | meaning |
+|---|---|
+| `accept` | Luau parses it, and larvae must. A miss refuses a file you wrote correctly. |
+| `reject` | Luau refuses it, and larvae must. A miss lets `larvae check` pass a file that will not build. |
+| `lenient` | Luau refuses it and larvae parses it, knowingly. |
+
+`scripts/parser_oracle.sh` makes the recording and checks it again later. With no argument it verifies the fixtures against the `luau-lsp` on the machine. With a path or `--list` it sweeps a corpus and reports both directions.
+
+The two directions are not equal. A file larvae refuses that Luau parses costs you something, because no command reads it. A file larvae parses that Luau refuses is softer, and `lenient` records the ones larvae means to keep. Most of those are type structure, which the parser consumes for extent and never interprets. The test holds them to the property that keeps them harmless: each formats to a stable result and keeps every non-whitespace byte. Leniency costs nothing while larvae only declines to complain. It costs something the day a lint or a rule reasons about a construct larvae read wrongly, because the output is then wrong rather than the error missing.
+
+`larvae check` is where leniency costs something now. It is the gate a project runs in CI, and a file it passes that the compiler refuses makes the gate say less than the compiler.
+
+A sweep of 367 third party files found five where larvae refused valid Luau: the `\z` escape, a leading `|` or `&` in a function return type, and a variadic type holding a union. All are fixed, and each has a fixture.
 
 ## Related
 
