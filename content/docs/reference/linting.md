@@ -60,61 +60,31 @@ And a group does not wake a lint that is `allow` on purpose. `prefer_const` is o
 
 ## The 63 lints
 
-Each name links to its section below, so an editor or an extension can deep link to one lint.
+Each name links to its section below, so an editor or an extension can deep link to one lint. The tables follow the six groups of [`[lint.groups]`](#groups), which is also how `larvae lint --explain` prints the list when a name misses.
+
+### correctness
+
+The code cannot do what it says: it throws, it hangs, or a line of it is dead.
 
 | Lint | Default | What it reports |
 |---|---|---|
 | [`almost_swapped`](#almost-swapped) | warn | Two assignments that look like a swap but overwrite one of the values. |
-| [`and_or_conditional`](#and-or-conditional) | allow | `cond and a or b` used as a value, where an if statement states one case per branch. |
 | [`bad_comment_directive`](#bad-comment-directive) | warn | A `--!` directive that Luau does not know, or one that comes after the code it should govern. |
 | [`bad_string_escape`](#bad-string-escape) | warn | An escape sequence the language does not define. |
-| [`builtin_global_write`](#builtin-global-write) | warn | An assignment over a standard global, which every later script sees. |
-| [`builtin_shadowed`](#builtin-shadowed) | warn | A local that takes the name of a standard global, so the library is unreachable below that line. |
-| [`collapsible_if`](#collapsible-if) | allow | An if that holds one if and nothing else, where the two conditions are one `and` apart. |
 | [`compare_nan`](#compare-nan) | warn | Comparing against nan, which is never equal to anything including itself. |
 | [`comparison_precedence`](#comparison-precedence) | warn | `not a == b`, or a chain like `a < b < c`, which does not group the way it reads. |
 | [`constant_condition`](#constant-condition) | warn | A condition that is a literal, so the branch is decided already. |
 | [`constant_table_comparison`](#constant-table-comparison) | warn | Comparing against a table literal, which compares identity and is always false. |
-| [`deprecated`](#deprecated) | warn | A function that still works but has been replaced. |
-| [`divide_by_zero`](#divide-by-zero) | warn | Dividing by a literal zero. |
 | [`duplicate_function`](#duplicate-function) | warn | Two functions of the same name in one scope, where the first is discarded. |
 | [`duplicate_keys`](#duplicate-keys) | deny | A table key written twice, where only the last one survives. |
 | [`duplicate_local`](#duplicate-local) | deny | One local statement or parameter list that declares the same name twice. |
-| [`else_after_return`](#else-after-return) | allow | An else after branches that all end in a return, break or continue. |
-| [`empty_if`](#empty-if) | warn | An if branch with nothing in it. |
-| [`empty_loop`](#empty-loop) | warn | A loop body with nothing in it. |
 | [`format_string`](#format-string) | deny | A format string that `string.format` or `os.date` rejects at runtime. |
-| [`global_usage`](#global-usage) | warn | Reaching into `_G`, which is shared with every other script. |
-| [`high_cyclomatic_complexity`](#high-cyclomatic-complexity) | allow | A function with more branches than anyone can hold at once. |
-| [`if_expression_assignment`](#if-expression-assignment) | allow | `if cond then a else b` used as a value. |
-| [`if_same_then_else`](#if-same-then-else) | warn | Two branches of the same if with identical bodies. |
 | [`ifs_same_cond`](#ifs-same-cond) | warn | An elseif repeating a condition already tested, which can never run. |
-| [`ignored_pcall_result`](#ignored-pcall-result) | warn | A `pcall` or `xpcall` used as a statement, which catches the error and discards it. |
-| [`implicit_any_local`](#implicit-any-local) | warn | A local with no value and no type, so whatever assigns it first decides what it holds. |
-| [`implicit_any_parameter`](#implicit-any-parameter) | allow | A parameter with no type, so what the function takes is decided by each caller. |
-| [`implicit_return`](#implicit-return) | allow | A function that returns a value on one path and falls off the end on another. |
 | [`length_as_condition`](#length-as-condition) | deny | `#t` used as a condition. A length is a number, and every number is true in Luau. |
-| [`loop_invariant_call`](#loop-invariant-call) | warn | A call inside a loop whose result cannot change between iterations. |
-| [`manual_table_clone`](#manual-table-clone) | warn | A loop that copies a table, which `table.clone` does in one call. |
 | [`misleading_and_or`](#misleading-and-or) | warn | `cond and x or b` where the middle can never be truthy: a literal `false` or `nil`, or a boolean that syntax proves. |
 | [`mismatched_arg_count`](#mismatched-arg-count) | warn | Calling a function in this file with the wrong number of arguments. |
-| [`mixed_table`](#mixed-table) | warn | A table with both array entries and named keys. |
-| [`multiple_statements`](#multiple-statements) | allow | More than one statement on a line. |
 | [`must_use`](#must-use) | warn | Calling a pure function and discarding what it returned. |
-| [`negated_condition`](#negated-condition) | allow | An if with a negated condition and an else, where swapped bodies read in the expected order. |
-| [`non_const_require`](#non-const-require) | allow | A required module bound with `local`, where `const` says it never changes. |
 | [`number_literal_overflow`](#number-literal-overflow) | warn | A hexadecimal or binary literal wider than 64 bits, which is truncated. |
-| [`parenthese_conditions`](#parenthese-conditions) | warn | Parentheses around a condition, which Luau does not need. |
-| [`placeholder_read`](#placeholder-read) | warn | Reading `_`, the name that says a value is discarded. |
-| [`prefer_const`](#prefer-const) | allow | A local that nothing reassigns, which `const` states outright. |
-| [`restricted_globals`](#restricted-globals) | warn | Reading a global the project has ruled out. Silent until the config names one. |
-| [`restricted_module_paths`](#restricted-module-paths) | warn | Requiring a module the project has ruled out. Quiet until the config names a path. |
-| [`roblox_incorrect_color3_new_bounds`](#roblox-incorrect-color3-new-bounds) | warn | `Color3.new` given a channel over 1, where the scale is 0 to 1. |
-| [`roblox_manual_fromscale_or_fromoffset`](#roblox-manual-fromscale-or-fromoffset) | warn | A `UDim2.new` that `fromScale` or `fromOffset` says more clearly. |
-| [`roblox_suspicious_udim2_new`](#roblox-suspicious-udim2-new) | warn | `UDim2.new` given two arguments, where it takes four. |
-| [`self_assignment`](#self-assignment) | warn | Assigning a value to itself, which does nothing. |
-| [`shadowing`](#shadowing) | warn | A name that hides another still in scope. |
-| [`string_concat_in_loop`](#string-concat-in-loop) | warn | Building a string by concatenation in a loop, which is quadratic. |
 | [`suspicious_reverse_loop`](#suspicious-reverse-loop) | warn | A numeric for counting down without a negative step, which never runs. |
 | [`table_operations`](#table-operations) | warn | A `table.insert` or `table.remove` whose index or argument count is wrong. |
 | [`type_check_inside_call`](#type-check-inside-call) | warn | A comparison inside `type()`, where it belongs outside. |
@@ -123,10 +93,79 @@ Each name links to its section below, so an editor or an extension can deep link
 | [`uninitialized_local`](#uninitialized-local) | warn | A local declared with no value and never assigned, so every read is nil. |
 | [`unknown_type`](#unknown-type) | warn | Comparing `type(x)` against a string that `type()` never returns. |
 | [`unreachable_code`](#unreachable-code) | warn | Statements after a return, break or continue, which never run. |
-| [`unscoped_variables`](#unscoped-variables) | warn | An assignment with no `local`, which creates a global. |
 | [`unused_function`](#unused-function) | warn | A `local function` that nothing calls, and a global `function f() end` that no line reads. |
 | [`unused_variable`](#unused-variable) | warn | A name declared and never read. A `local function` is [`unused_function`](#unused-function) instead. |
 | [`zero_step_loop`](#zero-step-loop) | deny | A numeric for whose step is zero, so the counter never moves. |
+
+### suspicious
+
+Probably wrong, and a human decides.
+
+| Lint | Default | What it reports |
+|---|---|---|
+| [`builtin_global_write`](#builtin-global-write) | warn | An assignment over a standard global, which every later script sees. |
+| [`builtin_shadowed`](#builtin-shadowed) | warn | A local that takes the name of a standard global, so the library is unreachable below that line. |
+| [`divide_by_zero`](#divide-by-zero) | warn | Dividing by a literal zero. |
+| [`empty_if`](#empty-if) | warn | An if branch with nothing in it. |
+| [`empty_loop`](#empty-loop) | warn | A loop body with nothing in it. |
+| [`global_usage`](#global-usage) | warn | Reaching into `_G`, which is shared with every other script. |
+| [`if_same_then_else`](#if-same-then-else) | warn | Two branches of the same if with identical bodies. |
+| [`ignored_pcall_result`](#ignored-pcall-result) | warn | A `pcall` or `xpcall` used as a statement, which catches the error and discards it. |
+| [`implicit_any_local`](#implicit-any-local) | warn | A local with no value and no type, so whatever assigns it first decides what it holds. |
+| [`implicit_any_parameter`](#implicit-any-parameter) | allow | A parameter with no type, so what the function takes is decided by each caller. |
+| [`implicit_return`](#implicit-return) | allow | A function that returns a value on one path and falls off the end on another. |
+| [`mixed_table`](#mixed-table) | warn | A table with both array entries and named keys. |
+| [`placeholder_read`](#placeholder-read) | warn | Reading `_`, the name that says a value is discarded. |
+| [`self_assignment`](#self-assignment) | warn | Assigning a value to itself, which does nothing. |
+| [`shadowing`](#shadowing) | warn | A name that hides another still in scope. |
+| [`unscoped_variables`](#unscoped-variables) | warn | An assignment with no `local`, which creates a global. |
+
+### style
+
+A matter of how the code reads.
+
+| Lint | Default | What it reports |
+|---|---|---|
+| [`and_or_conditional`](#and-or-conditional) | allow | `cond and a or b` used as a value, where an if statement states one case per branch. |
+| [`collapsible_if`](#collapsible-if) | allow | An if that holds one if and nothing else, where the two conditions are one `and` apart. |
+| [`deprecated`](#deprecated) | warn | A function that still works but has been replaced. |
+| [`else_after_return`](#else-after-return) | allow | An else after branches that all end in a return, break or continue. |
+| [`if_expression_assignment`](#if-expression-assignment) | allow | `if cond then a else b` used as a value. |
+| [`multiple_statements`](#multiple-statements) | allow | More than one statement on a line. |
+| [`negated_condition`](#negated-condition) | allow | An if with a negated condition and an else, where swapped bodies read in the expected order. |
+| [`non_const_require`](#non-const-require) | allow | A required module bound with `local`, where `const` says it never changes. |
+| [`parenthese_conditions`](#parenthese-conditions) | warn | Parentheses around a condition, which Luau does not need. |
+| [`prefer_const`](#prefer-const) | allow | A local that nothing reassigns, which `const` states outright. |
+| [`restricted_globals`](#restricted-globals) | warn | Reading a global the project has ruled out. Silent until the config names one. |
+| [`restricted_module_paths`](#restricted-module-paths) | warn | Requiring a module the project has ruled out. Quiet until the config names a path. |
+
+### complexity
+
+More shape than the job needs.
+
+| Lint | Default | What it reports |
+|---|---|---|
+| [`high_cyclomatic_complexity`](#high-cyclomatic-complexity) | allow | A function with more branches than anyone can hold at once. |
+
+### performance
+
+Correct, and it costs more than it has to.
+
+| Lint | Default | What it reports |
+|---|---|---|
+| [`loop_invariant_call`](#loop-invariant-call) | warn | A call inside a loop whose result cannot change between iterations. |
+| [`manual_table_clone`](#manual-table-clone) | warn | A loop that copies a table, which `table.clone` does in one call. |
+| [`string_concat_in_loop`](#string-concat-in-loop) | warn | Building a string by concatenation in a loop, which is quadratic. |
+
+### roblox
+
+A Roblox data type used in a way that does not hold.
+
+| Lint | Default | What it reports |
+|---|---|---|
+| [`roblox_incorrect_color3_new_bounds`](#roblox-incorrect-color3-new-bounds) | warn | `Color3.new` given a channel over 1, where the scale is 0 to 1. |
+| [`roblox_manual_fromscale_or_fromoffset`](#roblox-manual-fromscale-or-fromoffset) | warn | A `UDim2.new` that `fromScale` or `fromOffset` says more clearly. |
+| [`roblox_suspicious_udim2_new`](#roblox-suspicious-udim2-new) | warn | `UDim2.new` given two arguments, where it takes four. |
 
 `larvae lint --explain <name>` prints one lint's description and its group. The schema contains all lints with their defaults, so an editor can offer them by name. `larvae init` writes only `std = "roblox"` and a pointer to `[lint.rules]`, not the lint list.
 
