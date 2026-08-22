@@ -3,7 +3,7 @@ title: CLI reference
 description: Every larvae command, flag, exit code, and environment variable
 category: Reference
 order: 1
-updated: 2026-08-19
+updated: 2026-08-21
 ---
 
 larvae has nine commands: `process`, `check`, `fmt`, `lint`, `bundle`, `lsp`, `init`, `worm`, and `self`. That is the whole surface. There is no `serve` command and no `schema` command, and larvae never runs rojo for you.
@@ -90,7 +90,7 @@ larvae fmt
 
 Excludes apply to files that a walk finds, not to files that you name. `larvae fmt` with no arguments, or with a directory argument, skips excluded files. `larvae fmt Packages/thing.luau` formats the file, because a user who names a file means that file. A tool that silently does nothing to a named file is worse than a tool that touches an excluded file.
 
-The options live in `[fmt]`, documented on [formatting](/docs/reference/formatting).
+The options live in `[fmt]`, documented on [formatting](/docs/reference/formatting). With `[fmt] enabled = false` the command writes no file, `--check` reports no failure, and the exit code is zero, because that half of larvae is off, see [formatting](/docs/reference/formatting).
 
 ### `lint`
 
@@ -111,7 +111,9 @@ larvae lint
 
 A lint reads one file in isolation, which is why `larvae lint` works on stdin, in the editor, and with no config. A question about the whole project, such as a require cycle, runs under `larvae check` instead.
 
-Individual findings are silenced with `-- larvae: allow(...)` flag comments, and selene's spelling works too. The lint list, the levels, and the flag comment rules live on [linting](/docs/reference/linting).
+`--explain` also prints the group the lint belongs to, and the list it prints when a name misses is grouped rather than alphabetical, so a reader scans one kind at a time. The groups live on [linting](/docs/reference/linting).
+
+Individual findings are silenced with `-- larvae: allow(...)` flag comments, and selene's spelling works too. The lint list, the levels, and the flag comment rules live on [linting](/docs/reference/linting). With `[lint] enabled = false` the command reports nothing and exits zero, because that half of larvae is off, see [linting](/docs/reference/linting).
 
 The same named file rule as `fmt` applies: excludes affect the walk, never a file you name.
 
@@ -212,6 +214,7 @@ Manages the larvae binary itself, and the editor support around it.
 | `self update --force` | update even when another tool manages the binary |
 | `self uninstall` | prompt, then remove `~/.larvae` |
 | `self code` | set up editor schema support for `larvae.toml` |
+| `self sync-luaurc` | write the project aliases into `.luaurc` in a form the editor resolves |
 
 `self install` copies the **running** binary to `~/.larvae/bin/larvae`. PATH handling then differs by platform, on purpose:
 
@@ -229,6 +232,10 @@ It honors `GITHUB_TOKEN` for the releases API, which matters on shared runners w
 `self uninstall` asks `Remove <dir>?` and defaults to **no**, so pressing enter cancels.
 
 `self code` gives your editor completion and hover docs for every `larvae.toml` key. Its first choice is an Even Better TOML association in the editor's user settings; when that extension is absent it writes a `#:schema` line at the top of the file, which any Taplo based editor reads. A project with worms gets the merged schema too, so the editor also completes each worm's lints, options, and rules. The full story is on [editor setup](/docs/concepts/editor-setup).
+
+`self sync-luaurc` writes the project aliases into the `.luaurc` that an editor reads. A `@game/...` alias value is a DataModel path, and luau-lsp cannot follow one, so a verbatim copy would cost the editor types and go to definition on every require through that alias. The command inverts the mount table instead: the DataModel path goes back to the directory that mounts there, and `.luaurc` gets a path the editor can resolve. Source keeps its `@pkg` forms, and this file backs them.
+
+The command rewrites only the `aliases` key. Other keys survive. Comments do not, because larvae reads `.luaurc` as JSON with comments and writes plain JSON back. `--check` reports what would change and fails without writing, which is the form CI wants.
 
 ## Exit codes
 

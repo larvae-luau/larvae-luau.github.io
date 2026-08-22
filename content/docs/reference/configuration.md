@@ -3,7 +3,7 @@ title: Configuration
 description: Every larvae.toml key, the other files larvae reads, and how they merge
 category: Reference
 order: 2
-updated: 2026-08-19
+updated: 2026-08-21
 ---
 
 Configuration lives in `larvae.toml` next to your Rojo project. The file is optional: `larvae fmt` and `larvae lint` work with no `larvae.toml` at all, and a project with a `default.project.json` and `.luaurc` aliases can run `larvae process` on defaults alone. Every table below exists to override a default, never to satisfy one.
@@ -248,6 +248,10 @@ A worm's rules do **not** live here. They live under `[worms.<name>] rules`, so 
 
 Options for `larvae fmt`. The table accepts every stylua option under larvae's spelling, options beyond stylua such as `magic_trailing_comma` and `require_binding`, plus `exclude` and `include` as described under [the top level](#exclude-and-include). stylua's `syntax` key is accepted and ignored, because larvae only formats Luau.
 
+`enabled = false` turns the formatter off, for a project that wants larvae for one job and keeps another formatter, see [formatting](/docs/reference/formatting).
+
+`recommended = false` starts from a base that changes as little as possible, and the project turns back on what it wants, see [formatting](/docs/reference/formatting).
+
 A worm adds format options under its own key: `[fmt.<worm>]` is a table of the options that worm declares. An unknown key at the top level of `[fmt]` is refused with a message, because only a worm can own a name that larvae does not.
 
 Every option and its default lives on [formatting](/docs/reference/formatting).
@@ -258,10 +262,13 @@ Options for `larvae lint`.
 
 | key | meaning |
 |---|---|
+| `enabled` | `false` turns the linter off, see [linting](/docs/reference/linting) |
+| `recommended` | `false` starts every lint at `allow`, so the project gets the lints it names and no others, see [linting](/docs/reference/linting) |
 | `std` | the standard library, `"roblox"` by default; selene's spellings are accepted |
 | `globals` | extra globals |
 | `exclude`, `include` | per area lists, see [the top level](#exclude-and-include) |
-| `[lint.rules]` | lint levels: `allow`, `warn`, or `deny` |
+| `[lint.groups]` | a level for a whole kind of lint at once, see [linting](/docs/reference/linting) |
+| `[lint.rules]` | lint levels: `allow`, `info`, `warn`, or `deny` |
 | `[lint.options]` | per lint options, also named `[lint.config]` under selene's name |
 
 A worm's lints live under `[lint.rules.<worm>]`, and each name reads `<worm>.<name>` in a message, in `--explain`, and in an `allow` comment.
@@ -292,6 +299,10 @@ The CI gate. `larvae check` runs the analyses that need the whole require graph,
 | `entry` | none | the module the bundle starts from, relative to the project root. `--entry` on the command line beats this key; without either, the command errors |
 | `output` | `"bundle.luau"` | where the single file goes, relative to the project root |
 | `tree_shake` | `true` | drop the modules that the entry cannot reach. Reachability comes from the require graph, so a module reached only through a dynamic require is dropped; such a require is reported, and a project that needs those modules turns this off |
+
+The bundler follows the requires of a vendored package until the graph closes, with the same resolver, the same `.luaurc` walk, and the same `@self`, so a package that requires a package follows too. A resolution failure inside a vendored module warns instead of stopping the bundle, because a package can require another runtime, ex: `task or require("@lune/task")`. The require ships as written.
+
+`@self` requires enter the require graph as well, so `check` follows a cycle through one and a bundle keeps what one names.
 
 ## `[minify]`
 
