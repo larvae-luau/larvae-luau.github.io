@@ -1,7 +1,11 @@
 import { REPO_URL } from './site'
 
-/** Stands in until the CLI publishes its first release. */
-export const UNRELEASED_LABEL = 'v0.1.0-beta'
+/**
+ * Shown when a build cannot resolve the release. The CLI has published
+ * releases, so a made-up version here would claim the wrong one; a neutral
+ * label sends the reader to the releases page instead.
+ */
+export const UNRELEASED_LABEL = 'latest release'
 
 export interface Release {
   /** What the badge prints. */
@@ -44,7 +48,12 @@ export function currentRelease(): Release {
   }
 }
 
-/** Structured data wants a bare 0.1.0 rather than the badge's v0.1.0. */
-export function releaseVersion(): string {
-  return currentRelease().label.replace(/^v/i, '')
+/**
+ * Structured data wants a bare 0.1.0 rather than the badge's v0.1.0, and it
+ * wants no version at all when the build could not resolve one.
+ */
+export function releaseVersion(): string | null {
+  const release = currentRelease()
+  if (!release.published) return null
+  return release.label.replace(/^v/i, '')
 }

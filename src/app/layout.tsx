@@ -75,7 +75,9 @@ const structuredData = {
   url: SITE_ORIGIN,
   applicationCategory: 'DeveloperApplication',
   operatingSystem: 'Linux, macOS, Windows',
-  softwareVersion: releaseVersion(),
+  /* Omitted when the build could not resolve a release, because structured
+     data claiming a version nobody published is worse than none. */
+  ...(releaseVersion() ? { softwareVersion: releaseVersion() } : {}),
   programmingLanguage: 'Rust',
   codeRepository: REPO_URL,
 }

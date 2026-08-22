@@ -52,9 +52,9 @@ describe('releaseVersion', () => {
     expect(releaseVersion()).toBe('1.4.0')
   })
 
-  it('covers the placeholder too', () => {
+  it('claims no version when nothing resolved', () => {
     process.env.RELEASE_TAG = ''
-    expect(releaseVersion()).toBe('0.1.0-beta')
+    expect(releaseVersion()).toBeNull()
   })
 })
 
