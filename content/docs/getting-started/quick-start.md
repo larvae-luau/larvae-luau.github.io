@@ -3,7 +3,7 @@ title: Quick start
 description: Format, lint, and go from a Rojo project to native string requires in five minutes
 category: Getting started
 order: 2
-updated: 2026-08-16
+updated: 2026-08-21
 ---
 
 A handful of commands take an existing Rojo project from alias requires to Roblox native string requires, with formatting and linting along the way. This page walks through them, in order, on a project you already have.
@@ -42,6 +42,7 @@ What it writes:
 
 - `[process]` with the input directories it detected, and `[requires]`
 - `[fmt]` and `[lint]` with every option and every lint at its default, as comments. Both lists are generated from the code, so they cannot drift from it. The reason for writing them at all: a config is also the place where you discover that an option exists
+- `recommended = true` into `[fmt]` and `[lint]`. The value is the default already; the key is the point, because a key in the file can be turned off, and an absent key has to be found in the docs first
 - When the project already has a `stylua.toml` or a `selene.toml`, a note pointing at that file instead of keys, because written defaults would silently override settings the project already made
 
 It also offers to add `.larvae/` and `dist/` to `.gitignore`.

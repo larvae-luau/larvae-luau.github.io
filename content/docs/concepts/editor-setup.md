@@ -3,7 +3,7 @@ title: Editor setup
 description: One command for config completion, a language server for diagnostics and formatting, and go to definition through .luaurc
 category: Concepts
 order: 6
-updated: 2026-08-19
+updated: 2026-08-21
 ---
 
 Three pieces: `larvae self code` for editing `larvae.toml`, `larvae lsp` for editing Luau, and one `.luaurc` alias for go to definition. None takes more than a minute.
@@ -51,7 +51,7 @@ The editor follows the same [exclusion lists](/docs/reference/configuration) as 
 
 A buffer claimed by a worm is routed to that worm, through the same code the commands use. The server never downloads a worm, because a keystroke cannot wait for the network; installs happen through `larvae worm install` in the terminal. A worm failure becomes one diagnostic against the file, and the server keeps serving.
 
-See [formatting](/docs/reference/formatting) and [linting](/docs/reference/linting) for what the server reports.
+See [formatting](/docs/reference/formatting) and [linting](/docs/reference/linting) for what the server reports. `[fmt] enabled = false` gives the editor a formatter that returns no edits, and `[lint] enabled = false` clears the diagnostics of every file, see [formatting](/docs/reference/formatting) and [linting](/docs/reference/linting).
 
 ### What the server answers
 
@@ -60,14 +60,22 @@ See [formatting](/docs/reference/formatting) and [linting](/docs/reference/linti
 | `textDocument/publishDiagnostics` | The lints, and the findings of a worm for a file it claims. |
 | `textDocument/formatting` | One edit covering the document. A file that does not parse gets no reply, because a report on every keystroke is noise. |
 | `textDocument/documentSymbol` | The symbols of the file. |
-| `textDocument/codeAction` | The underscore fix for `unused_variable` and `unused_function`, plus what the worms of the project offer. |
+| `textDocument/codeAction` | The three lint fixes below, plus what the worms of the project offer. |
 | `larvae/definitions` | Luau definition text that a worm supplies. |
 
 ### Code actions
 
-larvae offers one fix today, for `unused_variable` and `unused_function`, and it is the sentence those lints already print: prefix the name with an underscore. The underscore is the convention Luau and selene both read, and larvae reads it too, so the name stops being reported and the code keeps working.
+larvae fixes three of its own lints, and each fix is the sentence that lint already prints.
 
-The fix renames the declaration and every write of the name. A binding that is assigned and never read also reports, and prefixing the declaration alone there would leave the assignments pointing at a name nothing declares. That is a global, and a worse bug than the warning it silenced.
+| lint | the fix |
+|---|---|
+| `unused_variable` | Prefix the name with an underscore. |
+| `unused_function` | The same. |
+| `prefer_const` | Change the `local` to `const`. |
+
+The underscore is the convention Luau and selene both read, and larvae reads it too, so the name stops being reported and the code keeps working. That fix renames the declaration and every write of the name. A binding that is assigned and never read also reports, and prefixing the declaration alone there would leave the assignments pointing at a name nothing declares. That is a global, and a worse bug than the warning it silenced.
+
+The `const` fix is one keyword. The lint has already established that nothing reassigns the names, which is the condition Luau enforces, so the swap cannot turn a running file into "Variable is constant and may not be reassigned". `prefer_const` is off by default, so the fix appears only where a project turned the lint on.
 
 The capability was advertised before larvae had any actions, because an editor decides at initialize whether it will ever ask.
 
@@ -119,6 +127,8 @@ pkg = "@game/ReplicatedStorage/Packages"
 ```
 
 luau-lsp cannot read that, so go to definition on `@pkg` stops working. If you need both, keep a filesystem alias in `.luaurc` for the editor and let larvae's auto mounts handle the DataModel side, since they already know where `Packages` lands. See [Rojo integration](/docs/concepts/rojo-integration).
+
+`larvae self sync-luaurc` keeps the `.luaurc` aliases editor resolvable for you: it inverts each DataModel alias back to the directory that mounts there and writes that path into `.luaurc`, see the [CLI reference](/docs/reference/cli).
 
 ## Related
 

@@ -3,7 +3,7 @@ title: Require targets
 description: One input semantics, three output targets, and the one caveat that can break a correct looking build
 category: Concepts
 order: 1
-updated: 2026-08-16
+updated: 2026-08-21
 ---
 
 larvae reads one require syntax and can write three. What you write never changes, what comes out is a config choice.
@@ -90,6 +90,21 @@ After:
 ```luau
 local json = require("../lib/json")
 ```
+
+#### What the path target writes for an init file
+
+An `init.luau` does not read `./` the way every other file does. The RFC resolves a relative require from an init file against the parent of the directory it sits in, and a runtime enforces that: `./utils/helper` inside `pkg/init.luau` fails to resolve, and `./pkg/utils/helper` works.
+
+So larvae writes `@self` for a module inside the directory of an init file:
+
+```luau
+-- src/init.luau, and dist/init.luau, both
+const helper = require("@self/utils/helper")
+```
+
+`@self` names that directory without spelling it. The same require reads correctly at `src/init.luau`, at `dist/init.luau`, and inside a package a consumer has vendored under a name neither tree used. A relative form cannot do that, because it has to name the directory, and the name changes when the output moves.
+
+Everything else keeps the relative form. A sibling is `./test` in both trees, because both ends travel together, and a target outside the init file's own directory has no `@self` to reach it by.
 
 ### roblox-instance
 

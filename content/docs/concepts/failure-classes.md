@@ -3,7 +3,7 @@ title: Failure classes
 description: Why strict is not one big switch
 category: Concepts
 order: 3
-updated: 2026-08-19
+updated: 2026-08-21
 ---
 
 Every require diagnostic falls into one of three groups. Which group it lands in is not a preference, it follows from whether larvae can still produce correct output.
@@ -115,6 +115,20 @@ larvae reports the same case. An earlier larvae read it as a call, and two thing
 
 Which command surfaces a syntax error follows from what each command needs. `check`, `fmt`, and `lint` parse, so all three report the same refusals, and the editor reports them too, through the same code paths. `process` needs only a lex to rewrite requires and parses when an enabled rule needs a tree, so a file with a syntax error can still get its requires rewritten, and it is `check` that tells you the file does not parse. See the [CLI reference](/docs/reference/cli).
 
+### Three merged RFCs parse
+
+larvae parses the syntax of three merged Luau RFCs, so a file that uses them is not refused as a syntax error.
+
+- Classes: `[export] [open] class Name [extends Base]` with `[public]` fields, methods, and the RFC's metamethod whitelist plus `__init`. Any other `__` name is a syntax error.
+- Export by value: `export local`, `export const`, and `export function`, composing with attributes.
+- Integer literals: the `i` suffix on decimal, hex, and binary numbers.
+
+`class`, `open`, and `export` stay contextual keywords, so code that uses them as names parses as before. The formatter lays a class out one member per line.
+
+### Files that are not UTF-8
+
+Luau accepts any byte inside a string, and larvae reads files as UTF-8. A read-only pass still reads such a file: `larvae check` and `larvae lint` analyze a stand-in where every invalid byte becomes one stand-in byte, so every offset holds. A pass that writes output refuses the file, because a splice of the stand-in would write it.
+
 ### How the stance is verified
 
 larvae has a parser of its own, so "does it read Luau the way Luau does" is a question that only a comparison answers. luau-lsp carries the real parser and prints `SyntaxError:` apart from `TypeError:`, so it serves as the oracle. The type errors are not larvae's business, and the syntax errors are.
@@ -134,6 +148,8 @@ The two directions are not equal. A file larvae refuses that Luau parses costs y
 `larvae check` is where leniency costs something now. It is the gate a project runs in CI, and a file it passes that the compiler refuses makes the gate say less than the compiler.
 
 A sweep of 367 third party files found five where larvae refused valid Luau: the `\z` escape, a leading `|` or `&` in a function return type, and a variadic type holding a union. All are fixed, and each has a fixture.
+
+The upstream Luau conformance corpus is a parser regression net as well. All 55 files of luau-lang/luau `tests/conformance` are vendored, and every one must lex, parse, tile its token stream, and print back byte for byte.
 
 ## Related
 

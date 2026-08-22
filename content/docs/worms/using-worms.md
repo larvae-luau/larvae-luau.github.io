@@ -3,7 +3,7 @@ title: Using worms
 description: The [worms] table, three install channels, run order, inheritance, and where a worm's settings live
 category: Worms
 order: 2
-updated: 2026-08-19
+updated: 2026-08-21
 ---
 
 One table per worm under `[worms]`. The key is the worm's name, and everything the worm adds to the project hangs off that key.
@@ -149,6 +149,14 @@ A finding then reads `markup.tidy` in a message, in `larvae lint --explain`, and
 `inherit_lints = true` runs the builtin lints on the files a worm claims, so a claimed file reports `unused_variable` and `shadowing` without work from the worm. The lints run against the Luau shadow the worm returns, or against its transform output when there is no shadow.
 
 Inheritance takes everything unless `[worms.<name>.inherit]` states less: `lints_only` or `lints_except` for the lints, never both, and `fmt_except` for the format options that keep their default in claimed files.
+
+## Requiring a claimed file
+
+A require that names a claimed file resolves to the Luau the worm writes, because a claimed file is a module: the pipeline turns it into Luau in the output. The DataModel targets strip the claimed extension, so `require("../Interface/App")` resolves although the source file is `App.luaux`. A directory whose init file is claimed is a module too: `Pkg/init.luaux` is written as `Pkg/init.luau`, so `require("./Pkg")` resolves.
+
+A claimed script keeps its realm suffix. `boot.client.luaux` is a LocalScript to the realm checks, and `boot.server.luaux` is a Script. Both halves matter, because UI runs on the server as well as the client, and the checks that apply to one do not apply to the other.
+
+A require is still written without an extension, as the Luau RFC says, because the source extension is larvae's business and never appears in output. A claimed file beside a `.luau` of the same name is ambiguous, as two `.luau` files would be.
 
 ## Hold-off markers in claimed files
 
