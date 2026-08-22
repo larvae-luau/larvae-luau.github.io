@@ -3,10 +3,10 @@ title: Formatting
 description: Every [fmt] option, its default, and what it does
 category: Reference
 order: 4
-updated: 2026-08-19
+updated: 2026-08-21
 ---
 
-`[fmt]` in `larvae.toml` configures `larvae fmt`. The table is optional: `larvae fmt` works with no config at all, and every option below has a default. `larvae init` writes only the four options users change most (`column_width`, `indent_type`, `indent_width`, `quote_style`); every other option keeps its default silently, and the schema serves the full list to the editor.
+`[fmt]` in `larvae.toml` configures `larvae fmt`. The table is optional: `larvae fmt` works with no config at all, and every option below has a default. Two keys come first, [`enabled`](#enabled) and [`recommended`](#recommended), because they decide what every other key below means. `larvae init` writes `recommended = true` and the four options users change most (`column_width`, `indent_type`, `indent_width`, `quote_style`); every other option keeps its default silently, and the schema serves the full list to the editor.
 
 ```toml
 [fmt]
@@ -20,6 +20,8 @@ quote_style = "auto-prefer-double"
 
 | Option | Default | What it does |
 |---|---|---|
+| [`enabled`](#enabled) | `true` | `false` turns the formatter off everywhere. |
+| [`recommended`](#recommended) | `true` | `false` starts from a base that changes as little as possible. |
 | [`column_width`](#column-width) | `120` | The column the formatter wraps at. |
 | [`line_endings`](#line-endings) | `"unix"` | Line endings in the output. |
 | [`indent_type`](#indent-type) | `"tabs"` | Tabs or spaces. |
@@ -36,11 +38,36 @@ quote_style = "auto-prefer-double"
 | [`trailing_comma`](#trailing-comma) | `true` | The last entry of an expanded table gets a comma. |
 | [`block_newline_gaps`](#block-newline-gaps) | `"never"` | `preserve` keeps a blank line just inside a block. |
 | [`require_binding`](#require-binding) | `"preserve"` | Which keyword binds a required module. |
+| [`prefer_const`](#prefer-const) | `false` | Turn a `local` that nothing reassigns into a `const`. |
 | [`semicolons`](#semicolons) | `"never"` | Whether a statement ends with one. |
 | [`if_expression`](#if-expression) | `{ expand = "never", ... }` | How an `if` expression lays out. |
 | [`function_call`](#function-call) | `{ expand = "when-needed", ... }` | How the argument list of a call lays out. |
 | [`function_declaration`](#function-declaration) | `{ expand = "when-needed", ... }` | How the parameter list of a declaration lays out. |
+| [`table_types`](#table-types) | `{ enabled = true, width = 60, separator = "comma" }` | How a table type lays out. |
 | [`final_newline`](#final-newline) | `true` | Whether the file ends with a newline. |
+
+## Two keys come first
+
+`enabled` and `recommended` come before every style option, because they decide what those options mean: whether the formatter runs at all, and which defaults it starts from.
+
+### `enabled`
+
+Default `true`. `enabled = false` turns the formatter off: `larvae fmt` writes no file, `--check` reports no failure and exits zero, `--stdin` answers with its input unchanged so a pipeline still reads the output as the file, and the editor gets a formatter that returns no edits. This is for a project that wants larvae for its lints and its requires and keeps another formatter.
+
+```toml
+[fmt]
+enabled = false
+```
+
+### `recommended`
+
+Has the same three states as `[lint] recommended` on [linting](/docs/reference/linting). Absent and `true` both mean larvae's defaults apply. `false` starts from a base that changes as little as possible: `magic_trailing_comma`, `space_inside_braces` and `trailing_comma` go off, and the project turns back on what it wants.
+
+Those three are the whole set, and the reason is worth stating. They are the options where larvae holds an opinion beyond stylua and the opinion rewrites a file on its own. Every other default is either stylua's already or a setting that does nothing until a project asks for it, so a base that moved them would not be neutral, it would be a third style nobody chose.
+
+A `stylua.toml` states the style of the project outright, so it stays the base wherever one exists, whatever `recommended` says.
+
+`larvae init` writes `recommended = true` into `[fmt]`. The value is the default already; the key is the point, because a key in the file can be turned off and an absent key has to be found in the docs first.
 
 ## stylua parity
 
@@ -215,6 +242,19 @@ local http = require("./http")
 const http = require("./http")
 ```
 
+### `prefer_const`
+
+Default `false`. Turns a `local` that nothing reassigns into a `const`. It is the same rule the `prefer_const` lint reports, with the formatter making the edit, and it carries the same `mutated_tables_stay_local` option under the same name. The [lint's section on linting](/docs/reference/linting#prefer-const) covers what is left alone.
+
+It is off by default, because it rewrites a keyword, which is a bigger step than moving spaces.
+
+```luau
+-- before
+local MAX_RETRIES = 3
+-- after, with prefer_const = true
+const MAX_RETRIES = 3
+```
+
 ### `semicolons`
 
 Default `"never"`. The values are `"never"`, `"always"`, and `"as-needed"`. `never` and `as-needed` name the same output, and both are accepted: Luau needs a semicolon in one place only, before a statement that opens with `(`, and larvae writes that one whatever the option says. In a language where the separator is optional everywhere except one place where it is never optional, "omit the ones that are not needed" and "omit all of them" describe the same file.
@@ -362,6 +402,42 @@ Default `"when-needed"`: the parameter list opens where the line does not fit. `
 #### `function_declaration.indent`
 
 Default `1`. The indent levels an opened parameter takes.
+
+### `table_types`
+
+Lays out table types in every position a type takes: an alias, an annotation on a binding or a parameter, a return type, and a `::` assertion. A table wider than `width` opens with one field per line and a trailing separator. The measure is one table alone, so a short table nested in a long one keeps its line.
+
+```luau
+-- before
+type Item = { name: string, price: number, rarity: string, tradable: boolean }
+-- after: wider than width, so it opens one field per line
+type Item = {
+	name: string,
+	price: number,
+	rarity: string,
+	tradable: boolean,
+}
+```
+
+The new solver's forms hold: `read` and `write` modifiers, indexers, intersections, and generic arguments split no field. A comment inside a table type keeps the author's text, and `type function` bodies are never touched.
+
+| Key | Default | Selects |
+|---|---|---|
+| `enabled` | `true` | whether table types lay out at all |
+| `width` | `60` | the boundary a table type opens at |
+| `separator` | `"comma"` | `"comma"` or `"semicolon"`, in both layouts |
+
+#### `table_types.enabled`
+
+Default `true`. `false` keeps the one line replay byte for byte.
+
+#### `table_types.width`
+
+Default `60`. The width at which a table type opens, in columns. The measure is the flat form of one table alone.
+
+#### `table_types.separator`
+
+Default `"comma"`. The separator between fields, `"comma"` or `"semicolon"`. It applies in both layouts, because Luau reads both.
 
 ### `final_newline`
 
