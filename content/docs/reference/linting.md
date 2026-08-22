@@ -1,65 +1,113 @@
 ---
 title: Linting
-description: All fifty one lints, their default levels, and the flag comments that silence them
+description: All sixty three lints, their default levels, and the flag comments that silence them
 category: Reference
 order: 5
-updated: 2026-08-19
+updated: 2026-08-21
 ---
 
-`larvae lint` reports suspicious code. It ships 51 lints, configured in the `[lint]` table of `larvae.toml`. The table is optional: `larvae lint` works with no config at all.
+`larvae lint` reports suspicious code. It ships 63 lints, configured in the `[lint]` table of `larvae.toml`. The table is optional: `larvae lint` works with no config at all.
 
 larvae covers all 28 lints of the Luau compiler, so `larvae init` turns Luau's own linter off in `.luaurc` and the project loses no report. With both linters on, each finding would arrive twice under two names, each needing its own comment to silence. [Quick start](/docs/getting-started/quick-start) describes that step.
 
 ## Levels
 
-Every lint has a level: `allow` (off), `warn` (reported), or `deny` (fails the run). `[lint.rules]` sets levels by name:
+Every lint has a level: `allow` (off), `info`, `warn`, or `deny` (fails the run). `[lint.rules]` sets levels by name:
 
 ```toml
 [lint.rules]
 shadowing = "allow"
+mixed_table = "info"
 unused_variable = "deny"
 ```
 
-Five lints do not default to `warn`. `undefined_variable` denies, because the name is nil at runtime and the line that reads it throws. `high_cyclomatic_complexity`, `multiple_statements`, `non_const_require`, and `prefer_const` allow, and none is a lint of the Luau compiler: a branch count is not a defect on its own, a second statement on a line is a style choice, and `const` is larvae's own reading of Luau. Each Luau lint keeps the level that Luau gives it, so the change of linter changes no report.
+`info` and `warn` both report, and both leave the exit code alone. They differ in what they ask of the reader: an editor draws an info as a hint and a warning as a squiggle. `info` is where a lint goes when a project wants it on the record without adding to the pile it reads every day. The summary line counts infos apart from warnings, and only when a project uses the level, so a project that never writes `info` reads the summary it always read.
 
-## The 51 lints
+Seventeen of the 63 lints do not warn by default: six deny and eleven allow.
+
+A lint denies when two things hold at once. No reading of the code makes the finding wrong, because the check reads a literal or the syntax and never a runtime value. And the code as written cannot be what the author meant: it throws, it hangs, or a line of it is dead. Six pass that bar. `undefined_variable`, because the name is nil at runtime and the line that reads it throws. `duplicate_keys`, because `{ a = 1, a = 2 }` discards the first entry. `duplicate_local`, because `local a, a` kills the first binding where it stands. `format_string`, because `string.format("%y", 1)` raises. `zero_step_loop`, because a step of zero never moves the counter. And `length_as_condition`, because `#t` yields a number and every number is true in Luau, so `if #players then` runs with no players. Over a 364 file corpus the five newer denies report nothing at all, which is the point: nobody writes these shapes on purpose, so the gate costs an existing project nothing on the day it adopts larvae.
+
+`bad_string_escape` is the near miss worth naming. It reads a literal and it cannot be wrong, but Luau accepts `"\q"` and runs the file. The string is wrong and the build is fine, so it warns.
+
+Eleven lints allow. `high_cyclomatic_complexity` and `non_const_require`, because a branch count is not a defect on its own and `const` is newer than most codebases. `prefer_const`, because it rewrites a keyword. `implicit_return`, because a lookup that returns a value on one path and falls off the end on another is idiomatic Luau. `multiple_statements`, because `larvae fmt` owns that ground already: with `collapse_simple_statement` at `never`, a format run removes every finding the lint can make. `implicit_any_parameter`, because most Luau carries no annotations and a `warn` default would report hundreds of times on the first run. And five lints about the shape of a branch or a value: `and_or_conditional`, `if_expression_assignment`, `else_after_return`, `collapsible_if`, and `negated_condition`. Each states a preference about code that is correct.
+
+`if_expression_assignment` has to stay allow, and the reason is worth the line. `misleading_and_or` names `if cond then a else b` as the repair in its own help text, so a default that reported would report the fix larvae asked for.
+
+Every other Luau lint keeps the level that Luau gives it, so the change of linter changes no report.
+
+## Groups
+
+Every lint belongs to one of six groups, and `[lint.groups]` sets a level for all of them at once:
+
+| Group | What it holds |
+|---|---|
+| `correctness` | The code cannot do what it says: it throws, it hangs, or a line of it is dead. |
+| `suspicious` | Probably wrong, and a human decides. |
+| `style` | A matter of how the code reads. |
+| `complexity` | More shape than the job needs. |
+| `performance` | Correct, and it costs more than it has to. |
+| `roblox` | A Roblox data type used in a way that does not hold. |
+
+Resolution runs most specific first: a name in `[lint.rules]`, then the group in `[lint.groups]`, then `recommended`, then the default of the lint. So `style = "allow"` with `mixed_table = "warn"` is one style lint back on and the rest off.
+
+Two rules about groups surprise a reader who knows Biome.
+
+The table is separate from `[lint.rules]`, not nested inside it. This is not a matter of taste: a table under `[lint.rules]` already means the lints of a worm of that name, and nothing reserves a worm name, so a worm published as `style` would make `[lint.rules.style]` mean two things at once. A separate table has no such collision, and every config written before groups existed reads exactly as it did. `selene.toml` needs no change either, because selene has no group concept and its flat `[rules]` still resolves at the first step.
+
+And a group does not wake a lint that is `allow` on purpose. `prefer_const` is off because it rewrites a keyword, and a project that writes `style = "info"` is asking the style lints it already sees to say less, not asking for a lint it never had. To turn one on, name it in `[lint.rules]`, which beats the group anyway.
+
+`larvae lint --explain <name>` prints the group of a lint, and the list it prints when a name misses is grouped rather than one alphabetical run.
+
+## The 63 lints
 
 Each name links to its section below, so an editor or an extension can deep link to one lint.
 
 | Lint | Default | What it reports |
 |---|---|---|
 | [`almost_swapped`](#almost-swapped) | warn | Two assignments that look like a swap but overwrite one of the values. |
+| [`and_or_conditional`](#and-or-conditional) | allow | `cond and a or b` used as a value, where an if statement states one case per branch. |
 | [`bad_comment_directive`](#bad-comment-directive) | warn | A `--!` directive that Luau does not know, or one that comes after the code it should govern. |
 | [`bad_string_escape`](#bad-string-escape) | warn | An escape sequence the language does not define. |
 | [`builtin_global_write`](#builtin-global-write) | warn | An assignment over a standard global, which every later script sees. |
+| [`builtin_shadowed`](#builtin-shadowed) | warn | A local that takes the name of a standard global, so the library is unreachable below that line. |
+| [`collapsible_if`](#collapsible-if) | allow | An if that holds one if and nothing else, where the two conditions are one `and` apart. |
 | [`compare_nan`](#compare-nan) | warn | Comparing against nan, which is never equal to anything including itself. |
 | [`comparison_precedence`](#comparison-precedence) | warn | `not a == b`, or a chain like `a < b < c`, which does not group the way it reads. |
+| [`constant_condition`](#constant-condition) | warn | A condition that is a literal, so the branch is decided already. |
 | [`constant_table_comparison`](#constant-table-comparison) | warn | Comparing against a table literal, which compares identity and is always false. |
 | [`deprecated`](#deprecated) | warn | A function that still works but has been replaced. |
 | [`divide_by_zero`](#divide-by-zero) | warn | Dividing by a literal zero. |
 | [`duplicate_function`](#duplicate-function) | warn | Two functions of the same name in one scope, where the first is discarded. |
-| [`duplicate_keys`](#duplicate-keys) | warn | A table key written twice, where only the last one survives. |
-| [`duplicate_local`](#duplicate-local) | warn | One local statement or parameter list that declares the same name twice. |
+| [`duplicate_keys`](#duplicate-keys) | deny | A table key written twice, where only the last one survives. |
+| [`duplicate_local`](#duplicate-local) | deny | One local statement or parameter list that declares the same name twice. |
+| [`else_after_return`](#else-after-return) | allow | An else after branches that all end in a return, break or continue. |
 | [`empty_if`](#empty-if) | warn | An if branch with nothing in it. |
 | [`empty_loop`](#empty-loop) | warn | A loop body with nothing in it. |
-| [`format_string`](#format-string) | warn | A format string that `string.format` or `os.date` rejects at runtime. |
+| [`format_string`](#format-string) | deny | A format string that `string.format` or `os.date` rejects at runtime. |
 | [`global_usage`](#global-usage) | warn | Reaching into `_G`, which is shared with every other script. |
 | [`high_cyclomatic_complexity`](#high-cyclomatic-complexity) | allow | A function with more branches than anyone can hold at once. |
+| [`if_expression_assignment`](#if-expression-assignment) | allow | `if cond then a else b` used as a value. |
 | [`if_same_then_else`](#if-same-then-else) | warn | Two branches of the same if with identical bodies. |
 | [`ifs_same_cond`](#ifs-same-cond) | warn | An elseif repeating a condition already tested, which can never run. |
-| [`implicit_return`](#implicit-return) | warn | A function that returns a value on one path and falls off the end on another. |
+| [`ignored_pcall_result`](#ignored-pcall-result) | warn | A `pcall` or `xpcall` used as a statement, which catches the error and discards it. |
+| [`implicit_any_local`](#implicit-any-local) | warn | A local with no value and no type, so whatever assigns it first decides what it holds. |
+| [`implicit_any_parameter`](#implicit-any-parameter) | allow | A parameter with no type, so what the function takes is decided by each caller. |
+| [`implicit_return`](#implicit-return) | allow | A function that returns a value on one path and falls off the end on another. |
+| [`length_as_condition`](#length-as-condition) | deny | `#t` used as a condition. A length is a number, and every number is true in Luau. |
 | [`loop_invariant_call`](#loop-invariant-call) | warn | A call inside a loop whose result cannot change between iterations. |
 | [`manual_table_clone`](#manual-table-clone) | warn | A loop that copies a table, which `table.clone` does in one call. |
-| [`misleading_and_or`](#misleading-and-or) | warn | `cond and false or b`, which always gives `b` because the middle is never truthy. |
+| [`misleading_and_or`](#misleading-and-or) | warn | `cond and x or b` where the middle can never be truthy: a literal `false` or `nil`, or a boolean that syntax proves. |
 | [`mismatched_arg_count`](#mismatched-arg-count) | warn | Calling a function in this file with the wrong number of arguments. |
 | [`mixed_table`](#mixed-table) | warn | A table with both array entries and named keys. |
 | [`multiple_statements`](#multiple-statements) | allow | More than one statement on a line. |
 | [`must_use`](#must-use) | warn | Calling a pure function and discarding what it returned. |
+| [`negated_condition`](#negated-condition) | allow | An if with a negated condition and an else, where swapped bodies read in the expected order. |
 | [`non_const_require`](#non-const-require) | allow | A required module bound with `local`, where `const` says it never changes. |
 | [`number_literal_overflow`](#number-literal-overflow) | warn | A hexadecimal or binary literal wider than 64 bits, which is truncated. |
 | [`parenthese_conditions`](#parenthese-conditions) | warn | Parentheses around a condition, which Luau does not need. |
 | [`placeholder_read`](#placeholder-read) | warn | Reading `_`, the name that says a value is discarded. |
 | [`prefer_const`](#prefer-const) | allow | A local that nothing reassigns, which `const` states outright. |
+| [`restricted_globals`](#restricted-globals) | warn | Reading a global the project has ruled out. Silent until the config names one. |
 | [`restricted_module_paths`](#restricted-module-paths) | warn | Requiring a module the project has ruled out. Quiet until the config names a path. |
 | [`roblox_incorrect_color3_new_bounds`](#roblox-incorrect-color3-new-bounds) | warn | `Color3.new` given a channel over 1, where the scale is 0 to 1. |
 | [`roblox_manual_fromscale_or_fromoffset`](#roblox-manual-fromscale-or-fromoffset) | warn | A `UDim2.new` that `fromScale` or `fromOffset` says more clearly. |
@@ -78,9 +126,9 @@ Each name links to its section below, so an editor or an extension can deep link
 | [`unscoped_variables`](#unscoped-variables) | warn | An assignment with no `local`, which creates a global. |
 | [`unused_function`](#unused-function) | warn | A `local function` that nothing calls, and a global `function f() end` that no line reads. |
 | [`unused_variable`](#unused-variable) | warn | A name declared and never read. A `local function` is [`unused_function`](#unused-function) instead. |
-| [`zero_step_loop`](#zero-step-loop) | warn | A numeric for whose step is zero, so the counter never moves. |
+| [`zero_step_loop`](#zero-step-loop) | deny | A numeric for whose step is zero, so the counter never moves. |
 
-`larvae lint --explain <name>` prints one lint's description. The schema contains all lints with their defaults, so an editor can offer them by name. `larvae init` writes only `std = "roblox"` and a pointer to `[lint.rules]`, not the lint list.
+`larvae lint --explain <name>` prints one lint's description and its group. The schema contains all lints with their defaults, so an editor can offer them by name. `larvae init` writes only `std = "roblox"` and a pointer to `[lint.rules]`, not the lint list.
 
 ### `almost_swapped`
 
@@ -94,6 +142,19 @@ b = a -- a was overwritten first, so both hold 2
 -- fine: a, b = b, a
 ```
 
+### `and_or_conditional`
+
+Default level: `allow`, because it states a preference about code that is correct.
+
+`cond and a or b` is used as a value. The decision hides inside an expression, where an if statement states one case per branch.
+
+```luau
+local fast = true
+local speed = fast and 20 or 10 -- the decision hides inside the expression
+```
+
+The shape also has a trap when the middle can be false or nil, and [`misleading_and_or`](#misleading-and-or) reports that case on its own.
+
 ### `bad_comment_directive`
 
 A `--!` comment is a directive to Luau. This lint reports a directive Luau does not know, and a directive placed after code, because a late directive governs nothing.
@@ -106,7 +167,7 @@ local x = 1
 
 ### `bad_string_escape`
 
-The string holds a backslash escape the language does not define, so the string does not mean what the backslash suggests.
+The string holds a backslash escape the language does not define, so the string does not mean what the backslash suggests. The check reads a literal, but Luau accepts the escape and runs the file, so the lint warns instead of denying.
 
 ```luau
 local dir = "C:\Users\me" -- \U and \m are not escape sequences
@@ -120,6 +181,37 @@ The assignment replaces a standard global. Globals are shared, so every later sc
 
 ```luau
 print = function() end -- every later print call now does nothing
+```
+
+### `builtin_shadowed`
+
+A local takes the name of a standard global, such as `local table = {}`. The library is unreachable below that line.
+
+```luau
+local table = {} -- the table library is unreachable below this line
+```
+
+A declaration whose value reads the same global is left alone, because `local pairs = pairs` caches it and loses nothing.
+
+```luau
+local pairs = pairs -- fine: caches the global under the same name
+```
+
+### `collapsible_if`
+
+Default level: `allow`, because it states a preference about code that is correct.
+
+An if holds one if and nothing else. The two conditions are one `and` apart.
+
+```luau
+local ready, armed = true, true
+if ready then
+	if armed then -- the outer if holds only this if
+		print("go")
+	end
+end
+
+-- fine: if ready and armed then print("go") end
 ```
 
 ### `compare_nan`
@@ -146,6 +238,18 @@ end
 
 -- fine: return a ~= b
 ```
+
+### `constant_condition`
+
+The condition is a literal, so the branch is decided already. Only nil and false are false in Luau, so `if 0 then` and `if "" then` both pass.
+
+```luau
+if 0 then
+	print("always") -- only nil and false are false, so 0 passes
+end
+```
+
+`while true do` and `repeat ... until false` are exempt, because each one is a deliberate loop.
 
 ### `constant_table_comparison`
 
@@ -201,6 +305,8 @@ function M.reset() end -- the first reset is discarded
 
 ### `duplicate_keys`
 
+Default level: `deny`, because `{ a = 1, a = 2 }` discards the first entry, and no reading of the code makes that what the author meant.
+
 A table constructor writes the same key twice. Only the last write survives, and the earlier value is discarded silently.
 
 ```luau
@@ -209,10 +315,28 @@ local color = { r = 1, g = 1, r = 0 } -- r is written twice, only the last survi
 
 ### `duplicate_local`
 
+Default level: `deny`, because `local a, a` kills the first binding where it stands.
+
 One local statement or one parameter list declares the same name twice. The second declaration hides the first inside the same statement.
 
 ```luau
 local width, width = 10, 20 -- one statement declares width twice
+```
+
+### `else_after_return`
+
+Default level: `allow`, because it states a preference about code that is correct.
+
+An else follows a branch that returns, breaks or continues. The jump already ends the branch, so the code in the else runs in the same cases without it. The lint fires only when every branch ends in the jump, because an elseif that falls through still needs the else.
+
+```luau
+local function sign(n: number)
+	if n < 0 then
+		return -1
+	else -- the branch above returns, so the else can go
+		return 1
+	end
+end
 ```
 
 ### `empty_if`
@@ -235,6 +359,8 @@ end -- nothing in the body
 ```
 
 ### `format_string`
+
+Default level: `deny`, because `string.format("%y", 1)` raises, and the check reads the literal, so no reading of the code makes the finding wrong.
 
 The format string is one that `string.format` or `os.date` rejects at runtime, so the call throws when it runs.
 
@@ -270,6 +396,17 @@ end
 |---|---|---|
 | `maximum_complexity` | `40` | Branches a function may have before it is reported. selene's default, kept so a project moving over gets the same answers. |
 
+### `if_expression_assignment`
+
+Default level: `allow`, and it must stay `allow`, because [`misleading_and_or`](#misleading-and-or) names this exact form as the repair in its own help text. A default that reported would report the fix larvae asked for.
+
+`if cond then a else b` is used as a value.
+
+```luau
+local fast = true
+local speed = if fast then 20 else 10 -- the if expression as a value
+```
+
 ### `if_same_then_else`
 
 Two branches of the same if have identical bodies, so the condition decides nothing.
@@ -292,7 +429,54 @@ local function describe(n)
 end
 ```
 
+### `ignored_pcall_result`
+
+A `pcall` or `xpcall` is used as a statement. It catches the error and discards it, so the failure leaves no trace at all.
+
+```luau
+local function save()
+	error("disk full")
+end
+pcall(save) -- the error is caught and discarded, no trace remains
+
+-- fine: local ok, err = pcall(save)
+```
+
+### `implicit_any_local`
+
+A local is declared with no value and no type, so what it holds is decided by whatever assigns it first. In a file with no `--!strict` directive Luau then accepts any later assignment of any type. The fix is one of two words: write the type, or write the value.
+
+```luau
+local items = { 1, 5 }
+local found -- no value and no type
+for _, v in items do
+	if v > 3 then
+		found = v
+	end
+end
+
+-- fine: local found: number?
+```
+
+A local that nothing ever assigns is left to [`uninitialized_local`](#uninitialized-local), which says the more urgent thing about the same line.
+
+### `implicit_any_parameter`
+
+Default level: `allow`, because most Luau carries no annotations, and a `warn` default would report hundreds of times on the first run.
+
+A parameter has no type, so what the function takes is decided by each caller. The sibling of [`implicit_any_local`](#implicit-any-local), on the other side of the call.
+
+```luau
+local function scale(n) -- what n is, each caller decides
+	return n * 2
+end
+
+-- fine: local function scale(n: number)
+```
+
 ### `implicit_return`
+
+Default level: `allow`, because a lookup that returns a value on one path and falls off the end on another is idiomatic Luau.
 
 The function returns a value on one path and falls off the end on another. The caller gets a value sometimes and nil the rest of the time.
 
@@ -302,6 +486,21 @@ local function find(t, v)
 		if x == v then return i end
 	end
 end -- falls off the end and returns nothing
+```
+
+### `length_as_condition`
+
+Default level: `deny`, because `#t` yields a number, every number is true in Luau, and so the guard does nothing.
+
+`#t` is used as a condition. A length is a number, and every number is true, so `if #players then` runs with no players.
+
+```luau
+local players = {}
+if #players then
+	print("someone is here") -- #players is 0, and 0 is true, so this runs
+end
+
+-- fine: if #players > 0 then
 ```
 
 ### `loop_invariant_call`
@@ -330,7 +529,9 @@ end
 
 ### `misleading_and_or`
 
-In `cond and x or b`, when `x` is `false` or `nil` the middle is never truthy, so the expression always gives `b` whatever `cond` is.
+In `cond and x or b`, when the middle can never be truthy the expression always gives `b` whatever `cond` is. Two cases fire, and each carries its own message.
+
+The middle is a literal `false` or `nil`. The expression is wrong for every input.
 
 ```luau
 local function pickMode(fast: boolean)
@@ -338,6 +539,16 @@ local function pickMode(fast: boolean)
 end
 
 -- fine: return if fast then nil else "slow"
+```
+
+The middle is a boolean that syntax proves. A comparison yields a boolean because it is a comparison, so the check needs no types. Here the expression is wrong for half the inputs: it gives `"pending"` exactly when the author wanted `false`.
+
+```luau
+local function status(ready: boolean, count: number)
+	return ready and (count == 0) or "pending" -- "pending" when the count is not zero
+end
+
+-- fine: return if ready then count == 0 else "pending"
 ```
 
 ### `mismatched_arg_count`
@@ -361,7 +572,7 @@ local cfg = { "fast", retries = 3 } -- an array entry and a named key in one tab
 
 ### `multiple_statements`
 
-Default level: `allow`, because a second statement on a line is a style choice rather than a defect. It is not a lint of the Luau compiler.
+Default level: `allow`, because `larvae fmt` owns that ground already: with `collapse_simple_statement` at `never`, a format run removes every finding the lint can make.
 
 More than one statement shares a line, and the second one is easy to miss.
 
@@ -379,6 +590,23 @@ local name = "larvae"
 string.upper(name) -- the returned string is discarded, nothing changes in place
 
 -- fine: name = string.upper(name)
+```
+
+### `negated_condition`
+
+Default level: `allow`, because it states a preference about code that is correct.
+
+An if has a negated condition and an else. Swapping the bodies states the same thing in the order a reader expects.
+
+```luau
+local ready = false
+if not ready then
+	print("wait")
+else
+	print("go")
+end
+
+-- fine: if ready then print("go") else print("wait") end
 ```
 
 ### `non_const_require`
@@ -435,6 +663,8 @@ print(retries)
 -- fine: const retries = 3
 ```
 
+In the editor the report carries a code action that changes `local` to `const`, so the fix is one click. [Editor setup](/docs/concepts/editor-setup) describes the language server.
+
 Three forms are left alone, and each one is a place where `const` does not compile or does not exist. A declaration with no initialiser stays, because `const x` is "Missing initializer in const declaration". A `local function` and a `for` variable take no `const` at all. And `const` binds the declaration and not one name inside it, so `local a, b = 1, 2` is reported only when nothing reassigns either name; where one of them changes, there is no edit to suggest.
 
 #### `prefer_const` options
@@ -457,6 +687,26 @@ The option is for a project that reads `local` as "this one changes" and wants t
 [lint.options.prefer_const]
 mutated_tables_stay_local = true
 ```
+
+### `restricted_globals`
+
+The code reads a global the project has ruled out in its config, and the report carries the configured reason. The lint is quiet until `[lint.options.restricted_globals]` names one, so it costs nothing until a project asks.
+
+```luau
+local env = getfenv() -- reported when the config restricts getfenv
+```
+
+#### `restricted_globals` options
+
+The table itself is the map: one `name = "why"` line per global. The reason is the message a reader gets, which is why a bare list of names is not the shape: it would report "this is restricted" and leave them guessing.
+
+```toml
+[lint.options.restricted_globals]
+getfenv = "turns the optimiser off, read the docs page on environments"
+setfenv = "turns the optimiser off, read the docs page on environments"
+```
+
+`getfenv` and `setfenv` are worth naming in a project that cares about speed, because each one turns Luau's optimiser off for the function that holds it.
 
 ### `restricted_module_paths`
 
@@ -594,7 +844,7 @@ local total = subtotal + 0.2 -- nothing declares subtotal, so this line throws
 
 ### `uninitialized_local`
 
-The local is declared with no value and nothing ever assigns one, so every read gives nil.
+The local is declared with no value and nothing ever assigns one, so every read gives nil. A local the file assigns later but never types is [`implicit_any_local`](#implicit-any-local) instead.
 
 ```luau
 local count
@@ -668,6 +918,8 @@ local _limit = 5 -- fine: the name matches ignore_pattern "^_"
 
 ### `zero_step_loop`
 
+Default level: `deny`, because a step of zero never moves the counter, so the loop hangs where it stands.
+
 A numeric for whose step is zero. The counter never moves, so the loop never ends or never runs as intended.
 
 ```luau
@@ -679,12 +931,19 @@ end
 
 | Key | What it does |
 |---|---|
+| `enabled` | Default `true`. `false` turns the linter off entirely. |
+| `recommended` | Default `true`. `false` starts every lint at `allow`. |
 | `std` | The global environment lints check against. Default `"roblox"`. |
 | `globals` | Extra globals the project defines. |
 | `exclude` | Globs the linter skips, relative to the project root. |
 | `include` | Globs the linter reads back, over every exclude. |
+| [`[lint.groups]`](#groups) | A level for a whole kind of lint at once. |
 | `[lint.rules]` | Levels by lint name. |
-| `[lint.options]` | Options for [`unused_variable`](#unused-variable-options), [`high_cyclomatic_complexity`](#high-cyclomatic-complexity-options), [`deprecated`](#deprecated-options), [`restricted_module_paths`](#restricted-module-paths-options), and [`prefer_const`](#prefer-const-options). Also spelled `[lint.config]`, selene's name. |
+| `[lint.options]` | Options for [`unused_variable`](#unused-variable-options), [`high_cyclomatic_complexity`](#high-cyclomatic-complexity-options), [`deprecated`](#deprecated-options), [`restricted_globals`](#restricted-globals-options), [`restricted_module_paths`](#restricted-module-paths-options), and [`prefer_const`](#prefer-const-options). Also spelled `[lint.config]`, selene's name. |
+
+`enabled = false` turns the linter off: `larvae lint` reports nothing and exits zero, and the language server clears the diagnostics of every file instead of leaving the last ones on screen. This is for a project that wants larvae for its formatter and its requires and keeps another linter.
+
+`recommended` has three states, as Biome has them. Absent and `true` both mean the default levels apply. `false` starts every lint at `allow`, so the project gets the lints it names under `[lint.rules]` and no others. A level the project wrote always wins in either state, so `recommended = false` with `shadowing = "warn"` is one lint on and the rest off. That pair is the reason to reach for it.
 
 `std` accepts selene's spellings: `lua51` through `lua54`, `luajit`, and chains such as `roblox+testez`, where the first name decides. A `selene.toml` on disk is read the same way, and for lists (`rules`, `globals`, `exclude`) larvae adds its entries to selene's and does not replace them. The exclusion order is on [configuration](/docs/reference/configuration).
 
