@@ -146,7 +146,7 @@ describe('Home page', () => {
     expect(table.textContent).toContain('matched')
     expect(table.textContent).toContain('5.9x')
     expect(benchmarks?.textContent).toContain(
-      '49 lints for larvae, 33 for selene',
+      '63 lints for larvae, 33 for selene',
     )
     // the flattering single-file figure is framed as throughput, not headline
     expect(benchmarks?.textContent).toContain('279x')

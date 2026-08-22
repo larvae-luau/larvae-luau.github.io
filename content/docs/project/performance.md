@@ -3,7 +3,7 @@ title: Performance
 description: Matched comparisons against darklua and selene, the incremental columns, and the four reasons behind them
 category: Project
 order: 1
-updated: 2026-08-16
+updated: 2026-08-21
 ---
 
 Running the same 10 rules over the same tree, both tools cold, larvae is **14x faster** than darklua. With rules off on darklua's side it is 17x to 75x, but the matched number is the one worth quoting, and it is still measured while larvae does require rewriting that darklua is not doing at all.
@@ -76,7 +76,7 @@ Two workloads are timed, for the same reason the darklua tables time three:
 | workload | what runs |
 |---|---|
 | matched | both tools hold to the 30 lints that both implement, the head to head |
-| defaults | each tool with what it enables: 49 lints for larvae, 33 for selene, what a user gets |
+| defaults | each tool with what it enables: 63 lints for larvae, 33 for selene, what a user gets |
 
 Holding a lint off is not free on either side, so a row cannot be faked by leaving one tool at its defaults: selene drops from 29 ms to 21 ms on 1,500 files when 15 lints go to `allow`.
 

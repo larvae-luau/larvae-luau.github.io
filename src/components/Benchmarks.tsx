@@ -58,7 +58,7 @@ interface LintRun {
   speedup: string
 }
 
-/** matched = the 30 lints both tools implement; defaults = 49 vs 33. */
+/** matched = the 30 lints both tools implement; defaults = 63 vs 33. */
 const LINT_RUNS: LintRun[] = [
   {
     label: '3,000 files',
@@ -310,7 +310,7 @@ export default function Benchmarks() {
               </p>
               <p className="text-sm text-muted">
                 matched holds both tools to the 30 lints both implement,
-                defaults runs what each enables: 49 lints for larvae, 33 for
+                defaults runs what each enables: 63 lints for larvae, 33 for
                 selene. 16 cores, median of 7.
               </p>
             </div>
