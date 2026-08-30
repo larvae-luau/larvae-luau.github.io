@@ -44,6 +44,11 @@ quote_style = "auto-prefer-double"
 | [`function_call`](#function-call) | `{ expand = "when-needed", ... }` | How the argument list of a call lays out. |
 | [`function_declaration`](#function-declaration) | `{ expand = "when-needed", ... }` | How the parameter list of a declaration lays out. |
 | [`table_types`](#table-types) | `{ enabled = true, width = 60, separator = "comma" }` | How a table type lays out. |
+| [`type_operators`](#type-operators) | `{ expand = "auto" }` | When a union or an intersection opens over several lines. |
+| [`sort_table_types`](#sort-table-types) | `{ order = "none", indexer = "first" }` | The order of the properties of a table type. |
+| [`sort_tables`](#sort-tables) | `{ order = "none" }` | The order of the fields of a value table. |
+| [`function_style`](#function-style) | `"preserve"` | The keyword a top level function declaration takes. |
+| [`unused_imports`](#unused-imports) | `"preserve"` | What happens to a required module nothing reads. |
 | [`final_newline`](#final-newline) | `true` | Whether the file ends with a newline. |
 
 ## Two keys come first
@@ -438,6 +443,30 @@ Default `60`. The width at which a table type opens, in columns. The measure is 
 #### `table_types.separator`
 
 Default `"comma"`. The separator between fields, `"comma"` or `"semicolon"`. It applies in both layouts, because Luau reads both.
+
+### `type_operators`
+
+How a union and an intersection lay out, in every type position. One option covers `|` and `&`, because they share one shape: members with an operator between them. An opened chain takes the leading operator, so the reader finds each member at one column instead of at the uneven right edge.
+
+| Key | Default | Values |
+|---|---|---|
+| `expand` | `"auto"` | `"auto"`, `"always"`, `"never"` |
+
+`auto` leaves the chain to the replay, which is the layout larvae always had, so a chain wider than `column_width` runs past it. `always` puts every member on its own line whatever its width. `never` asks for one line, and `column_width` still outranks it: a line that runs off the screen is not the one line the option asked for.
+
+### `unused_imports`
+
+What happens to a required module nothing reads.
+
+| Value | Does |
+|---|---|
+| `ignore` | leaves it as written, the default |
+| `underscore` | renames it to `_Name`, which keeps the module and silences the lint |
+| `remove` | deletes the declaration |
+
+The default is `ignore` for a reason worth knowing: `require` runs a module the first time a file asks for it, so a module can do its work by being required at all, and deleting the line stops that work while the file still compiles. A name that only a type reads counts as used.
+
+`remove` deletes the line and nothing else. The comments around the declaration stay and attach to what follows, because a formatter may rewrite code and may not delete prose, and the blank lines of the file stay as the author left them: the line goes without leaving a gap where it stood. A declaration inside a [`fmt off`](#holding-the-formatter-off) region is never removed.
 
 ### `sort_table_types`
 

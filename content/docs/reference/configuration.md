@@ -326,6 +326,16 @@ On, every emitted file prints through the dense emitter whatever `generator` say
 
 Roblox has no `loadstring`, so a file cannot ship as a decoded blob: it has to be Luau the compiler reads, and hiding the names, the strings, and the shape is what obfuscation can be. A backtick string stays whole, because splitting its static text from its holes means implementing interpolation twice, and a wrong split is a broken build; the names inside a hole are pinned instead of renamed.
 
+#### What it is not
+
+It adds no code. Some obfuscators wrap a program in opaque predicates, dead branches, and flattened control flow, so the reader follows a machine instead of a function. larvae does not, and the reason is that the output still has to run in a game:
+
+- **Every branch it adds is a branch the engine runs.** Roblox executes this on a player's device, inside a frame budget, and a hot function wrapped in decision noise costs that budget for as long as the game lives.
+- **A stack trace has to stay readable to you.** Line numbers already survive obfuscation, because `column_span` keeps the emitter breaking lines; control flow noise would keep the numbers and take the meaning.
+- **It buys less than it looks like.** The names, the strings, and the layout are what a reader recovers a program from, and those are what this removes. Someone determined enough to trace flattened control flow is someone the extra branches do not stop either.
+
+A require spec is left as written for the same practical reason: the engine decodes either spelling, so escaping the path hides nothing from a reader while breaking every tool that reads a spec as text, larvae's own checker included.
+
 With `[bundle]` set, the bundle output gets the same treatment, because a bundle prints through the generator like any file. Pair it with `[bundle] module_ids = "opaque"` so the registry keys stop shipping the project layout.
 
 A typical release profile:

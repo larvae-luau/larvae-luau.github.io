@@ -98,7 +98,27 @@ The subtables, each with its own keys: `[lsp.completion]`, `[lsp.inlay_hints]`, 
 
 ## The VS Code extension
 
-The Larvae extension starts the server, watches `larvae.toml` and restarts on change, and mirrors the `[lsp]` keys as `larvae-lsp.*` settings. Where the project file and the editor settings speak about one key, the project wins, because the project travels with the repository. The extension also asks larvae which extensions the project's worms claim before the client starts, so a `.luaux` buffer is served from the first keystroke.
+The Larvae extension starts the server, watches `larvae.toml` and restarts on change, and mirrors the `[lsp]` keys as `larvae-lsp.*` settings. The extension also asks larvae which extensions the project's worms claim before the client starts, so a `.luaux` buffer is served from the first keystroke.
+
+### Which side wins
+
+**The project.** Where `larvae.toml` spells a key, that value stands and the editor setting for it is ignored; where the project says nothing, the editor setting applies. So a checkout behaves the same for everyone who opens it, and a developer's own preferences still fill in the rest. The server reads the raw `[lsp]` table to make that distinction, because a key the project left out and a key it set to the default look identical once parsed.
+
+Two keys are the client's to act on before any server exists: `enabled` and `claim_only`. A server that never starts reads no project config, so the extension reads those two out of `larvae.toml` itself and follows the same rule. A project that turns the server on gets it, whatever the editor setting says.
+
+## When something is wrong
+
+**No types at all, and no diagnostics.** The server is not running, or it is running without the analyzer. Check the extension's output channel: a server that started prints its handshake there. Three usual causes:
+
+- The project or the editor turned it off. `[lsp] enabled = false` in `larvae.toml` beats the editor setting; `[lsp] analyzer = false` keeps the lints and the formatter and takes the type half.
+- The binaries are not together. `larvae-lsp` opens the analyzer library at startup, so the two travel as one: `larvae self install` from an unpacked release puts the CLI, the server, and the library in `~/.larvae/bin`. A server without the library beside it cannot start.
+- The build carries no analyzer. `larvae lsp`, the CLI subcommand, is the fallback half by design.
+
+**Windows, before 0.7.3.** The analyzer library was built against the dynamic C runtime, so a machine without the Visual C++ redistributable could not load it, and the server failed to start rather than falling back. 0.7.3 links that runtime statically; update and the redistributable stops mattering.
+
+**`script.Parent` completes nothing.** The instance tree comes from the sourcemap. Check that `[lsp] sourcemap` names a file that exists, and that the generator runs: with `sourcemap_autogenerate` on, the server spawns rojo itself, and it says so once when it cannot.
+
+**The terminal and the editor disagree about types.** `larvae analyze` reads `[lsp.fflags]` from `larvae.toml`, and the editor reads the settings too. A project that turns the new solver on in the editor alone gets the stock solver in the terminal. Put the flags in `larvae.toml` and both answer alike.
 
 ## Coexisting with luau-lsp
 
