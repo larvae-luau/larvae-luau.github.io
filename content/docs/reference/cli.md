@@ -150,8 +150,39 @@ larvae bundle --entry src/main.luau
 | flag | meaning |
 |---|---|
 | `--entry <PATH>` | the module the bundle starts from, beats `[bundle] entry` |
+| `--out <PATH>`, `-o` | where to write it, beats `[bundle] output` |
+| `--config <PATH>` | config file, defaults to `./larvae.toml` when present |
+| `--profile <NAME>` | merge `[profile.<name>]` over the config before bundling |
 
-Without `--entry` and without `[bundle] entry` in the config, the command errors. The output path and tree shaking are configured in [`[bundle]`](/docs/reference/configuration), and the bundle is printed by the `[process]` `generator`, so a dense bundle is one config line away.
+Without `--entry` and without `[bundle] entry` in the config, the command errors.
+
+### One bundle per realm
+
+A place with a client entry and a server entry needs two bundles: one graph starts at each entry, and one file cannot be both. Name the output each time, or the second run overwrites the first.
+
+```shell
+larvae bundle --entry src/main.client.luau --out dist/client.client.luau
+larvae bundle --entry src/main.server.luau --out dist/server.server.luau
+```
+
+The output name carries the realm suffix, so rojo makes a LocalScript of the one and a Script of the other. Shared modules land in both bundles, which is what a bundle is; the realm rules still apply to the source, so a client entry that requires `ServerScriptService` fails in `larvae check` before it reaches a bundle.
+
+A project that runs this often puts each side in a profile instead:
+
+```toml
+[profile.client.bundle]
+entry = "src/main.client.luau"
+output = "dist/client.client.luau"
+
+[profile.server.bundle]
+entry = "src/main.server.luau"
+output = "dist/server.server.luau"
+```
+
+```shell
+larvae bundle --profile client
+larvae bundle --profile server
+``` The output path and tree shaking are configured in [`[bundle]`](/docs/reference/configuration), and the bundle is printed by the `[process]` `generator`, so a dense bundle is one config line away.
 
 ### `lsp`
 

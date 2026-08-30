@@ -3,7 +3,7 @@ title: Formatting
 description: Every [fmt] option, its default, and what it does
 category: Reference
 order: 4
-updated: 2026-08-21
+updated: 2026-08-30
 ---
 
 `[fmt]` in `larvae.toml` configures `larvae fmt`. The table is optional: `larvae fmt` works with no config at all, and every option below has a default. Two keys come first, [`enabled`](#enabled) and [`recommended`](#recommended), because they decide what every other key below means. `larvae init` writes `recommended = true` and the four options users change most (`column_width`, `indent_type`, `indent_width`, `quote_style`); every other option keeps its default silently, and the schema serves the full list to the editor.
@@ -438,6 +438,94 @@ Default `60`. The width at which a table type opens, in columns. The measure is 
 #### `table_types.separator`
 
 Default `"comma"`. The separator between fields, `"comma"` or `"semicolon"`. It applies in both layouts, because Luau reads both.
+
+### `sort_table_types`
+
+Orders the properties of a table type. Off by default, because a formatter that reorders code nobody asked it to reorder loses the order the author meant.
+
+```luau
+-- before
+type Row = { description: string, id: string, [number]: any, hp: number }
+-- after: order = "ascending", the indexer first
+type Row = { [number]: any, id: string, hp: number, description: string }
+```
+
+| Key | Default | Selects |
+|---|---|---|
+| `order` | `"none"` | how the properties are ordered |
+| `indexer` | `"first"` | where an indexer such as `[number]: any` lands |
+
+#### `sort_table_types.order`
+
+Default `"none"`, which keeps the order the author wrote.
+
+| Value | Orders by |
+|---|---|
+| `none` | nothing; the author's order stands |
+| `ascending` | the length of the name, shortest first |
+| `descending` | the length of the name, longest first |
+| `alphabetical` | the name, a to z |
+| `size-ascending` | the width of the whole field, narrowest first |
+| `size-descending` | the width of the whole field, widest first |
+
+The length orders measure the name, which reads a list of keys down one edge. The size orders measure what the line takes: the name, the type, and the separator between them.
+
+Two properties that measure the same are ordered by name, so the order is total and a second format finds the file exactly as the first one left it.
+
+Two limits come with the option. A table type that holds a comment prints as the author wrote it, so nothing inside it moves: a comment cannot travel with the property it describes, and a comment that now sits on another property is worse than a table the sort skipped. And a table with a field the sort cannot name, the element type of `{ string }` for one, stays whole rather than half sorted.
+
+#### `sort_table_types.indexer`
+
+Default `"first"`. Where an indexer lands once `order` asks for a sort.
+
+| Value | Puts the indexer |
+|---|---|
+| `first` | above the named properties, as the heading of the table |
+| `last` | below them, as the footnote |
+| `sorted` | wherever `order` puts it |
+
+`indexer_first` is the older spelling of this key and still works: `true` is `first`, `false` is `sorted`.
+
+### `sort_tables`
+
+The same orders for a value table, and **off by default** for a stronger reason than style. A value table is data: the sort moves each value with its key, so the file evaluates them in the new order. A table whose values call anything is a table whose side effects move.
+
+```toml
+[fmt]
+sort_tables = { order = "alphabetical" }
+```
+
+```luau
+-- before
+local config = { zeta = 1, alpha = 2, mid = 3 }
+-- after
+local config = { alpha = 2, mid = 3, zeta = 1 }
+```
+
+`order` takes the same six values as `sort_table_types.order`. Three shapes keep a table as written, each because the sort cannot read it whole: a comment anywhere inside it, a positional field, where the position is the data, and a computed key that is not a plain string, which names nothing to sort by.
+
+The separators are the formatter's, so a sorted table cannot leave a `;` behind on a moved field, and the trailing comma [`magic_trailing_comma`](#magic-trailing-comma) reads is the source's own, which the sort never moves.
+
+### `function_style`
+
+The keyword a top-level function declaration takes. Default `"preserve"`, which changes nothing.
+
+| Value | Writes |
+|---|---|
+| `preserve` | the keyword the author wrote |
+| `local` | `local function f()` |
+| `const` | `const function f()` |
+| `global` | a bare `function f()` |
+
+Three shapes are left exactly as written, because no keyword belongs on them:
+
+```luau
+function Class.method() end -- a field of a table takes no keyword
+function Class:other() end -- a method takes none either
+local anon = function() end -- an expression declares nothing
+```
+
+`const` carries one more proof: a name the file reassigns keeps the keyword it had, because Luau refuses `Variable 'X' is constant and may not be reassigned`. A declaration inside a block is left alone as well, where the three spellings stop meaning one thing.
 
 ### `final_newline`
 
