@@ -3,10 +3,10 @@ title: Linting
 description: All sixty three lints, their default levels, and the flag comments that silence them
 category: Reference
 order: 5
-updated: 2026-08-21
+updated: 2026-08-30
 ---
 
-`larvae lint` reports suspicious code. It ships 63 lints, configured in the `[lint]` table of `larvae.toml`. The table is optional: `larvae lint` works with no config at all.
+`larvae lint` reports suspicious code. It ships 64 lints, configured in the `[lint]` table of `larvae.toml`. The table is optional: `larvae lint` works with no config at all.
 
 larvae covers all 28 lints of the Luau compiler, so `larvae init` turns Luau's own linter off in `.luaurc` and the project loses no report. With both linters on, each finding would arrive twice under two names, each needing its own comment to silence. [Quick start](/docs/getting-started/quick-start) describes that step.
 
@@ -23,7 +23,7 @@ unused_variable = "deny"
 
 `info` and `warn` both report, and both leave the exit code alone. They differ in what they ask of the reader: an editor draws an info as a hint and a warning as a squiggle. `info` is where a lint goes when a project wants it on the record without adding to the pile it reads every day. The summary line counts infos apart from warnings, and only when a project uses the level, so a project that never writes `info` reads the summary it always read.
 
-Seventeen of the 63 lints do not warn by default: six deny and eleven allow.
+Seventeen of the 64 lints do not warn by default: six deny and eleven allow.
 
 A lint denies when two things hold at once. No reading of the code makes the finding wrong, because the check reads a literal or the syntax and never a runtime value. And the code as written cannot be what the author meant: it throws, it hangs, or a line of it is dead. Six pass that bar. `undefined_variable`, because the name is nil at runtime and the line that reads it throws. `duplicate_keys`, because `{ a = 1, a = 2 }` discards the first entry. `duplicate_local`, because `local a, a` kills the first binding where it stands. `format_string`, because `string.format("%y", 1)` raises. `zero_step_loop`, because a step of zero never moves the counter. And `length_as_condition`, because `#t` yields a number and every number is true in Luau, so `if #players then` runs with no players. Over a 364 file corpus the five newer denies report nothing at all, which is the point: nobody writes these shapes on purpose, so the gate costs an existing project nothing on the day it adopts larvae.
 
@@ -58,7 +58,7 @@ And a group does not wake a lint that is `allow` on purpose. `prefer_const` is o
 
 `larvae lint --explain <name>` prints the group of a lint, and the list it prints when a name misses is grouped rather than one alphabetical run.
 
-## The 63 lints
+## The 64 lints
 
 Each name links to its section below, so an editor or an extension can deep link to one lint. The tables follow the six groups of [`[lint.groups]`](#groups), which is also how `larvae lint --explain` prints the list when a name misses.
 
@@ -94,6 +94,7 @@ The code cannot do what it says: it throws, it hangs, or a line of it is dead.
 | [`unknown_type`](#unknown-type) | warn | Comparing `type(x)` against a string that `type()` never returns. |
 | [`unreachable_code`](#unreachable-code) | warn | Statements after a return, break or continue, which never run. |
 | [`unused_function`](#unused-function) | warn | A `local function` that nothing calls, and a global `function f() end` that no line reads. |
+| [`unused_import`](#unused-import) | warn | A module required and never used. |
 | [`unused_variable`](#unused-variable) | warn | A name declared and never read. A `local function` is [`unused_function`](#unused-function) instead. |
 | [`zero_step_loop`](#zero-step-loop) | deny | A numeric for whose step is zero, so the counter never moves. |
 
@@ -937,6 +938,16 @@ end
 ```
 
 The declaring form decides which unused lint fires, not the value: `local function f() end` is `unused_function`, and `local f = function() end` is [`unused_variable`](#unused-variable), though both hold a function. Each carries its own level, so a project that keeps unused helpers around while still wanting unused locals reported can say so. Both lints read [`[lint.options.unused_variable]`](#unused-variable-options), because `ignore_pattern` means the same thing to either one, and `_helper` silences a function as it silences a variable.
+
+### `unused_import`
+
+A module required and bound to a name nothing reads. The fix is always to delete the line, which is why the leftover gets its own lint and its own level instead of riding [`unused_variable`](#unused-variable).
+
+```luau
+local Signal = require("@pkg/signal") -- nothing reads Signal
+```
+
+A method that happens to be named `require` stays a variable question. A worm can also exempt what it knows: in a `.luaux` file the factory package never reports, because the markup uses it even where no call spells it out.
 
 ### `unused_variable`
 

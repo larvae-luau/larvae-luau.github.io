@@ -3,7 +3,7 @@ title: worm.toml
 description: The manifest beside the artifact, the four capability tables, and what larvae refuses at load
 category: Worms
 order: 3
-updated: 2026-08-16
+updated: 2026-08-30
 ---
 
 `worm.toml` ships beside the artifact. It is what larvae reads before it runs anything. A worm declares what it adds, and larvae checks the project's config against those declarations, so the manifest is also where the schema and the editor learn a worm's names.
@@ -30,8 +30,15 @@ default = false
 description = "Collapse adjacent markup nodes"
 filter = ["Call"]
 
-[options]                 # the settings this worm reads from [worms.<name>.config]:
-                          # bare names, each with a description, a type, and a default
+[options]                 # the settings this worm reads from [worms.<name>.config]
+                          # and from [lsp.<name>]: bare names, each with a
+                          # description, a type, and a default
+
+[lsp]                     # the editor tiers this worm answers, native form only
+resolve = true            # requires it claims, lowered for the analyzer
+declarations = true       # .d.luau text injected at session start
+respond = ["hover", "completions", "diagnostics"]
+serves_luau = true        # its hooks answer inside plain Luau files too
 ```
 
 ## Top level keys
@@ -68,6 +75,12 @@ Each table declares one capability, and a worm needs at least one. larvae refuse
 | `[frontend] fmt` | Format | that this worm answers a format request with a layout document or byte ranges |
 | `[lints]` | Lint | the worm's lints, bare names with a default level. `larvae worm run --lint` reports at these defaults, and a project overrides them in `[lint.rules.<name>]` |
 | `[rules]` | Rules | the worm's transform rules, one table per rule |
+| `[lsp]` | Editor | the tiers above: resolve, declarations, and respond, plus `serves_luau`. Native form only, because the hooks sit on the analyzer's hot path |
+
+Two more keys reach beyond the claims:
+
+- `lints_luau = true`, top level, runs the worm's Lint op over every plain Luau file, after the builtin lints and on the same levels and suppressions. This is how a worm about conventions in ordinary code exists at all; the oop worm is the example.
+- `shared = true`, under `[frontend]`, is a claiming worm's consent for foreign `lints_luau` worms to read its byte-true Luau shadow, so a convention holds inside its files too. The luaux worm sets it.
 
 The names in every table are bare. larvae groups them under the worm's key in the project config and in the generated schema, so a worm's `tidy` can never collide with a builtin or with another worm's `tidy`. See [using worms](/docs/worms/using-worms) for the user's side of each table.
 

@@ -3,7 +3,7 @@ title: Quick start
 description: Format, lint, and go from a Rojo project to native string requires in five minutes
 category: Getting started
 order: 2
-updated: 2026-08-21
+updated: 2026-08-30
 ---
 
 A handful of commands take an existing Rojo project from alias requires to Roblox native string requires, with formatting and linting along the way. This page walks through them, in order, on a project you already have.
@@ -59,7 +59,7 @@ A package directory never becomes an input. `init` reads every component of the 
 
 `init` writes `"lint": { "*": false }` into `.luaurc`.
 
-The reason is that both linters report the same defects. The Luau compiler ships 28 lints, and larvae covers all 28, so with both on each finding arrives twice: once from luau-lsp in the editor, once from `larvae lint` in CI. The two use different names, and each needs its own comment to silence one finding. The `*` covers every rule, including a rule that a later Luau adds.
+The reason is that both linters report the same defects. The Luau compiler ships 28 lints, and larvae covers all 28, so with both on each finding arrives twice: once under Luau's name, once under larvae's, and each needs its own comment to silence one finding. The `*` covers every rule, including a rule that a later Luau adds.
 
 Three promises about the edit, because you are about to let a tool write your file:
 
@@ -134,6 +134,7 @@ There is no `larvae serve` and no `larvae build`. Every rojo command you already
 
 ## Next steps
 
+- Set up the editor: the Larvae extension gives you hover, completion, type diagnostics, and inlay hints from the same tool, see [editor setup](/docs/concepts/editor-setup)
 - Add `larvae check` and `larvae fmt --check` to CI. `check` runs the same analysis as `process` plus the whole project checks, writes nothing, and exits non zero on errors
 - Read the [CLI reference](/docs/reference/cli) for every command and flag
 - Read [formatting](/docs/reference/formatting) and [linting](/docs/reference/linting) when a default stops fitting

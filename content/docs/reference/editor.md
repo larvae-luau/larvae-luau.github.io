@@ -1,0 +1,106 @@
+---
+title: Editor
+description: The larvae language server, the analyzer inside it, every [lsp] key, and the VS Code extension
+category: Reference
+order: 6
+updated: 2026-08-30
+---
+
+`larvae-lsp` is a full language server. It carries Luau's own analysis frontend, vendored and compiled in, so hover, completion, type diagnostics, and inlay hints come from the same type inference Luau runs. The lints, the formatter, and the code actions larvae always served ride in the same process. One server, both halves, measured against luau-lsp on a real project until the answers matched.
+
+The server installs beside the CLI: `larvae self install` copies `larvae-lsp` and its analyzer library to `~/.larvae/bin`. The [Larvae extension](https://marketplace.visualstudio.com/items?itemName=AndrewBordis.larvae) starts it in VS Code; any other editor starts `larvae-lsp` over stdio. Setup is on [editor setup](/docs/concepts/editor-setup).
+
+## What the server answers
+
+| capability | what comes back |
+|---|---|
+| diagnostics | Luau's type errors with their error numbers, larvae's lints, a worm's findings, and the cross-realm requires `larvae check` reports, in one publish |
+| hover | the inferred type, doc comments, and the card speaks the author's words: a `const` binding says `const`, an `export local` says so, a member says `hp: number` |
+| completion | members, keywords ranked above auto-imports, service auto-imports, module auto-imports, require path completion, and deprecated entries struck through |
+| signature help | parameters with the active one marked |
+| inlay hints | variable types, parameter types and names, function return types; a double click accepts a type hint into the file |
+| go to definition | locals, members, modules, and requires, aliases included |
+| document symbols, semantic tokens, rename, document links, colors | as an editor expects |
+| formatting | the same layout `larvae fmt` writes |
+| code actions | larvae's lint fixes plus what the worms of the project offer |
+
+### Inlay hints hold still while you type
+
+`[lsp.inlay_hints] update_delay` holds the hints during a burst of keystrokes and recomputes once after the pause, so a hint never lands mid-word. Held hints follow their lines as edits move them. `type_hint_max_length` truncates a long label for display; the accept edit still writes the whole type, and a hint whose text is display notation rather than syntax, `@metatable` for one, never inserts.
+
+Hovering a hint answers with the same card as hovering the name it annotates.
+
+### The dialect is served
+
+`const` bindings and `export local` declarations parse, type, and hover as written. Value exports ride Luau's `LuauExportValueSyntax` flag, which larvae turns on by default; `[lsp.fflags]` with `LuauExportValueSyntax = "false"` restores stock parsing, and `export` then reports as the error it is there.
+
+### Requires resolve every way the build resolves them
+
+String forms, `.luaurc` and `[aliases]` names, `@game/...` paths, and the instance forms: `require(script.Parent.Widget)`, `require(game.ReplicatedStorage.App)`, and the `GetService`, `FindFirstChild`, and `WaitForChild` call spellings all carry types. A worm-claimed target lowers the same way a string require does, so a `.luaux` component or a data file types through any spelling.
+
+A module that returns `{ }` and carries `export type` lines hints and hovers as `{ type PlayerData, type Slot }` instead of the empty table, because the type exports are what the module is for.
+
+## The instance tree
+
+The rojo sourcemap becomes types: each node is a declared type, and every script learns its own, so `script.Parent.Config` and `game.ReplicatedStorage.Packages` resolve with real children. A folder that holds only worm-claimed files joins the tree although rojo omits it.
+
+`[lsp] sourcemap` names the file. With `sourcemap_autogenerate` on, the server keeps it fresh itself: `sourcemap_command` names the generator, run through the shell in the project root, and an empty command infers rojo from `rojo_project_file` and runs `rojo sourcemap --watch`. The generator and everything it started die with the server. A generator that does not start is said once and costs the autogeneration alone.
+
+`character_type` decides what `Player.Character` types to: `r15` and `r6` carry the body parts of their rig, every part optional because a part can be destroyed or not yet streamed in. `not_set` types the union of the two.
+
+`[lsp.studio]` links a running Studio through the companion plugin, so the live DataModel joins the tree.
+
+## Deprecated members
+
+A deprecated use draws a strikethrough in the file and in the completion list. `[lsp.completion] hide_deprecated` drops deprecated entries from the list whole, and stays off by default. Where the platform marks a member, larvae's own `deprecated` finding stands down, so one use never reports twice.
+
+## Worms in the editor
+
+A worm serves the editor in three tiers, declared in its manifest so gating never runs worm code:
+
+1. **Resolve.** The worm answers the requires it claims and hands the analyzer lowered Luau, so `require("./data.json")` and a `.luaux` component carry their real types.
+2. **Declarations.** `.d.luau` text the worm injects at session start.
+3. **Respond.** The worm transforms hover, completions, or diagnostics before the editor sees them.
+
+A worm that lints plain Luau reports beside the builtin lints, in the editor and in `larvae lint` alike. The worm side of all of this is on [using worms](/docs/worms/using-worms) and [worm.toml](/docs/worms/worm-toml).
+
+`[lsp.<worm>]` holds the editor settings a worm declares:
+
+```toml
+[lsp.oop]
+hide_private_completions = false
+```
+
+Each key checks against the worm's own `[options]`, so a typo, a wrong type, or a name that is no worm warns instead of doing nothing.
+
+## The `[lsp]` table
+
+| key | default | meaning |
+|---|---|---|
+| `enabled` | `true` | off answers every request with nothing, so another server owns the files |
+| `analyzer` | `true` | off serves the lints, format, and actions alone; hover, completion, and type diagnostics go quiet |
+| `claim_only` | `false` | on serves only the files worms claim, so stock luau-lsp can own the plain Luau |
+| `character_type` | `"r15"` | `r15`, `r6`, or `not_set` |
+| `sourcemap` | `"sourcemap.json"` | the sourcemap to read, relative to the project root |
+| `sourcemap_autogenerate` | `true` | the server runs the sourcemap command itself |
+| `sourcemap_command` | `""` | the generator, through the shell; empty infers rojo |
+| `rojo_project_file` | `"default.project.json"` | what the inferred rojo command reads |
+
+The subtables, each with its own keys: `[lsp.completion]`, `[lsp.inlay_hints]`, `[lsp.signature_help]`, `[lsp.hover]`, `[lsp.index]`, `[lsp.studio]`, `[lsp.fflags]`, and `[lsp.bytecode]`. `larvae self code` completes every key with its description, and the [extension](#the-vs-code-extension) mirrors them as editor settings, so the schema is the reference most people read. Two worth naming:
+
+- `[lsp.fflags]` controls Luau's own flags: `enable_new_solver` turns the new type solver on, `enable_by_default` turns on everything stable, and `over` sets one flag by name.
+- `[lsp.bytecode]` tunes the `larvae/bytecode` and `larvae/compilerRemarks` requests the extension's compiled views use.
+
+## The VS Code extension
+
+The Larvae extension starts the server, watches `larvae.toml` and restarts on change, and mirrors the `[lsp]` keys as `larvae-lsp.*` settings. Where the project file and the editor settings speak about one key, the project wins, because the project travels with the repository. The extension also asks larvae which extensions the project's worms claim before the client starts, so a `.luaux` buffer is served from the first keystroke.
+
+## Coexisting with luau-lsp
+
+`claim_only = true` narrows larvae to the files worms claim and leaves plain Luau to another server. A worm whose hooks answer inside plain files widens that narrowing for its own answers and says so once. With the analyzer in the server there is no longer a reason to run two servers; the switch stays for the projects that want one anyway.
+
+## Related
+
+- [editor setup](/docs/concepts/editor-setup), the one-time steps
+- [configuration](/docs/reference/configuration), the rest of `larvae.toml`
+- [using worms](/docs/worms/using-worms), what a worm adds to the editor

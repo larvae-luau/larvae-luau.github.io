@@ -1,12 +1,35 @@
 ---
 title: Editor setup
-description: One command for config completion, a language server for diagnostics and formatting, and go to definition through .luaurc
+description: The Larvae extension or a bare language server, config completion, and go to definition through .luaurc
 category: Concepts
 order: 6
-updated: 2026-08-21
+updated: 2026-08-30
 ---
 
-Three pieces: `larvae self code` for editing `larvae.toml`, `larvae lsp` for editing Luau, and one `.luaurc` alias for go to definition. None takes more than a minute.
+Three pieces: the Larvae extension for editing Luau, `larvae self code` for editing `larvae.toml`, and one `.luaurc` alias habit for portable requires. None takes more than a minute.
+
+## The language server
+
+In VS Code, install the [Larvae extension](https://marketplace.visualstudio.com/items?itemName=AndrewBordis.larvae). It starts `larvae-lsp`, restarts it when `larvae.toml` changes, and mirrors every `[lsp]` key as a `larvae-lsp.*` setting. Where the project file and the editor settings speak about one key, the project wins.
+
+Any other editor starts the server itself, over stdio:
+
+```shell
+larvae-lsp
+```
+
+`larvae self install` puts `larvae-lsp` and its analyzer library in `~/.larvae/bin` beside the CLI, and the release zips carry all three files together.
+
+The server is the whole story: Luau's own analyzer answers hover, completion, type diagnostics, and inlay hints, and larvae's lints, formatter, and code actions ride in the same process, through the same code the commands run, so the terminal and the editor cannot disagree. What it answers, key by key, is on the [editor reference](/docs/reference/editor).
+
+Two behaviors worth knowing on day one:
+
+- A buffer a worm claims is served through that worm, types included. The server never downloads a worm, because a keystroke cannot wait for the network; `larvae worm install` is the download.
+- The server keeps the rojo sourcemap fresh itself, so `script.Parent.` completes on a file made a minute ago. `[lsp] sourcemap_command` names another generator for a project not on rojo, and `sourcemap_autogenerate = false` turns the spawning off. See the [editor reference](/docs/reference/editor).
+
+### The fallback half
+
+`larvae lsp`, the CLI subcommand, serves the lints, the formatter, and the code actions with no analyzer, and `[lsp] analyzer = false` puts the full server in the same mode. A platform whose release ships without the analyzer library falls back the same way: everything larvae always served keeps working, and the type half goes quiet.
 
 ## Config completion
 
@@ -16,7 +39,7 @@ larvae self code
 
 The command sets up completion and hover docs for `larvae.toml`. Its first choice is to write an **Even Better TOML** association into the editor's user settings. The pattern matches `larvae.toml` in every location, so one entry covers every project on the machine. When that extension is absent, the command falls back to writing a `#:schema` line at the top of the file, which any Taplo based editor reads.
 
-The schema is `crates/larvae/larvae.schema.json`, served from the repo. It contains a description for every key, the enum values, and the defaults. A test, `crates/larvae/tests/schema.rs`, checks the lint list against the registry and the `[fmt]` keys against the struct, so the schema cannot differ from the code. The editor is therefore the reference that most people use.
+The schema is `crates/larvae/larvae.schema.json`, served from the repo. It contains a description for every key, the enum values, and the defaults. A test checks the lint list against the registry, the `[fmt]` keys against the struct, and the `[lsp]` subtables against the config, so the schema cannot differ from the code. The editor is therefore the reference that most people use.
 
 What you get in `larvae.toml`:
 
@@ -39,61 +62,9 @@ The command rewrites the generated copy whenever one is on disk, and not only wh
 
 The command ends by telling you to run **Developer: Reload Window**. The editor holds the schema in memory, so a new file on disk does not change what the editor already parsed. larvae cannot do this step for you, because the command line of the editor runs no editor command.
 
-## Diagnostics and formatting
+## Aliases and go to definition
 
-```shell
-larvae lsp
-```
-
-The language server speaks over stdio and serves diagnostics and formatting. It runs the same code paths as `larvae lint` and `larvae fmt`, so the terminal and the editor cannot disagree about a finding or a layout.
-
-The editor follows the same [exclusion lists](/docs/reference/configuration) as the commands. When a file is excluded, larvae clears its diagnostics; it does not keep the diagnostics that were there before you added the exclude.
-
-A buffer claimed by a worm is routed to that worm, through the same code the commands use. The server never downloads a worm, because a keystroke cannot wait for the network; installs happen through `larvae worm install` in the terminal. A worm failure becomes one diagnostic against the file, and the server keeps serving.
-
-See [formatting](/docs/reference/formatting) and [linting](/docs/reference/linting) for what the server reports. `[fmt] enabled = false` gives the editor a formatter that returns no edits, and `[lint] enabled = false` clears the diagnostics of every file, see [formatting](/docs/reference/formatting) and [linting](/docs/reference/linting).
-
-### What the server answers
-
-| method | what comes back |
-|---|---|
-| `textDocument/publishDiagnostics` | The lints, and the findings of a worm for a file it claims. |
-| `textDocument/formatting` | One edit covering the document. A file that does not parse gets no reply, because a report on every keystroke is noise. |
-| `textDocument/documentSymbol` | The symbols of the file. |
-| `textDocument/codeAction` | The three lint fixes below, plus what the worms of the project offer. |
-| `larvae/definitions` | Luau definition text that a worm supplies. |
-
-### Code actions
-
-larvae fixes three of its own lints, and each fix is the sentence that lint already prints.
-
-| lint | the fix |
-|---|---|
-| `unused_variable` | Prefix the name with an underscore. |
-| `unused_function` | The same. |
-| `prefer_const` | Change the `local` to `const`. |
-
-The underscore is the convention Luau and selene both read, and larvae reads it too, so the name stops being reported and the code keeps working. That fix renames the declaration and every write of the name. A binding that is assigned and never read also reports, and prefixing the declaration alone there would leave the assignments pointing at a name nothing declares. That is a global, and a worse bug than the warning it silenced.
-
-The `const` fix is one keyword. The lint has already established that nothing reassigns the names, which is the condition Luau enforces, so the swap cannot turn a running file into "Variable is constant and may not be reassigned". `prefer_const` is off by default, so the fix appears only where a project turned the lint on.
-
-The capability was advertised before larvae had any actions, because an editor decides at initialize whether it will ever ask.
-
-A worm offers actions here as well. The title of each action carries the worm's name, and an action that names the lint it repairs is grouped under that diagnostic.
-
-### larvae/definitions
-
-`larvae/definitions` is not in the protocol, which is why it carries larvae's name. The reply is Luau definition text that a worm supplies. A worm that makes a data file requirable is the case that asks for it: `require("./items.json")` has a type, the worm knows it, and neither larvae nor luau-lsp can work it out alone. This is a different thing from `larvae worm types`, which writes the definitions of the worm API for the people who write worms.
-
-### When something is missing
-
-A config that fails to resolve raises one editor warning with the reason, and the server serves defaults until it loads. A project without a `larvae.toml` raises nothing.
-
-The editor skips a worm that is not installed and says nothing, because it answers a keystroke and a download is not an answer. Install through `larvae worm install`, see [using worms](/docs/worms/using-worms).
-
-## Go to definition on aliases
-
-**luau-lsp reads `.luaurc`.** That is its source of alias truth. larvae reads `.luaurc` too, and merges `[aliases]` from `larvae.toml` over it per key, so a `.luaurc` alias gives you both halves:
+The server reads `.luaurc` and merges `[aliases]` from `larvae.toml` over it per key, so one alias serves the editor and the build:
 
 ```json
 {
@@ -103,19 +74,17 @@ The editor skips a worm that is not installed and says nothing, because it answe
 }
 ```
 
-Now this require is resolvable by your editor and by larvae:
-
 ```luau
 local Signal = require("@pkg/signal")
 ```
 
-Ctrl-click jumps to `Packages/signal.luau`, hover shows the module's type, and rename works. larvae independently rewrites the same require for the engine:
+Ctrl-click jumps to `Packages/signal.luau`, hover shows the module's type, and larvae independently rewrites the same require for the engine:
 
 ```luau
 local Signal = require("@game/ReplicatedStorage/Packages/signal")
 ```
 
-One alias, two consumers, the editor follows it to a file and larvae follows it to a DataModel path.
+One alias, two consumers: the editor follows it to a file and the build follows it to a DataModel path.
 
 ### When the alias has to live in larvae.toml
 
@@ -126,12 +95,13 @@ One alias, two consumers, the editor follows it to a file and larvae follows it 
 pkg = "@game/ReplicatedStorage/Packages"
 ```
 
-luau-lsp cannot read that, so go to definition on `@pkg` stops working. If you need both, keep a filesystem alias in `.luaurc` for the editor and let larvae's auto mounts handle the DataModel side, since they already know where `Packages` lands. See [Rojo integration](/docs/concepts/rojo-integration).
+larvae-lsp resolves that spelling too, through the same mount table the build reads. Keeping a filesystem alias in `.luaurc` beside it still helps: `.luaurc` is what every other Luau tool reads, so the requires stay portable beyond larvae.
 
-`larvae self sync-luaurc` keeps the `.luaurc` aliases editor resolvable for you: it inverts each DataModel alias back to the directory that mounts there and writes that path into `.luaurc`, see the [CLI reference](/docs/reference/cli).
+`larvae self sync-luaurc` maintains that portability for you: it inverts each DataModel alias back to the directory that mounts there and writes that path into `.luaurc`, see the [CLI reference](/docs/reference/cli).
 
 ## Related
 
+- [editor reference](/docs/reference/editor), everything the server answers and every `[lsp]` key
 - [configuration](/docs/reference/configuration), every key the schema describes
 - [using worms](/docs/worms/using-worms), the declarations that get merged into the schema
 - [require targets](/docs/concepts/require-targets), how aliases are resolved on the build side

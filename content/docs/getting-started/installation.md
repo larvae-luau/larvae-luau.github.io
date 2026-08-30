@@ -3,10 +3,10 @@ title: Installation
 description: Install larvae with lpm, lpx, cargo, or a prebuilt binary
 category: Getting started
 order: 1
-updated: 2026-08-16
+updated: 2026-08-30
 ---
 
-larvae ships as a single binary with no runtime dependencies. Pick one of the routes below, they all end with a `larvae` you can run.
+larvae ships as one small toolset with no runtime dependencies: the `larvae` CLI, the `larvae-lsp` editor server, and the analyzer library the server opens. Pick one of the routes below, they all end with a `larvae` you can run.
 
 ## Add it to a project with lpm
 
@@ -44,19 +44,22 @@ cargo install --path .
 
 ## Prebuilt binaries
 
-Release builds are attached to the GitHub releases page. Assets are named `larvae-{os}-{arch}`, with `.exe` appended on Windows.
+Release builds are attached to the GitHub releases page. Each asset is a zip named `larvae-{os}-{arch}.zip`, holding the CLI, the `larvae-lsp` server, and the analyzer library together, because the server opens the library at runtime and the two have to travel as one.
 
 | asset | platform |
 |---|---|
-| `larvae-linux-x86_64` | Linux, Intel or AMD |
-| `larvae-macos-aarch64` | macOS, Apple silicon |
-| `larvae-windows-x86_64.exe` | Windows, Intel or AMD |
+| `larvae-linux-x86_64.zip` | Linux, Intel or AMD |
+| `larvae-linux-aarch64.zip` | Linux, ARM |
+| `larvae-macos-x86_64.zip` | macOS, Intel |
+| `larvae-macos-aarch64.zip` | macOS, Apple silicon |
+| `larvae-windows-x86_64.zip` | Windows, Intel or AMD |
+| `larvae-windows-aarch64.zip` | Windows, ARM. This one ships the fallback server: everything works except the type half |
 
-Download the asset for your platform, mark it executable if your OS needs that, and move it somewhere on your PATH. Or let larvae do the moving for you, see below.
+Unpack the zip, mark the binaries executable if your OS needs that, and run `larvae self install` from there so all three land on PATH together.
 
 ## Putting larvae on PATH
 
-`larvae self install` copies the **running** binary to `~/.larvae/bin/larvae`, so run it with the binary you just downloaded or built.
+`larvae self install` copies the **running** binary to `~/.larvae/bin/larvae`, and the `larvae-lsp` server with its analyzer library when they sit beside it, so run it from the unpacked release directory.
 
 ```shell
 larvae self install

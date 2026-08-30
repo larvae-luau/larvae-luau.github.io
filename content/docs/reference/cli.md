@@ -3,7 +3,7 @@ title: CLI reference
 description: Every larvae command, flag, exit code, and environment variable
 category: Reference
 order: 1
-updated: 2026-08-21
+updated: 2026-08-30
 ---
 
 larvae has nine commands: `process`, `check`, `fmt`, `lint`, `bundle`, `lsp`, `init`, `worm`, and `self`. That is the whole surface. There is no `serve` command and no `schema` command, and larvae never runs rojo for you.
@@ -133,13 +133,15 @@ Without `--entry` and without `[bundle] entry` in the config, the command errors
 
 ### `lsp`
 
-Sends diagnostics and formatting to an editor over stdio.
+Serves an editor over stdio: the lints, the formatter, and the code actions, without the analyzer.
 
 ```shell
 larvae lsp
 ```
 
-The server runs through the same code the commands use, so the terminal and the editor cannot disagree. It follows the same exclude lists as every command, and it routes a claimed buffer to its worm. It never downloads a worm, because a keystroke cannot wait for the network; the first fetch happens in the terminal. See [editor setup](/docs/concepts/editor-setup).
+The full server is the separate `larvae-lsp` binary, which adds Luau's analyzer: hover, completion, type diagnostics, and inlay hints. `larvae self install` installs both, and the [Larvae extension](/docs/concepts/editor-setup) starts the full one. The subcommand stays as the fallback half, and `[lsp] analyzer = false` puts the full server in the same mode.
+
+Either server runs through the same code the commands use, so the terminal and the editor cannot disagree. It follows the same exclude lists as every command, and it routes a claimed buffer to its worm. It never downloads a worm, because a keystroke cannot wait for the network; the first fetch happens in the terminal. See [editor setup](/docs/concepts/editor-setup) and the [editor reference](/docs/reference/editor).
 
 A config that fails to resolve raises one editor warning with the reason, and the server serves defaults until the config loads. A project without a `larvae.toml` raises nothing, because a missing config is a normal state and not a fault.
 
@@ -177,6 +179,7 @@ Manages the [worms](/docs/worms/what-a-worm-is) a project uses, and helps you de
 | `worm run --lint <dir> <file>` | print the worm's findings at the manifest defaults |
 | `worm info <dir>` | print what the manifest declares, without running it |
 | `worm types` | write the Luau definitions for a language server |
+| `worm claims` | print the extensions the project's worms claim, as JSON for an editor |
 
 `add` takes a short name that larvae knows, such as `luaux`, or `owner/repo`, and either with `@version` on the end. A short name expands through a list written into larvae: `luaux` is `larvae-luau/luaux-worm`. A name larvae does not know is refused rather than guessed, because guessing an owner points the fetch at a repository that may exist and may belong to someone else. `--cargo` takes the crate of that name instead of a GitHub release.
 
@@ -216,7 +219,7 @@ Manages the larvae binary itself, and the editor support around it.
 | `self code` | set up editor schema support for `larvae.toml` |
 | `self sync-luaurc` | write the project aliases into `.luaurc` in a form the editor resolves |
 
-`self install` copies the **running** binary to `~/.larvae/bin/larvae`. PATH handling then differs by platform, on purpose:
+`self install` copies the **running** binary to `~/.larvae/bin/larvae`, and `larvae-lsp` with its analyzer library beside it when they sit next to the binary, which the release zips guarantee. PATH handling then differs by platform, on purpose:
 
 | platform | what happens |
 |---|---|
@@ -258,7 +261,7 @@ Color is also disabled automatically when output is piped, so `larvae check > lo
 
 ## What larvae does not do
 
-larvae stops at writing files. It writes `dist/` and keeps `.larvae/build.project.json` in sync, then you point rojo at the derived project yourself:
+The build stops at writing files. It writes `dist/` and keeps `.larvae/build.project.json` in sync, then you point rojo at the derived project yourself:
 
 ```shell
 larvae process
@@ -266,6 +269,8 @@ rojo serve .larvae/build.project.json
 ```
 
 Serving is rojo's job. See [Rojo integration](/docs/concepts/rojo-integration) for how the derived project is generated from your `default.project.json`.
+
+The one process larvae does run is the editor's sourcemap generator: the language server spawns `rojo sourcemap --watch`, or the `[lsp] sourcemap_command` of the project, and ends it with the session. That serves the editor's instance tree and never the build; `sourcemap_autogenerate = false` turns it off. See the [editor reference](/docs/reference/editor).
 
 ## Related pages
 

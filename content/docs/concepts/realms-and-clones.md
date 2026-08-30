@@ -3,7 +3,7 @@ title: Realms and clones
 description: Why larvae refuses to emit a require that would break in a running game
 category: Concepts
 order: 2
-updated: 2026-08-16
+updated: 2026-08-30
 ---
 
 A require can resolve perfectly on disk and still be wrong in a running game. larvae maps both ends of every require into the DataModel and refuses to emit something that would break at runtime.
@@ -132,7 +132,7 @@ Realm violations and unresolvable requires are reported unconditionally. The `[c
 
 Nothing else in the ecosystem fully checks this.
 
-darklua rewrites requires but does not model realms, does not know that Starter containers clone, and does not canonicalize casing against the DataModel. luau-lsp understands your files and your `.luaurc` aliases, which is why go to definition works, but it is not modelling the runtime DataModel either, so it has nothing to say about a client file reaching into `ServerStorage`.
+darklua rewrites requires but does not model realms, does not know that Starter containers clone, and does not canonicalize casing against the DataModel. luau-lsp understands your files and your `.luaurc` aliases, but it is not modelling the runtime DataModel, so it has nothing to say about a client file reaching into `ServerStorage`. larvae's own editor server does say it: the same cross-realm finding `larvae check` reports squiggles in the open file, string forms and instance forms alike.
 
 larvae can check it because it already built the map, the filesystem to DataModel mounts that come out of parsing your Rojo project. Once you have that map, refusing to emit a broken require is nearly free. See [Rojo integration](/docs/concepts/rojo-integration) for where the map comes from.
 

@@ -3,7 +3,7 @@ title: Configuration
 description: Every larvae.toml key, the other files larvae reads, and how they merge
 category: Reference
 order: 2
-updated: 2026-08-21
+updated: 2026-08-30
 ---
 
 Configuration lives in `larvae.toml` next to your Rojo project. The file is optional: `larvae fmt` and `larvae lint` work with no `larvae.toml` at all, and a project with a `default.project.json` and `.luaurc` aliases can run `larvae process` on defaults alone. Every table below exists to override a default, never to satisfy one.
@@ -17,6 +17,7 @@ Configuration lives in `larvae.toml` next to your Rojo project. The file is opti
 | `selene.toml` | read the same way for lint settings |
 | `.luaurc` | aliases, merged with `[aliases]` per key |
 | `default.project.json` | Rojo mounts, which is why `[requires] mounts` is rarely necessary |
+| `sourcemap.json` | the instance tree the editor types `script` against, kept fresh by the server itself |
 
 ## The rule about unknown keys
 
@@ -116,7 +117,7 @@ Rules for alias names:
 - Case insensitive, so `pkg` and `Pkg` are the same alias
 - `@self` and `@game` are reserved and cannot be redefined
 
-Keeping aliases in `.luaurc` is also what gives luau-lsp go to definition on `require("@pkg/thing")`, since `.luaurc` is the file the language server reads.
+The language server reads `.luaurc` too and merges `[aliases]` over it, so go to definition follows `require("@pkg/thing")` whichever file defines the alias. Keeping the filesystem aliases in `.luaurc` still keeps the requires portable to other Luau tools.
 
 ## `[process]`
 
@@ -343,6 +344,12 @@ path = "build/myworm"                # a directory, for development
 A worm's settings live under `[worms.<name>.config]`, its rules under `[worms.<name>] rules`, its lint levels under `[lint.rules.<name>]`, and its format options under `[fmt.<name>]`. An older larvae used a top level `[config.<name>]` table; that spelling now causes an error that names the new location.
 
 Every key, the version forms, the three install channels, the managing commands, and inheritance are documented on [using worms](/docs/worms/using-worms).
+
+## `[lsp]`
+
+The editor server. `enabled = false` hands the files to another server, `analyzer = false` serves the lints and the formatter without the type half, and `claim_only = true` narrows larvae to the files worms claim. The table also holds the sourcemap keys, `character_type`, and the subtables for completion, inlay hints, hover, signature help, Luau's fflags, and the Studio link. `[lsp.<worm>]` carries the editor settings a worm declares.
+
+Every key with its default lives on the [editor reference](/docs/reference/editor), and `larvae self code` completes them all.
 
 ## `[profile.<name>]`
 

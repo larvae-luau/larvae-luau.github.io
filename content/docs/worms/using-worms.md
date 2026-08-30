@@ -3,7 +3,7 @@ title: Using worms
 description: The [worms] table, three install channels, run order, inheritance, and where a worm's settings live
 category: Worms
 order: 2
-updated: 2026-08-21
+updated: 2026-08-30
 ---
 
 One table per worm under `[worms]`. The key is the worm's name, and everything the worm adds to the project hangs off that key.
@@ -174,11 +174,24 @@ When larvae loads worms it writes `<cache_dir>/larvae.schema.json`, a copy of th
 
 The language server routes a claimed buffer to its worm for diagnostics and formatting, through the same code the commands use, so the terminal and the editor cannot disagree. It never downloads a worm, because it answers a keystroke and a download is not an answer: a worm the config names and the disk lacks is skipped silently, and `larvae worm install` puts it on disk. It stamps each worm entry with its mtime and length, so a rebuilt `path` worm answers on the next keystroke. A worm failure becomes one diagnostic against the file, and the server keeps serving.
 
-A worm can also answer two editor requests: code actions and Luau type definitions. Both are optional, and a worm with nothing to say answers with nothing rather than an error, because nothing in the manifest promises them. A worm that fails there is passed over, because one broken worm must not take the lightbulb from the others.
+A native worm can go much further, in three tiers its manifest declares:
 
-A worm's code actions carry the worm's name in the title, so the user sees which worm offered each fix. The worm speaks in byte offsets, because it parsed the file, and larvae turns those into the positions the protocol wants. An action that names the lint it repairs is grouped under that diagnostic.
+1. **Resolve.** The worm answers the requires it claims and hands the analyzer lowered Luau with a span map, so `require("./items.json")` and a `.luaux` component carry their real types on hover and completion, unsaved edits included.
+2. **Declarations.** `.d.luau` text the worm injects when the session starts.
+3. **Respond.** The worm transforms hover, completions, or diagnostics before the editor sees them, which is how a markup worm answers inside its own syntax.
 
-`larvae/definitions` serves the Luau type definitions worms supply. A worm that makes a data file requirable is the case that asks for it: `require("./items.json")` has a type, and the worm knows it. This is a different thing from `larvae worm types`, which writes the definitions of the worm API for the people who write worms. The server itself is described on [editor setup](/docs/concepts/editor-setup); the exports each form provides are on [writing a worm in Luau](/docs/worms/writing-in-luau) and [writing a worm in Rust](/docs/worms/writing-in-rust).
+A worm can also lint plain Luau, and the files another worm claims when that worm consents: the oop worm holds a privacy convention across `.luau` and `.luaux` files this way. The findings pass through the same levels and `allow` comments as every other lint. The manifest keys behind all of this are on [worm.toml](/docs/worms/worm-toml).
+
+A worm's editor settings live under `[lsp.<worm>]`:
+
+```toml
+[lsp.oop]
+hide_private_completions = false
+```
+
+Each key checks against the `[options]` the worm declares, so a typo, a wrong type, or a name that is no worm warns instead of doing nothing.
+
+Code actions and Luau type definitions round it out, on every form. Both are optional, and a worm with nothing to say answers with nothing rather than an error. A worm's code actions carry the worm's name in the title, and an action that names the lint it repairs is grouped under that diagnostic. The server itself is described on the [editor reference](/docs/reference/editor); the exports each form provides are on [writing a worm in Luau](/docs/worms/writing-in-luau) and [writing a worm in Rust](/docs/worms/writing-in-rust).
 
 ## Related
 

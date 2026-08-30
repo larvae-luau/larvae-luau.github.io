@@ -76,7 +76,7 @@ Two workloads are timed, for the same reason the darklua tables time three:
 | workload | what runs |
 |---|---|
 | matched | both tools hold to the 30 lints that both implement, the head to head |
-| defaults | each tool with what it enables: 63 lints for larvae, 33 for selene, what a user gets |
+| defaults | each tool with what it enables: 64 lints for larvae, 33 for selene, what a user gets |
 
 Holding a lint off is not free on either side, so a row cannot be faked by leaving one tool at its defaults: selene drops from 29 ms to 21 ms on 1,500 files when 15 lints go to `allow`.
 

@@ -3,10 +3,17 @@ title: Writing a worm in Rust
 description: The larvae-worm crate, the wasm macros, and the native pipe protocol
 category: Worms
 order: 5
-updated: 2026-08-19
+updated: 2026-08-30
 ---
 
-Depend on `larvae-worm`. The crate is the guest side of the worm system and does not pull in larvae, because [larvae is the host, not a library](/docs/worms/what-a-worm-is). It gives a Rust author both shipping forms:
+Depend on `larvae-worm`, published on crates.io at the version larvae speaks:
+
+```toml
+[dependencies]
+larvae-worm = { version = "0.7", features = ["native"] }
+```
+
+Release builds should pin against the registry, not a path: a path dependency floats with a checkout, and a released worm wants to name the SDK it was built against. A `[patch.crates-io]` line covers the days you work on an unreleased SDK change. The crate is the guest side of the worm system and does not pull in larvae, because [larvae is the host, not a library](/docs/worms/what-a-worm-is). It gives a Rust author both shipping forms:
 
 - `frontend!` and `rules!`, macros for the **wasm** ABI. Compile to `wasm32-unknown-unknown` and ship the `.wasm`.
 - a `native` module with a `Handler` trait and `serve()`, for the **native** pipe protocol. Compile an ordinary binary.
@@ -60,7 +67,9 @@ See [using worms](/docs/worms/using-worms) for the resolution order and caching.
 
 ## Answering the editor
 
-Both forms can answer code actions and Luau type definitions for the language server: on wasm the exports are `larvae_actions` and `larvae_definitions`, on native the `actions` and `definitions` ops. All are optional. A worm that leaves them out answers with nothing rather than an error, the opposite of `format` and `lint`, where the manifest promises the capability and a missing export is a broken promise worth a message. A worm that fails is passed over, because one broken worm must not take the lightbulb from the others.
+The native form carries the full editor surface, as `Handler` methods the manifest's `[lsp]` table declares: `lsp_resolve` answers a require spec with a path, `lsp_load` hands the analyzer lowered Luau with a span map, `lsp_declarations` injects `.d.luau` text, and `lsp_respond` transforms a hover, completion, or diagnostics payload before the editor sees it. `lint` doubles as the plain-Luau linter when the manifest sets `lints_luau`. The hooks are native only, because they sit on the analyzer's hot path.
+
+Both forms can answer code actions and Luau type definitions: on wasm the exports are `larvae_actions` and `larvae_definitions`, on native the `actions` and `definitions` ops. All are optional. A worm that leaves them out answers with nothing rather than an error, the opposite of `format` and `lint`, where the manifest promises the capability and a missing export is a broken promise worth a message. A worm that fails is passed over, because one broken worm must not take the lightbulb from the others.
 
 Actions speak in byte offsets, and larvae turns those into protocol positions. The title carries the worm's name, and an action that names the lint it repairs is grouped under that diagnostic. Definitions are Luau definition text, the answer to `larvae/definitions`: a worm that makes a data file requirable knows the type of `require("./items.json")`. The user's side is on [using worms](/docs/worms/using-worms).
 
