@@ -29,7 +29,7 @@ Two behaviors worth knowing on day one:
 
 ### The fallback half
 
-`larvae lsp`, the CLI subcommand, serves the lints, the formatter, and the code actions with no analyzer, and `[lsp] analyzer = false` puts the full server in the same mode. A platform whose release ships without the analyzer library falls back the same way: everything larvae always served keeps working, and the type half goes quiet.
+`larvae lsp`, the CLI subcommand, serves the lints, the formatter, and the code actions with no analyzer, and `[lsp] analyzer = false` puts the full server in the same mode. A build without the analyzer library falls back the same way: everything larvae always served keeps working, and the type half goes quiet.
 
 ## Config completion
 

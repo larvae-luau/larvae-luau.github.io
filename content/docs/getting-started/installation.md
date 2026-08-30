@@ -44,7 +44,7 @@ cargo install --path .
 
 ## Prebuilt binaries
 
-Release builds are attached to the GitHub releases page. Each asset is a zip named `larvae-{os}-{arch}.zip`, holding the CLI, the `larvae-lsp` server, and the analyzer library together, because the server opens the library at runtime and the two have to travel as one.
+Release builds are attached to the GitHub releases page. Each asset is a zip named `larvae-{os}-{arch}.zip`, holding the CLI, the `larvae-lsp` server, and the analyzer library together, because the server opens the library at runtime and the two have to travel as one. Every platform carries the analyzer since 0.7.1.
 
 | asset | platform |
 |---|---|
@@ -53,7 +53,7 @@ Release builds are attached to the GitHub releases page. Each asset is a zip nam
 | `larvae-macos-x86_64.zip` | macOS, Intel |
 | `larvae-macos-aarch64.zip` | macOS, Apple silicon |
 | `larvae-windows-x86_64.zip` | Windows, Intel or AMD |
-| `larvae-windows-aarch64.zip` | Windows, ARM. This one ships the fallback server: everything works except the type half |
+| `larvae-windows-aarch64.zip` | Windows, ARM |
 
 Unpack the zip, mark the binaries executable if your OS needs that, and run `larvae self install` from there so all three land on PATH together.
 
