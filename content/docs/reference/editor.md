@@ -88,6 +88,7 @@ Each key checks against the worm's own `[options]`, so a typo, a wrong type, or 
 | `sourcemap` | `"sourcemap.json"` | the sourcemap to read, relative to the project root |
 | `sourcemap_autogenerate` | `true` | the server runs the sourcemap command itself |
 | `sourcemap_command` | `""` | the generator, through the shell; empty infers rojo |
+| `definitions` | `[]` | extra type definition files, loaded after the platform globals; `larvae analyze --definitions` adds to the list |
 | `rojo_project_file` | `"default.project.json"` | what the inferred rojo command reads |
 
 The subtables, each with its own keys: `[lsp.completion]`, `[lsp.inlay_hints]`, `[lsp.signature_help]`, `[lsp.hover]`, `[lsp.index]`, `[lsp.studio]`, `[lsp.fflags]`, and `[lsp.bytecode]`. `larvae self code` completes every key with its description, and the [extension](#the-vs-code-extension) mirrors them as editor settings, so the schema is the reference most people read. Two worth naming:

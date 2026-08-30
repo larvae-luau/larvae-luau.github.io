@@ -6,7 +6,7 @@ order: 1
 updated: 2026-08-30
 ---
 
-larvae has nine commands: `process`, `check`, `fmt`, `lint`, `bundle`, `lsp`, `init`, `worm`, and `self`. That is the whole surface. There is no `serve` command and no `schema` command, and larvae never runs rojo for you.
+larvae has ten commands: `process`, `check`, `analyze`, `fmt`, `lint`, `bundle`, `lsp`, `init`, `worm`, and `self`. That is the whole surface. There is no `serve` command and no `schema` command, and larvae never runs rojo for you.
 
 Running `larvae` with no arguments prints the logo beside the help text, fastfetch style. `larvae --help` does the same. `larvae <cmd> -h` prints that command's help.
 
@@ -70,6 +70,28 @@ What fails the run is configured in [`[check]`](/docs/reference/configuration): 
 
 - an unresolvable require
 - a realm violation, see [realms and clones](/docs/concepts/realms-and-clones)
+
+### `analyze`
+
+Type diagnostics in the terminal, from the same analyzer the editor runs.
+
+```shell
+larvae analyze
+larvae analyze src/server --definitions types/global.d.luau
+```
+
+| flag | meaning |
+|---|---|
+| `--definitions <PATH>` | extra type definition files, on top of `[lsp] definitions`; repeat for more |
+| `--config <PATH>` | config file, defaults to `./larvae.toml` when present |
+
+The session mirrors the editor's: the platform globals, the `[lsp] definitions` files, the worms' lowering hooks, the DataModel mounts, and the sourcemap tree, so a require types here exactly as it types under the cursor. Diagnostics print with Luau's own error numbers, and errors fail the run, which is the form CI wants.
+
+The analyzer is compiled into `larvae-lsp`, so the command finds that binary beside itself, in the install directory, or on PATH, and hands the arguments over. `larvae self install` from a release puts the pair in place.
+
+`larvae analyze` reads `[lsp.fflags]` for the solver, so a project that sets `enable_new_solver` in its editor settings alone gets the stock solver here. Put the flags in `larvae.toml` and the two answer alike.
+
+Type questions live here; the per file lints live in `larvae lint`, and the whole-graph require questions in `larvae check`.
 
 ### `fmt`
 

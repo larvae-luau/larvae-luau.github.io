@@ -365,7 +365,7 @@ Every key, the version forms, the three install channels, the managing commands,
 
 ## `[lsp]`
 
-The editor server. `enabled = false` hands the files to another server, `analyzer = false` serves the lints and the formatter without the type half, and `claim_only = true` narrows larvae to the files worms claim. The table also holds the sourcemap keys, `character_type`, and the subtables for completion, inlay hints, hover, signature help, Luau's fflags, and the Studio link. `[lsp.<worm>]` carries the editor settings a worm declares.
+The editor server, and `larvae analyze` reads it too. `enabled = false` hands the files to another server, `analyzer = false` serves the lints and the formatter without the type half, and `claim_only = true` narrows larvae to the files worms claim. The table also holds the sourcemap keys, `character_type`, `definitions` for extra `.d.luau` files, and the subtables for completion, inlay hints, hover, signature help, Luau's fflags, and the Studio link. `[lsp.<worm>]` carries the editor settings a worm declares.
 
 Every key with its default lives on the [editor reference](/docs/reference/editor), and `larvae self code` completes them all.
 
