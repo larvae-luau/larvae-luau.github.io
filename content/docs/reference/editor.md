@@ -50,6 +50,10 @@ The rojo sourcemap becomes types: each node is a declared type, and every script
 
 `[lsp.studio]` links a running Studio through the companion plugin, so the live DataModel joins the tree.
 
+## Config as code
+
+A `.config.luau` file is Luau's config written as Luau, and the server types it as such. The session wraps the file's return value in a check against the declared config shape, forces strict mode on the buffer, and the keys then typecheck, complete, and hover: `languagemode`, the `lint` table with every rule name, `linterrors`, `typeerrors`, `globals`, and `aliases`. A wrong key or a wrong value squiggles before anything reads the file. luau-lsp wires the same file the same way, so the two servers agree about it. Inlay hints stay out of a config file, because a type hint on data is noise.
+
 ## Deprecated members
 
 A deprecated use draws a strikethrough in the file and in the completion list. `[lsp.completion] hide_deprecated` drops deprecated entries from the list whole, and stays off by default. Where the platform marks a member, larvae's own `deprecated` finding stands down, so one use never reports twice.

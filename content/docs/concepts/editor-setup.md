@@ -62,6 +62,10 @@ The command rewrites the generated copy whenever one is on disk, and not only wh
 
 The command ends by telling you to run **Developer: Reload Window**. The editor holds the schema in memory, so a new file on disk does not change what the editor already parsed. larvae cannot do this step for you, because the command line of the editor runs no editor command.
 
+### Luau's own config file
+
+`.config.luau`, Luau's config as code, types itself in the editor: the server checks the returned table against the config shape, so the keys complete and a typo squiggles. Nothing to set up; the file works the moment it exists. See the [editor reference](/docs/reference/editor).
+
 ## Aliases and go to definition
 
 The server reads `.luaurc` and merges `[aliases]` from `larvae.toml` over it per key, so one alias serves the editor and the build:
