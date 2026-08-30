@@ -300,6 +300,11 @@ The CI gate. `larvae check` runs the analyses that need the whole require graph,
 | `entry` | none | the module the bundle starts from, relative to the project root. `--entry` on the command line beats this key; without either, the command errors |
 | `output` | `"bundle.luau"` | where the single file goes, relative to the project root |
 | `tree_shake` | `true` | drop the modules that the entry cannot reach. Reachability comes from the require graph, so a module reached only through a dynamic require is dropped; such a require is reported, and a project that needs those modules turns this off |
+| `module_ids` | `"paths"` | what the registry calls each module. `paths` reads well in an error; `opaque` numbers the modules instead, see below |
+
+### `module_ids`
+
+A path id in the registry reads well in a crash report, and it also ships the whole project layout: every file, package, and vendor directory in a table key anyone who reads the bundle can read. `opaque` numbers the modules instead. Numbers, not hashes, on purpose: a hash of a path is deterministic, so a list of likely paths recovers the names, and a number carries nothing to recover. The numbering follows the sorted paths, so a rebuild emits the same bytes.
 
 The bundler follows the requires of a vendored package until the graph closes, with the same resolver, the same `.luaurc` walk, and the same `@self`, so a package that requires a package follows too. A resolution failure inside a vendored module warns instead of stopping the bundle, because a package can require another runtime, ex: `task or require("@lune/task")`. The require ships as written.
 
@@ -313,6 +318,15 @@ Tuning for `generator = "dense"`, which is the minifier. The dense generator re-
 |---|---|---|
 | `column_span` | `120` | the column where the emitter breaks the line. A minified file on one line makes every reported line number useless, so the emitter breaks near a column instead. A token wider than the span, such as a long string, stays whole |
 | `rename_variables` | `false` | give every local a short name while minifying. The same rule as `[rules] rename_variables`, turned on for dense builds only, so one profile can hold the whole minify story |
+| `obfuscate` | `false` | make the output hard to read, see below |
+
+### `obfuscate`
+
+On, every emitted file prints through the dense emitter whatever `generator` says, with three changes: every type is gone, every local takes a name from `_0x0` upward, and every string literal becomes the `\xNN` form of its own bytes. The file lands on one line, because `obfuscate` sets the column span to unlimited; a project that wrote its own `column_span` keeps that number, the same way an explicit key beats an implied one everywhere else.
+
+Roblox has no `loadstring`, so a file cannot ship as a decoded blob: it has to be Luau the compiler reads, and hiding the names, the strings, and the shape is what obfuscation can be. A backtick string stays whole, because splitting its static text from its holes means implementing interpolation twice, and a wrong split is a broken build; the names inside a hole are pinned instead of renamed.
+
+With `[bundle]` set, the bundle output gets the same treatment, because a bundle prints through the generator like any file. Pair it with `[bundle] module_ids = "opaque"` so the registry keys stop shipping the project layout.
 
 A typical release profile:
 
@@ -322,6 +336,10 @@ generator = "dense"
 
 [profile.ship.minify]
 rename_variables = true
+obfuscate = true
+
+[profile.ship.bundle]
+module_ids = "opaque"
 ```
 
 ## `[worms]`
