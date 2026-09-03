@@ -3,7 +3,7 @@ title: Editor
 description: The larvae language server, the analyzer inside it, every [lsp] key, and the VS Code extension
 category: Reference
 order: 6
-updated: 2026-08-30
+updated: 2026-09-03
 ---
 
 `larvae-lsp` is a full language server. It carries Luau's own analysis frontend, vendored and compiled in, so hover, completion, type diagnostics, and inlay hints come from the same type inference Luau runs. The lints, the formatter, and the code actions larvae always served ride in the same process. One server, both halves, measured against luau-lsp on a real project until the answers matched.
@@ -16,7 +16,7 @@ The server installs beside the CLI: `larvae self install` copies `larvae-lsp` an
 |---|---|
 | diagnostics | Luau's type errors with their error numbers, larvae's lints, a worm's findings, and the cross-realm requires `larvae check` reports, in one publish |
 | hover | the inferred type, doc comments, and the card speaks the author's words: a `const` binding says `const`, an `export local` says so, a member says `hp: number` |
-| completion | members, keywords ranked above auto-imports, service auto-imports, module auto-imports, require path completion, and deprecated entries struck through |
+| completion | members, keywords ranked above auto-imports, service auto-imports, module auto-imports, require path completion, the strings a Roblox call takes, and deprecated entries struck through |
 | signature help | parameters with the active one marked |
 | inlay hints | variable types, parameter types and names, function return types; a double click accepts a type hint into the file |
 | go to definition | locals, members, modules, and requires, aliases included |
@@ -30,6 +30,10 @@ The server installs beside the CLI: `larvae self install` copies `larvae-lsp` an
 
 Hovering a hint answers with the same card as hovering the name it annotates.
 
+### The first list waits for the session
+
+The analyzer takes a few seconds to load at startup. A completion asked in that window is held and answered the moment the session lands, so the popup you were typing toward opens on its own. The editor cancels the ask it no longer wants on every further keystroke, and only the newest one answers.
+
 ### The dialect is served
 
 `const` bindings and `export local` declarations parse, type, and hover as written. Value exports ride Luau's `LuauExportValueSyntax` flag, which larvae turns on by default; `[lsp.fflags]` with `LuauExportValueSyntax = "false"` restores stock parsing, and `export` then reports as the error it is there.
@@ -39,6 +43,21 @@ Hovering a hint answers with the same card as hovering the name it annotates.
 String forms, `.luaurc` and `[aliases]` names, `@game/...` paths, and the instance forms: `require(script.Parent.Widget)`, `require(game.ReplicatedStorage.App)`, and the `GetService`, `FindFirstChild`, and `WaitForChild` call spellings all carry types. A worm-claimed target lowers the same way a string require does, so a `.luaux` component or a data file types through any spelling.
 
 A module that returns `{ }` and carries `export type` lines hints and hovers as `{ type PlayerData, type Slot }` instead of the empty table, because the type exports are what the module is for.
+
+### Roblox classes carry their handlers
+
+A declaration file names every class and member and stops there, so the server puts the same handlers on them that luau-lsp does.
+
+- `instance:IsA("BasePart")` narrows `instance` to the class it names, in the branch and past a `continue` or `return`. An unknown class name is an error. `item:IsA("KeyCode")` narrows an enum item the same way.
+- `instance:Clone()` and `Instance.fromExisting(instance)` answer with the class of the instance, not `Instance`.
+- `FindFirstChildWhichIsA`, `FindFirstChildOfClass`, `FindFirstAncestorWhichIsA`, and `FindFirstAncestorOfClass` answer with the class they name, or nil.
+- `GetPropertyChangedSignal`, `IsPropertyModified`, and `ResetPropertyToDefault` check the property name against the class.
+- `QueryDescendants("Part, Model > Folder")` answers with an array of the classes the selector ends on.
+- `game:GetService("Nope")` and `Instance.new("Nope")` report `Invalid service name` and `Invalid class name` from the lists the definitions carry.
+- With a sourcemap, `FindFirstChild`, `WaitForChild`, and `FindFirstAncestor` answer with the tree's own child or ancestor when the name is in it.
+- Inside the quotes of each of these, completion offers the class names, the property names, the children, the enums, the creatable classes, or the services.
+
+`Vector3` and `vector` are one type. Roblox hands the same value out under both names, so `vector.magnitude(part.Position)` and `local p: Vector3 = vector.create(1, 2, 3)` both check, and a hover reads `Vector3` either way. luau-lsp keeps them apart and reports both. `Vector2` stays apart here too: it is userdata at runtime, and the vector library refuses it there.
 
 ## The instance tree
 
