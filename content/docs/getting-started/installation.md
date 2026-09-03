@@ -34,7 +34,16 @@ Good for trying larvae on a project before committing to it, or for a one off ru
 cargo install larvae
 ```
 
-That pulls the published crate from crates.io, so it needs no checkout.
+That pulls the published crate from crates.io, so it needs no checkout. The
+editor server is a crate of its own:
+
+```shell
+cargo install larvae-lsp
+```
+
+It compiles the vendored Luau C++ once, so it needs a C++ toolchain and takes
+a few minutes. The binary carries its analyzer library inside and writes it out
+on first run, so it works from wherever `cargo install` put it.
 
 To build from a clone instead, ex: to try an unreleased change, point cargo at the path:
 
