@@ -3,7 +3,7 @@ title: Formatting
 description: Every [fmt] option, its default, and what it does
 category: Reference
 order: 4
-updated: 2026-08-30
+updated: 2026-09-03
 ---
 
 `[fmt]` in `larvae.toml` configures `larvae fmt`. The table is optional: `larvae fmt` works with no config at all, and every option below has a default. Two keys come first, [`enabled`](#enabled) and [`recommended`](#recommended), because they decide what every other key below means. `larvae init` writes `recommended = true` and the four options users change most (`column_width`, `indent_type`, `indent_width`, `quote_style`); every other option keeps its default silently, and the schema serves the full list to the editor.
@@ -27,6 +27,7 @@ quote_style = "auto-prefer-double"
 | [`indent_type`](#indent-type) | `"tabs"` | Tabs or spaces. |
 | [`indent_width`](#indent-width) | `4` | Width of one indent level. |
 | [`quote_style`](#quote-style) | `"auto-prefer-double"` | Which quote a string gets. |
+| [`leading_zero`](#leading-zero) | `"add"` | Whether `.5` gets its zero. |
 | [`call_parentheses`](#call-parentheses) | `"always"` | Whether a call keeps its parentheses. |
 | [`space_after_function_names`](#space-after-function-names) | `"never"` | Space between a function's name and its parameter list. |
 | [`collapse_simple_statement`](#collapse-simple-statement) | `"never"` | Collapse a one statement block onto one line. |
@@ -104,6 +105,18 @@ local a = 'plain'
 -- after, with auto-prefer-double
 local a = "plain"
 ```
+
+### `leading_zero`
+
+Whether a decimal literal carries its leading zero. `.5` and `0.5` are one number, and a file that mixes them reads as two hands, so the formatter picks one.
+
+| value | writes |
+|---|---|
+| `add` | `.5` as `0.5`, the default |
+| `strip` | `0.5` as `.5` |
+| `preserve` | every literal as written |
+
+Only a fraction moves. `0.` alone stays, because `.` is not a number, and `0x10` has no fraction to speak of. The sign is not part of the literal, so `-.5` becomes `-0.5` the same way.
 
 ### `call_parentheses`
 
