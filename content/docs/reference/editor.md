@@ -125,6 +125,16 @@ The Larvae extension starts the server, watches `larvae.toml` and restarts on ch
 
 Two keys are the client's to act on before any server exists: `enabled` and `claim_only`. A server that never starts reads no project config, so the extension reads those two out of `larvae.toml` itself and follows the same rule. A project that turns the server on gets it, whatever the editor setting says.
 
+## Embedding the server
+
+Any host that speaks the protocol over stdio can run `larvae-lsp`. A host with no `larvae.toml` and no editor settings has the command line:
+
+```shell
+larvae-lsp --new-solver
+```
+
+`--new-solver` turns Luau's new type solver on for the whole session, over the project file and the editor, and stays on across every config reload. A library written for the new solver, jecs for one, types wrong under the old: an unannotated `local world = jecs.world()` loses its type there, and `world:component<<number>>()` then reports that it cannot instantiate type parameters. luau-lsp reads it the same way under its old solver. Any other argument passes through, so an editor that adds `--stdio` is fine.
+
 ## When something is wrong
 
 **No types at all, and no diagnostics.** The server is not running, or it is running without the analyzer. Check the extension's output channel: a server that started prints its handshake there. Three usual causes:
