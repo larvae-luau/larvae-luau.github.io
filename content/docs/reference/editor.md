@@ -133,7 +133,11 @@ Any host that speaks the protocol over stdio can run `larvae-lsp`. A host with n
 larvae-lsp --new-solver
 ```
 
-`--new-solver` turns Luau's new type solver on for the whole session, over the project file and the editor, and stays on across every config reload. A library written for the new solver, jecs for one, types wrong under the old: an unannotated `local world = jecs.world()` loses its type there, and `world:component<<number>>()` then reports that it cannot instantiate type parameters. luau-lsp reads it the same way under its old solver. Any other argument passes through, so an editor that adds `--stdio` is fine.
+`--new-solver` turns Luau's new type solver on for the whole session, over the project file and the editor, and stays on across every config reload. A library written for the new solver, jecs for one, types wrong under the old: an unannotated `local world = jecs.world()` loses its type there, and `world:component<<number>>()` then reports that it cannot instantiate type parameters. luau-lsp reads it the same way under its old solver. `--no-warning` keeps every warning off screen and publishes the errors alone, whoever raised the warning: a builtin lint, Luau, or a worm. Hints stay, because a strikethrough is not a warning. Any other argument passes through, so an editor that adds `--stdio` is fine.
+
+```shell
+larvae-lsp --new-solver --no-warning
+```
 
 ## When something is wrong
 
