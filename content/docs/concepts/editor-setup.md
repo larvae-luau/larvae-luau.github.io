@@ -15,7 +15,7 @@ Two servers share each Luau file, and each answers what the other does not.
 - **larvae** lints, formats, and offers the fixes of the lints.
 - **[luau-lsp](https://github.com/JohnnyMorganz/luau-lsp)** gives the types: hover, completion, inlay hints, type diagnostics, and go to definition.
 
-In VS Code, install the [Larvae extension](https://marketplace.visualstudio.com/items?itemName=AndrewBordis.larvae) and the luau-lsp extension. The Larvae extension starts `larvae lsp` and restarts it when `larvae.toml` changes. Where the project file and the editor settings speak about one key, the project wins.
+In VS Code, install the [Larvae extension](https://marketplace.visualstudio.com/items?itemName=AndrewBordis.larvae) and the luau-lsp extension. The Larvae extension starts `larvae lsp` and restarts it when `larvae.toml` changes. The `[lsp]` table in `larvae.toml` configures the server.
 
 Any other editor starts the larvae server itself, over stdio:
 

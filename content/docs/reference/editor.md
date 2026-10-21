@@ -51,17 +51,15 @@ A worm manifest that declares `[lsp]` hooks still loads too, and larvae prints o
 
 ## The VS Code extension
 
-The Larvae extension starts the server, watches `larvae.toml` and restarts on change, and mirrors `enabled` and `claim_only` as `larvae-lsp.*` settings. The extension also asks larvae which extensions the worms of the project claim before the client starts, so a `.luaux` buffer is served from the first keystroke.
+The Larvae extension starts the server, watches `larvae.toml` and restarts on change. The extension has no server settings of its own: `[lsp]` in `larvae.toml` decides, so a checkout behaves the same for everyone who opens it. A server that never starts reads no project config, so the extension reads `enabled` and `claim_only` out of `larvae.toml` itself. The extension also asks larvae which extensions the worms of the project claim before the client starts, so a `.luaux` buffer is served from the first keystroke.
 
-### Which side wins
+### Other editors
 
-**The project.** Where `larvae.toml` spells a key, that value stands and the editor setting for it is ignored. Where the project says nothing, the editor setting applies. So a checkout behaves the same for everyone who opens it, and the preferences of one developer still fill in the rest. The server reads the raw `[lsp]` table to make that distinction, because a key the project left out and a key it set to the default look identical once parsed.
-
-A server that never starts reads no project config, so the extension reads `enabled` and `claim_only` out of `larvae.toml` itself and follows the same rule.
+An editor can send `enabled` and `claimOnly` under a `larvae-lsp` key in the initialization options. Where `larvae.toml` spells the same key, the project wins.
 
 ## When something is wrong
 
-**No diagnostics at all.** The server is not running. Check the output channel of the extension: a server that started prints its handshake there. The project or the editor can also turn it off: `[lsp] enabled = false` in `larvae.toml` beats the editor setting.
+**No diagnostics at all.** The server is not running. Check the output channel of the extension: a server that started prints its handshake there. `[lsp] enabled = false` in `larvae.toml` turns it off.
 
 **No hover and no completion.** luau-lsp gives these, and larvae does not. Install luau-lsp beside larvae.
 
