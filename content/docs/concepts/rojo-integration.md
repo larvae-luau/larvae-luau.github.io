@@ -115,7 +115,7 @@ build_project = ".larvae/build.project.json"
 
 ## The build never runs rojo
 
-This is worth stating flatly. The build keeps `.larvae/build.project.json` fresh and stops there. **You point rojo at the derived project yourself.** larvae spawns no rojo process. luau-lsp runs `rojo sourcemap --watch` for the editor, if you set it up to.
+This is worth stating flatly. The build keeps `.larvae/build.project.json` fresh and stops there. **You point rojo at the derived project yourself.** larvae spawns no rojo process. luau-lsp runs `rojo sourcemap --watch` for the editor by default, under `luau-lsp.sourcemap.autogenerate`.
 
 ```shell
 larvae process --watch

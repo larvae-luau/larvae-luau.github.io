@@ -73,7 +73,7 @@ Both forms can answer code actions: on wasm the export is `larvae_actions`, on n
 
 Actions speak in byte offsets, and larvae turns those into protocol positions. The title carries the worm's name, and an action that names the lint it repairs is grouped under that diagnostic. The user's side is on [using worms](/docs/worms/using-worms).
 
-The `lsp_resolve`, `lsp_load`, `lsp_declarations`, and `lsp_respond` methods of `Handler`, and the `definitions` op, served the analyzer up to 0.9. larvae no longer calls them since 0.10, so a worm can drop them.
+The `lsp_resolve`, `lsp_load`, `lsp_declarations`, and `lsp_respond` methods of `Handler`, and the `definitions` op, served the analyzer up to 0.9. The 0.10 SDK removes the four methods, so a worm that implements one fails to compile until the implementation goes.
 
 ## Pick the right form
 
