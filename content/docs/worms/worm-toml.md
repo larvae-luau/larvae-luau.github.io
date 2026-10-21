@@ -3,7 +3,7 @@ title: worm.toml
 description: The manifest beside the artifact, the four capability tables, and what larvae refuses at load
 category: Worms
 order: 3
-updated: 2026-08-30
+updated: 2026-10-20
 ---
 
 `worm.toml` ships beside the artifact. It is what larvae reads before it runs anything. A worm declares what it adds, and larvae checks the project's config against those declarations, so the manifest is also where the schema and the editor learn a worm's names.
@@ -33,12 +33,6 @@ filter = ["Call"]
 [options]                 # the settings this worm reads from [worms.<name>.config]
                           # and from [lsp.<name>]: bare names, each with a
                           # description, a type, and a default
-
-[lsp]                     # the editor tiers this worm answers, native form only
-resolve = true            # requires it claims, lowered for the analyzer
-declarations = true       # .d.luau text injected at session start
-respond = ["hover", "completions", "diagnostics"]
-serves_luau = true        # its hooks answer inside plain Luau files too
 ```
 
 ## Top level keys
@@ -75,7 +69,8 @@ Each table declares one capability, and a worm needs at least one. larvae refuse
 | `[frontend] fmt` | Format | that this worm answers a format request with a layout document or byte ranges |
 | `[lints]` | Lint | the worm's lints, bare names with a default level. `larvae worm run --lint` reports at these defaults, and a project overrides them in `[lint.rules.<name>]` |
 | `[rules]` | Rules | the worm's transform rules, one table per rule |
-| `[lsp]` | Editor | the tiers above: resolve, declarations, and respond, plus `serves_luau`. Native form only, because the hooks sit on the analyzer's hot path |
+
+An `[lsp]` table, the editor tiers of a release before 0.10, still loads. larvae prints one note per worm, and the table counts as no capability, because the analyzer it fed is gone.
 
 Two more keys reach beyond the claims:
 

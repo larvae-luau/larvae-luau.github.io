@@ -3,7 +3,7 @@ title: Failure classes
 description: Why strict is not one big switch
 category: Concepts
 order: 3
-updated: 2026-08-21
+updated: 2026-10-20
 ---
 
 Every require diagnostic falls into one of three groups. Which group it lands in is not a preference, it follows from whether larvae can still produce correct output.
@@ -115,15 +115,16 @@ larvae reports the same case. An earlier larvae read it as a call, and two thing
 
 Which command surfaces a syntax error follows from what each command needs. `check`, `fmt`, and `lint` parse, so all three report the same refusals, and the editor reports them too, through the same code paths. `process` needs only a lex to rewrite requires and parses when an enabled rule needs a tree, so a file with a syntax error can still get its requires rewritten, and it is `check` that tells you the file does not parse. See the [CLI reference](/docs/reference/cli).
 
-### Three merged RFCs parse
+### Newer Luau syntax parses
 
-larvae parses the syntax of three merged Luau RFCs, so a file that uses them is not refused as a syntax error.
+larvae parses four forms of newer Luau, so a file that uses them is not refused as a syntax error.
 
 - Classes: `[export] [open] class Name [extends Base]` with `[public]` fields, methods, and the RFC's metamethod whitelist plus `__init`. Any other `__` name is a syntax error.
 - Export by value: `export local`, `export const`, and `export function`, composing with attributes.
 - Integer literals: the `i` suffix on decimal, hex, and binary numbers.
+- Bound conditions: `if local x = f() then` and `if const x = f() then`, in an `if` statement and in an `if` expression. The binding is visible in the body of its own branch only, and not in a later `elseif` or `else`.
 
-`class`, `open`, and `export` stay contextual keywords, so code that uses them as names parses as before. The formatter lays a class out one member per line.
+`class`, `open`, `export`, and `const` stay contextual keywords, so code that uses them as names parses as before. `if const then` still reads a variable named `const`, because `const` binds only before a name. The formatter lays a class out one member per line.
 
 ### Files that are not UTF-8
 

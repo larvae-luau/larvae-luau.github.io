@@ -3,12 +3,12 @@ title: Roadmap
 description: What is still ahead, published benchmarks, a 1.0 freeze, and four worm gaps
 category: Project
 order: 3
-updated: 2026-08-30
+updated: 2026-10-20
 ---
 
 Where larvae is going, so you can tell whether to adopt now or wait.
 
-The old milestones on this page have shipped. larvae now formats (`larvae fmt`), lints (`larvae lint`), bundles (`larvae bundle` and `[bundle]`), minifies (`generator = "dense"` and `[minify]`), serves an editor with Luau's own analyzer inside (`larvae-lsp`, at parity with luau-lsp), gates CI through `[check]`, reads and emits instance requires, overlays config per environment with `[profile.<name>]`, and loads [worms](/docs/worms/what-a-worm-is), whose hooks reach the editor too. For what works today, see [configuration](/docs/reference/configuration), [rules](/docs/reference/rules), and the [CLI reference](/docs/reference/cli).
+The old milestones on this page have shipped. larvae now formats (`larvae fmt`), lints (`larvae lint`), bundles (`larvae bundle` and `[bundle]`), minifies (`generator = "dense"` and `[minify]`), serves an editor with its lints and its formatter (`larvae lsp`, beside luau-lsp for the types), gates CI through `[check]`, reads and emits instance requires, overlays config per environment with `[profile.<name>]`, and loads [worms](/docs/worms/what-a-worm-is), whose findings and layouts reach the editor too. For what works today, see [configuration](/docs/reference/configuration), [rules](/docs/reference/rules), and the [CLI reference](/docs/reference/cli).
 
 What remains is short, and this page lists all of it.
 

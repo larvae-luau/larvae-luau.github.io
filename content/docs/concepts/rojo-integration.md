@@ -3,7 +3,7 @@ title: Rojo integration
 description: One project file instead of the hand synced pair
 category: Concepts
 order: 4
-updated: 2026-08-30
+updated: 2026-10-20
 ---
 
 darklua users maintain two nearly identical Rojo project files: one pointing at `src` so sourcemaps and editor tooling work, and one pointing at `dist` so serving works. Every tree change has to be made twice, and the second one is the one you forget.
@@ -113,13 +113,9 @@ build_project = ".larvae/build.project.json"
 
 `build_project` defaults to `build.project.json` inside `cache_dir`, so changing `[process].cache_dir` moves it. Full key list in [configuration](/docs/reference/configuration).
 
-## The sourcemap and the editor
-
-The other rojo file larvae reads is `sourcemap.json`. The editor server turns it into types: every script learns the type of its own instance, so `script.Parent.Config` completes and hovers with real children. The server also keeps the file fresh itself, spawning `rojo sourcemap --watch` when the project file is there, or the `[lsp] sourcemap_command` of the project for another sync tool, and ending it with the session. See the [editor reference](/docs/reference/editor).
-
 ## The build never runs rojo
 
-This is worth stating flatly. The build keeps `.larvae/build.project.json` fresh and stops there. **You point rojo at the derived project yourself.** The one spawn larvae makes is the editor's sourcemap generator above, which serves types and never the build.
+This is worth stating flatly. The build keeps `.larvae/build.project.json` fresh and stops there. **You point rojo at the derived project yourself.** larvae spawns no rojo process. luau-lsp runs `rojo sourcemap --watch` for the editor by default, under `luau-lsp.sourcemap.autogenerate`.
 
 ```shell
 larvae process --watch
