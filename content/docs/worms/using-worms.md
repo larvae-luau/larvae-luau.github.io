@@ -3,7 +3,7 @@ title: Using worms
 description: The [worms] table, three install channels, run order, inheritance, and where a worm's settings live
 category: Worms
 order: 2
-updated: 2026-08-30
+updated: 2026-10-20
 ---
 
 One table per worm under `[worms]`. The key is the worm's name, and everything the worm adds to the project hangs off that key.
@@ -174,24 +174,21 @@ When larvae loads worms it writes `<cache_dir>/larvae.schema.json`, a copy of th
 
 The language server routes a claimed buffer to its worm for diagnostics and formatting, through the same code the commands use, so the terminal and the editor cannot disagree. It never downloads a worm, because it answers a keystroke and a download is not an answer: a worm the config names and the disk lacks is skipped silently, and `larvae worm install` puts it on disk. It stamps each worm entry with its mtime and length, so a rebuilt `path` worm answers on the next keystroke. A worm failure becomes one diagnostic against the file, and the server keeps serving.
 
-A native worm can go much further, in three tiers its manifest declares:
-
-1. **Resolve.** The worm answers the requires it claims and hands the analyzer lowered Luau with a span map, so `require("./items.json")` and a `.luaux` component carry their real types on hover and completion, unsaved edits included.
-2. **Declarations.** `.d.luau` text the worm injects when the session starts.
-3. **Respond.** The worm transforms hover, completions, or diagnostics before the editor sees them, which is how a markup worm answers inside its own syntax.
-
 A worm can also lint plain Luau, and the files another worm claims when that worm consents: the oop worm holds a privacy convention across `.luau` and `.luaux` files this way. The findings pass through the same levels and `allow` comments as every other lint. The manifest keys behind all of this are on [worm.toml](/docs/worms/worm-toml).
 
 A worm's editor settings live under `[lsp.<worm>]`:
 
 ```toml
-[lsp.oop]
-hide_private_completions = false
+# one table per worm, keyed by its name
+[lsp.markup]
+strict = false   # an option the markup worm declares under [options]
 ```
 
 Each key checks against the `[options]` the worm declares, so a typo, a wrong type, or a name that is no worm warns instead of doing nothing.
 
-Code actions and Luau type definitions round it out, on every form. Both are optional, and a worm with nothing to say answers with nothing rather than an error. A worm's code actions carry the worm's name in the title, and an action that names the lint it repairs is grouped under that diagnostic. The server itself is described on the [editor reference](/docs/reference/editor); the exports each form provides are on [writing a worm in Luau](/docs/worms/writing-in-luau) and [writing a worm in Rust](/docs/worms/writing-in-rust).
+Code actions round it out, on every form. They are optional, and a worm with nothing to say answers with nothing rather than an error. A worm's code actions carry the worm's name in the title, and an action that names the lint it repairs is grouped under that diagnostic. The server itself is described on the [editor reference](/docs/reference/editor); the exports each form provides are on [writing a worm in Luau](/docs/worms/writing-in-luau) and [writing a worm in Rust](/docs/worms/writing-in-rust).
+
+Up to 0.9, a native worm could also answer the analyzer in three tiers: resolve, declarations, and respond. The analyzer left larvae in 0.10, and luau-lsp serves the types now. A manifest that still declares `[lsp]` loads, and larvae prints one note per worm. The hooks do nothing.
 
 ## Related
 

@@ -3,10 +3,10 @@ title: CLI reference
 description: Every larvae command, flag, exit code, and environment variable
 category: Reference
 order: 1
-updated: 2026-08-30
+updated: 2026-10-20
 ---
 
-larvae has ten commands: `process`, `check`, `analyze`, `fmt`, `lint`, `bundle`, `lsp`, `init`, `worm`, and `self`. That is the whole surface. There is no `serve` command and no `schema` command, and larvae never runs rojo for you.
+larvae has nine commands: `process`, `check`, `fmt`, `lint`, `bundle`, `lsp`, `init`, `worm`, and `self`. That is the whole surface. There is no `serve` command and no `schema` command, and larvae never runs rojo for you.
 
 Running `larvae` with no arguments prints the logo beside the help text, fastfetch style. `larvae --help` does the same. `larvae <cmd> -h` prints that command's help.
 
@@ -70,28 +70,6 @@ What fails the run is configured in [`[check]`](/docs/reference/configuration): 
 
 - an unresolvable require
 - a realm violation, see [realms and clones](/docs/concepts/realms-and-clones)
-
-### `analyze`
-
-Type diagnostics in the terminal, from the same analyzer the editor runs.
-
-```shell
-larvae analyze
-larvae analyze src/server --definitions types/global.d.luau
-```
-
-| flag | meaning |
-|---|---|
-| `--definitions <PATH>` | extra type definition files, on top of `[lsp] definitions`; repeat for more |
-| `--config <PATH>` | config file, defaults to `./larvae.toml` when present |
-
-The session mirrors the editor's: the platform globals, the `[lsp] definitions` files, the worms' lowering hooks, the DataModel mounts, and the sourcemap tree, so a require types here exactly as it types under the cursor. Diagnostics print with Luau's own error numbers, and errors fail the run, which is the form CI wants.
-
-The analyzer is compiled into `larvae-lsp`, so the command finds that binary beside itself, in the install directory, or on PATH, and hands the arguments over. `larvae self install` from a release puts the pair in place.
-
-`larvae analyze` reads `[lsp.fflags]` for the solver, so a project that sets `enable_new_solver` in its editor settings alone gets the stock solver here. Put the flags in `larvae.toml` and the two answer alike.
-
-Type questions live here; the per file lints live in `larvae lint`, and the whole-graph require questions in `larvae check`.
 
 ### `fmt`
 
@@ -186,15 +164,15 @@ larvae bundle --profile server
 
 ### `lsp`
 
-Serves an editor over stdio: the lints, the formatter, and the code actions, without the analyzer.
+Serves an editor over stdio: the lints, the formatter, and the code actions.
 
 ```shell
 larvae lsp
 ```
 
-The full server is the separate `larvae-lsp` binary, which adds Luau's analyzer: hover, completion, type diagnostics, and inlay hints. `larvae self install` installs both, and the [Larvae extension](/docs/concepts/editor-setup) starts the full one. The subcommand stays as the fallback half, and `[lsp] analyzer = false` puts the full server in the same mode.
+The types come from luau-lsp, which runs beside it. Up to 0.9, a separate `larvae-lsp` binary carried Luau's analyzer, and `larvae analyze` printed its type diagnostics. Both are gone since 0.10.
 
-Either server runs through the same code the commands use, so the terminal and the editor cannot disagree. It follows the same exclude lists as every command, and it routes a claimed buffer to its worm. It never downloads a worm, because a keystroke cannot wait for the network; the first fetch happens in the terminal. See [editor setup](/docs/concepts/editor-setup) and the [editor reference](/docs/reference/editor).
+The server runs through the same code the commands use, so the terminal and the editor cannot disagree. It follows the same exclude lists as every command, and it routes a claimed buffer to its worm. It never downloads a worm, because a keystroke cannot wait for the network; the first fetch happens in the terminal. See [editor setup](/docs/concepts/editor-setup) and the [editor reference](/docs/reference/editor).
 
 A config that fails to resolve raises one editor warning with the reason, and the server serves defaults until the config loads. A project without a `larvae.toml` raises nothing, because a missing config is a normal state and not a fault.
 
@@ -272,7 +250,7 @@ Manages the larvae binary itself, and the editor support around it.
 | `self code` | set up editor schema support for `larvae.toml` |
 | `self sync-luaurc` | write the project aliases into `.luaurc` in a form the editor resolves |
 
-`self install` copies the **running** binary to `~/.larvae/bin/larvae`, and `larvae-lsp` with its analyzer library beside it when they sit next to the binary, which the release zips guarantee. PATH handling then differs by platform, on purpose:
+`self install` copies the **running** binary to `~/.larvae/bin/larvae`. It also removes a `larvae-lsp` binary and its `eclipse_analysis` library that a release before 0.10 left there, and `self update` does the same. PATH handling then differs by platform, on purpose:
 
 | platform | what happens |
 |---|---|
@@ -322,8 +300,6 @@ rojo serve .larvae/build.project.json
 ```
 
 Serving is rojo's job. See [Rojo integration](/docs/concepts/rojo-integration) for how the derived project is generated from your `default.project.json`.
-
-The one process larvae does run is the editor's sourcemap generator: the language server spawns `rojo sourcemap --watch`, or the `[lsp] sourcemap_command` of the project, and ends it with the session. That serves the editor's instance tree and never the build; `sourcemap_autogenerate = false` turns it off. See the [editor reference](/docs/reference/editor).
 
 ## Related pages
 

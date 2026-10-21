@@ -3,7 +3,7 @@ title: Writing a worm in Rust
 description: The larvae-worm crate, the wasm macros, and the native pipe protocol
 category: Worms
 order: 5
-updated: 2026-08-30
+updated: 2026-10-20
 ---
 
 Depend on `larvae-worm`, published on crates.io at the version larvae speaks:
@@ -67,11 +67,13 @@ See [using worms](/docs/worms/using-worms) for the resolution order and caching.
 
 ## Answering the editor
 
-The native form carries the full editor surface, as `Handler` methods the manifest's `[lsp]` table declares: `lsp_resolve` answers a require spec with a path, `lsp_load` hands the analyzer lowered Luau with a span map, `lsp_declarations` injects `.d.luau` text, and `lsp_respond` transforms a hover, completion, or diagnostics payload before the editor sees it. `lint` doubles as the plain-Luau linter when the manifest sets `lints_luau`. The hooks are native only, because they sit on the analyzer's hot path.
+`lint` doubles as the plain-Luau linter when the manifest sets `lints_luau`.
 
-Both forms can answer code actions and Luau type definitions: on wasm the exports are `larvae_actions` and `larvae_definitions`, on native the `actions` and `definitions` ops. All are optional. A worm that leaves them out answers with nothing rather than an error, the opposite of `format` and `lint`, where the manifest promises the capability and a missing export is a broken promise worth a message. A worm that fails is passed over, because one broken worm must not take the lightbulb from the others.
+Both forms can answer code actions: on wasm the export is `larvae_actions`, on native the `actions` op. Both are optional. A worm that leaves them out answers with nothing rather than an error, the opposite of `format` and `lint`, where the manifest promises the capability and a missing export is a broken promise worth a message. A worm that fails is passed over, because one broken worm must not take the lightbulb from the others.
 
-Actions speak in byte offsets, and larvae turns those into protocol positions. The title carries the worm's name, and an action that names the lint it repairs is grouped under that diagnostic. Definitions are Luau definition text, the answer to `larvae/definitions`: a worm that makes a data file requirable knows the type of `require("./items.json")`. The user's side is on [using worms](/docs/worms/using-worms).
+Actions speak in byte offsets, and larvae turns those into protocol positions. The title carries the worm's name, and an action that names the lint it repairs is grouped under that diagnostic. The user's side is on [using worms](/docs/worms/using-worms).
+
+The `lsp_resolve`, `lsp_load`, `lsp_declarations`, and `lsp_respond` methods of `Handler`, and the `definitions` op, served the analyzer up to 0.9. larvae no longer calls them since 0.10, so a worm can drop them.
 
 ## Pick the right form
 

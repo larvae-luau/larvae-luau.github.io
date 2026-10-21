@@ -3,10 +3,10 @@ title: Installation
 description: Install larvae with lpm, lpx, cargo, or a prebuilt binary
 category: Getting started
 order: 1
-updated: 2026-08-30
+updated: 2026-10-20
 ---
 
-larvae ships as one small toolset with no runtime dependencies: the `larvae` CLI, the `larvae-lsp` editor server, and the analyzer library the server opens. Pick one of the routes below, they all end with a `larvae` you can run.
+larvae ships as one small binary with no runtime dependencies. The same binary is the CLI and the editor server, `larvae lsp`. Pick one of the routes below, they all end with a `larvae` you can run.
 
 ## Add it to a project with lpm
 
@@ -34,16 +34,7 @@ Good for trying larvae on a project before committing to it, or for a one off ru
 cargo install larvae
 ```
 
-That pulls the published crate from crates.io, so it needs no checkout. The
-editor server is a crate of its own:
-
-```shell
-cargo install larvae-lsp
-```
-
-It compiles the vendored Luau C++ once, so it needs a C++ toolchain and takes
-a few minutes. The binary carries its analyzer library inside and writes it out
-on first run, so it works from wherever `cargo install` put it.
+That pulls the published crate from crates.io, so it needs no checkout.
 
 To build from a clone instead, ex: to try an unreleased change, point cargo at the path:
 
@@ -53,7 +44,7 @@ cargo install --path .
 
 ## Prebuilt binaries
 
-Release builds are attached to the GitHub releases page. Each asset is a zip named `larvae-{os}-{arch}.zip`, holding the CLI, the `larvae-lsp` server, and the analyzer library together, because the server opens the library at runtime and the two have to travel as one. Every platform carries the analyzer since 0.7.1.
+Release builds are attached to the GitHub releases page. Each asset is a zip named `larvae-{os}-{arch}.zip`, holding the `larvae` binary.
 
 | asset | platform |
 |---|---|
@@ -64,11 +55,11 @@ Release builds are attached to the GitHub releases page. Each asset is a zip nam
 | `larvae-windows-x86_64.zip` | Windows, Intel or AMD |
 | `larvae-windows-aarch64.zip` | Windows, ARM |
 
-Unpack the zip, mark the binaries executable if your OS needs that, and run `larvae self install` from there so all three land on PATH together. The server opens the analyzer library at startup, so the two have to stay side by side; the library carries its own C runtime, so no redistributable is needed on any platform.
+Unpack the zip, mark the binary executable if your OS needs that, and run `larvae self install` from there.
 
 ## Putting larvae on PATH
 
-`larvae self install` copies the **running** binary to `~/.larvae/bin/larvae`, and the `larvae-lsp` server with its analyzer library when they sit beside it, so run it from the unpacked release directory.
+`larvae self install` copies the **running** binary to `~/.larvae/bin/larvae`. It also removes a `larvae-lsp` server and its analyzer library that a release before 0.10 left there, because luau-lsp serves the types now.
 
 ```shell
 larvae self install

@@ -3,7 +3,7 @@ title: Formatting
 description: Every [fmt] option, its default, and what it does
 category: Reference
 order: 4
-updated: 2026-09-03
+updated: 2026-10-20
 ---
 
 `[fmt]` in `larvae.toml` configures `larvae fmt`. The table is optional: `larvae fmt` works with no config at all, and every option below has a default. Two keys come first, [`enabled`](#enabled) and [`recommended`](#recommended), because they decide what every other key below means. `larvae init` writes `recommended = true` and the four options users change most (`column_width`, `indent_type`, `indent_width`, `quote_style`); every other option keeps its default silently, and the schema serves the full list to the editor.
@@ -137,7 +137,7 @@ Default `"never"`. Whether a space separates a function's name from its paramete
 
 ### `collapse_simple_statement`
 
-Default `"never"`. Whether a block that holds one statement collapses onto one line. The values are stylua's: `"never"`, `"function-only"`, `"conditional-only"`, and `"always"`. `"never"` keeps every block expanded; the other values collapse the block kinds they name.
+Default `"never"`. Whether a block that holds one statement collapses onto one line. The values are stylua's: `"never"`, `"function-only"`, `"conditional-only"`, `"always"`, and `"preserve"`. `"never"` keeps every block expanded. `"function-only"`, `"conditional-only"`, and `"always"` collapse the block kinds they name.
 
 ```luau
 -- "never" (default)
@@ -147,6 +147,20 @@ end
 -- a collapsing value
 if ready then start() end
 ```
+
+`"preserve"` keeps the shape the author wrote, for functions and conditionals both. A statement written on one line stays on one line while it fits `column_width`, and opens past it. A statement written over several lines stays open, also where it fits.
+
+```luau
+-- "preserve": both stay as written
+if ready then start() end
+if done then
+	stop()
+end
+```
+
+stylua 2.6.0 calls this mode `Input`. A `stylua.toml` that sets `collapse_simple_statement = "Input"` reads as `"preserve"`, and `"input"` is an alias in `larvae.toml` too.
+
+A [`hug-last`](#function-call-style) call keeps its shape under every value. The style reads the kind of the last argument and no width, so a long callback body does not open the call around it. stylua issue 1175 reports that failure for its `Input` mode, and it does not apply to larvae.
 
 ### `sort_requires`
 
@@ -465,7 +479,16 @@ How a union and an intersection lay out, in every type position. One option cove
 |---|---|---|
 | `expand` | `"auto"` | `"auto"`, `"always"`, `"never"` |
 
-`auto` leaves the chain to the replay, which is the layout larvae always had, so a chain wider than `column_width` runs past it. `always` puts every member on its own line whatever its width. `never` asks for one line, and `column_width` still outranks it: a line that runs off the screen is not the one line the option asked for.
+`auto` keeps the chain on one line while it fits `column_width`, and opens one member per line past it, as stylua does. A table type inside follows [`table_types.width`](#table-types-width). A table type that opens keeps the chain on its lines, so `{ ... } & Base` keeps its layout. `always` puts every member on its own line whatever its width.
+
+```luau
+-- auto, past column_width
+type AddFunction =
+	& ((self: any, trackable: thread) -> thread)
+	& (<T>(self: any, trackable: T & {}) -> T)
+```
+
+Before 0.10, `auto` kept the chain on one line at every width. `never` asks for one line, and `column_width` still outranks it: a line that runs off the screen is not the one line the option asked for.
 
 ### `unused_imports`
 

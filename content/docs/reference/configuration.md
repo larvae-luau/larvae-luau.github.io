@@ -3,7 +3,7 @@ title: Configuration
 description: Every larvae.toml key, the other files larvae reads, and how they merge
 category: Reference
 order: 2
-updated: 2026-08-30
+updated: 2026-10-20
 ---
 
 Configuration lives in `larvae.toml` next to your Rojo project. The file is optional: `larvae fmt` and `larvae lint` work with no `larvae.toml` at all, and a project with a `default.project.json` and `.luaurc` aliases can run `larvae process` on defaults alone. Every table below exists to override a default, never to satisfy one.
@@ -17,7 +17,7 @@ Configuration lives in `larvae.toml` next to your Rojo project. The file is opti
 | `selene.toml` | read the same way for lint settings |
 | `.luaurc` | aliases, merged with `[aliases]` per key |
 | `default.project.json` | Rojo mounts, which is why `[requires] mounts` is rarely necessary |
-| `sourcemap.json` | the instance tree the editor types `script` against, kept fresh by the server itself |
+| `sourcemap.json` | rojo's file to instance map, read when `[requires] sourcemap` names it |
 
 ## The rule about unknown keys
 
@@ -375,13 +375,13 @@ Every key, the version forms, the three install channels, the managing commands,
 
 ## `[lsp]`
 
-The editor server, and `larvae analyze` reads it too. `enabled = false` hands the files to another server, `analyzer = false` serves the lints and the formatter without the type half, and `claim_only = true` narrows larvae to the files worms claim. The table also holds the sourcemap keys, `character_type`, `definitions` for extra `.d.luau` files, and the subtables for completion, inlay hints, hover, signature help, Luau's fflags, and the Studio link. `[lsp.<worm>]` carries the editor settings a worm declares.
+The editor server. `enabled = false` hands the files to another server, and `claim_only = true` narrows larvae to the files worms claim. `[lsp.<worm>]` carries the editor settings a worm declares.
 
-Every key with its default lives on the [editor reference](/docs/reference/editor), and `larvae self code` completes them all.
+The other keys of the analyzer left larvae in 0.10, ex: `analyzer`, `sourcemap`, and `[lsp.fflags]`. A project that still sets one loads, and the editor shows one warning for each key. Every key with its default lives on the [editor reference](/docs/reference/editor).
 
 ## `[profile.<name>]`
 
-This table holds the same keys as the root. larvae merges it over the base when you pass `--profile <name>` to `process` or `check`. Tables merge per key. Arrays and scalars are replaced whole, because if larvae appended to lists instead, a profile could not state that it does not append.
+This table holds the same keys as the root, ex: `input`, `rojo.project`, `worms`, and `lsp`. The two exceptions are `extends` and `profile`, which resolve before the merge. larvae merges the profile over the base when you pass `--profile <name>` to `process` or `check`. Tables merge per key. Arrays and scalars are replaced whole, because if larvae appended to lists instead, a profile could not state that it does not append.
 
 ## Related pages
 

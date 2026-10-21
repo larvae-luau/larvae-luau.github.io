@@ -3,7 +3,7 @@ title: Quick start
 description: Format, lint, and go from a Rojo project to native string requires in five minutes
 category: Getting started
 order: 2
-updated: 2026-08-30
+updated: 2026-10-20
 ---
 
 A handful of commands take an existing Rojo project from alias requires to Roblox native string requires, with formatting and linting along the way. This page walks through them, in order, on a project you already have.
@@ -134,7 +134,7 @@ There is no `larvae serve` and no `larvae build`. Every rojo command you already
 
 ## Next steps
 
-- Set up the editor: the Larvae extension gives you hover, completion, type diagnostics, and inlay hints from the same tool, see [editor setup](/docs/concepts/editor-setup)
+- Set up the editor: the Larvae extension gives you the lints and the formatter, and luau-lsp beside it gives you the types, see [editor setup](/docs/concepts/editor-setup)
 - Add `larvae check` and `larvae fmt --check` to CI. `check` runs the same analysis as `process` plus the whole project checks, writes nothing, and exits non zero on errors
 - Read the [CLI reference](/docs/reference/cli) for every command and flag
 - Read [formatting](/docs/reference/formatting) and [linting](/docs/reference/linting) when a default stops fitting
