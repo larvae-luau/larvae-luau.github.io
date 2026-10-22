@@ -8,7 +8,7 @@ export const SITE_ORIGIN =
 
 export const SITE_NAME = 'larvae'
 
-export const SITE_TITLE = 'larvae · The Luau toolchain, in Rust'
+export const SITE_TITLE = 'larvae · A Luau toolchain, in Rust'
 
 /* Also the body of the Discord card, which cuts near 350 characters. */
 export const SITE_DESCRIPTION =

@@ -14,7 +14,6 @@ import HiveBackdrop from '@/components/HiveBackdrop'
 import Tilt from '@/components/Tilt'
 import { useDisabledEffects } from '@/lib/debug-flags'
 import logo from '@/lib/logo'
-import { currentRelease } from '@/lib/release'
 import useLiteMotion from '@/lib/use-lite-motion'
 
 const container: Variants = {
@@ -69,7 +68,6 @@ type InstallId = (typeof INSTALLS)[number]['id']
 export default function Hero() {
   const lite = useLiteMotion()
   const off = useDisabledEffects()
-  const release = currentRelease()
   const [installer, setInstaller] = useState<InstallId>('lpm')
   const active = INSTALLS.find((i) => i.id === installer) ?? INSTALLS[0]
 
@@ -128,23 +126,14 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
-      <motion.a
-        href={release.url}
-        target="_blank"
-        rel="noreferrer"
-        title={
-          release.published
-            ? 'Read the release notes'
-            : 'No release published yet'
-        }
+      <motion.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        data-testid="release-badge"
-        className="mb-5 select-none rounded-full border border-hive/20 bg-hive/5 px-4 py-1.5 font-mono text-xs tracking-widest text-hive uppercase transition-colors hover:border-hive/40 hover:bg-hive/10"
+        className="mb-4 text-base text-muted"
       >
-        The Luau toolchain, in Rust · {release.label}
-      </motion.a>
+        A Luau toolchain
+      </motion.p>
 
       <motion.h1
         variants={container}
