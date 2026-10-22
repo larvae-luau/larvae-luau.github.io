@@ -8,12 +8,11 @@ export const SITE_ORIGIN =
 
 export const SITE_NAME = 'larvae'
 
-export const SITE_TITLE = 'larvae · the Luau toolchain'
+export const SITE_TITLE = 'larvae · The Luau toolchain, in Rust'
 
+/* Also the body of the Discord card, which cuts near 350 characters. */
 export const SITE_DESCRIPTION =
-  'Format, lint, and ship Luau. One parallel Rust binary: requires that cannot break, style that cannot drift, and worms that teach it languages beyond Luau.'
-
-export const SITE_TAGLINE = 'Format, lint, and ship Luau.'
+  'larvae rewrites requires and refuses to ship one that fails at runtime. It formats with stylua parity and lints with thirty four selene rules. Worms extend all three to languages that compile to Luau. One parallel Rust binary, one VS Code extension.'
 
 export const REPO_URL = 'https://github.com/larvae-luau/larvae'
 
