@@ -43,7 +43,7 @@ export const metadata: Metadata = {
         url: banner.src,
         width: banner.width,
         height: banner.height,
-        alt: 'larvae: format, lint, and ship Luau. The Luau toolchain, in Rust',
+        alt: 'larvae: format, lint, and ship Luau. A Luau toolchain, in Rust',
       },
     ],
   },
@@ -64,9 +64,8 @@ export const viewport: Viewport = {
 
 /** Only claims that are true today, nothing about ratings or price. */
 const structuredData = {
-  /* Shares its source with the hero badge, which is the only other place the
-     version appears. Two hardcoded copies would drift the first time one of
-     them was updated. */
+  /* The version comes from the same release lookup the build uses, so it
+     cannot drift from what is published. */
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
   name: SITE_NAME,

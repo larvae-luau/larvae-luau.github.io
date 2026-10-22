@@ -15,7 +15,7 @@ export default function Footer() {
             className="rounded-md"
           />
           <span className="text-sm text-muted">
-            lar<span className="text-hive">vae</span> · the Luau toolchain
+            lar<span className="text-hive">vae</span> · a Luau toolchain
           </span>
         </div>
         <div className="flex items-center gap-6 text-sm text-muted">
@@ -35,6 +35,12 @@ export default function Footer() {
           </a>
         </div>
       </div>
+      {/* Luau's brand guidelines ask every project that uses the name for
+          this attribution: https://luau.org/brand */}
+      <p className="mx-auto mt-8 max-w-5xl text-center text-xs text-muted sm:text-left">
+        Luau is a trademark of Roblox Corporation. larvae is an independent
+        project, not affiliated with or endorsed by Roblox or the Luau team.
+      </p>
     </footer>
   )
 }
