@@ -6,10 +6,9 @@ import {
   SITE_DESCRIPTION,
   SITE_NAME,
   SITE_ORIGIN,
-  SITE_TAGLINE,
   SITE_TITLE,
 } from '@/lib/site'
-import ogImage from '../../public/larvae-og.png'
+import banner from '../../public/larvae-embed-banner.png'
 import './globals.css'
 
 const geistSans = Geist({
@@ -34,27 +33,27 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
   openGraph: {
     title: SITE_TITLE,
-    description: SITE_TAGLINE,
+    description: SITE_DESCRIPTION,
     url: SITE_ORIGIN,
     siteName: SITE_NAME,
     locale: 'en_US',
     type: 'website',
     images: [
       {
-        url: ogImage.src,
-        width: ogImage.width,
-        height: ogImage.height,
-        alt: 'larvae logo',
+        url: banner.src,
+        width: banner.width,
+        height: banner.height,
+        alt: 'larvae: format, lint, and ship Luau. The Luau toolchain, in Rust',
       },
     ],
   },
   twitter: {
-    // 'summary' makes Discord render the image as a small square
-    // thumbnail beside the text instead of a full-width banner.
-    card: 'summary',
+    // Discord reads this card too: the banner full width under the link,
+    // as on the Alloy site. scripts/embed-banner.html is its source.
+    card: 'summary_large_image',
     title: SITE_TITLE,
-    description: SITE_TAGLINE,
-    images: [ogImage.src],
+    description: SITE_DESCRIPTION,
+    images: [banner.src],
   },
 }
 
