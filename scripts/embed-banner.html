@@ -1,0 +1,168 @@
+<!doctype html>
+<!--
+  The link preview banner, public/larvae-embed-banner.png (2400 x 1260).
+  Discord, Slack, and X show it under a shared link. Render it again after a
+  change to the copy or the theme:
+
+  google-chrome-stable --headless=new --hide-scrollbars --force-device-scale-factor=1 \
+    --window-size=2400,1260 --virtual-time-budget=8000 \
+    --screenshot=public/larvae-embed-banner.png "file://$PWD/scripts/embed-banner.html"
+
+  The colours are the tokens of src/app/globals.css, the ridges are the
+  shapes of HiveBackdrop, and the mark is larvae.png redrawn as vectors so it
+  stays sharp at this size.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700;800&family=Geist+Mono:wght@400;500&display=block" rel="stylesheet">
+<style>
+  :root {
+    --background: #040a08;
+    --foreground: #e6fff2;
+    --muted: #7ea694;
+    --hive: #10e694;
+    --spore: #a6ff57;
+    --ring-edge: #0cc17c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 2400px; height: 1260px; overflow: hidden; }
+  body {
+    position: relative;
+    background:
+      radial-gradient(900px 760px at 1840px 560px, rgba(16, 230, 148, 0.16), transparent 70%),
+      radial-gradient(1400px 900px at 300px 0px, rgba(166, 255, 87, 0.05), transparent 70%),
+      var(--background);
+    color: var(--foreground);
+    font-family: 'Geist', system-ui, sans-serif;
+  }
+  .spores { position: absolute; inset: 0; }
+  .ridges { position: absolute; left: 0; right: 0; bottom: 0; height: 200px; }
+  .ridges svg { position: absolute; left: 0; bottom: 0; width: 100%; }
+
+  .brand { position: absolute; left: 150px; top: 130px; display: flex; align-items: center; gap: 28px; }
+  .brand svg { width: 96px; height: 96px; }
+  .brand span { font-size: 76px; font-weight: 700; letter-spacing: -0.02em; }
+
+  .copy { position: absolute; left: 150px; top: 350px; width: 1400px; }
+  .eyebrow {
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 32px; font-weight: 500; letter-spacing: 0.32em;
+    color: var(--hive); text-transform: uppercase;
+  }
+  h1 {
+    margin-top: 44px;
+    font-size: 172px; font-weight: 800; line-height: 1.0; letter-spacing: -0.035em;
+  }
+  .hive-text {
+    background: linear-gradient(115deg, #ffffff 0%, var(--hive) 45%, var(--spore) 90%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .lede {
+    margin-top: 48px; width: 1240px;
+    font-size: 46px; line-height: 1.38; color: var(--muted);
+  }
+
+  .chips { position: absolute; left: 150px; top: 1012px; display: flex; gap: 22px; }
+  .chip {
+    display: flex; align-items: center; gap: 18px;
+    padding: 20px 34px; border-radius: 999px;
+    border: 2px solid rgba(16, 230, 148, 0.24);
+    background: linear-gradient(160deg, rgba(16, 230, 148, 0.09), rgba(10, 23, 18, 0.7) 60%);
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 32px; color: var(--foreground);
+  }
+  .chip svg { width: 34px; height: 34px; stroke: var(--hive); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .mark {
+    position: absolute; left: 1520px; top: 230px; width: 660px; height: 660px;
+    filter: drop-shadow(0 0 70px rgba(16, 230, 148, 0.42)) drop-shadow(0 0 22px rgba(166, 255, 87, 0.18));
+  }
+</style>
+</head>
+<body>
+  <svg class="spores" viewBox="0 0 2400 1260" aria-hidden="true">
+    <g fill="#10e694">
+      <circle cx="412" cy="96" r="3" opacity="0.35"/>
+      <circle cx="988" cy="210" r="2.5" opacity="0.3"/>
+      <circle cx="1310" cy="120" r="3.5" opacity="0.4"/>
+      <circle cx="2210" cy="180" r="3" opacity="0.35"/>
+      <circle cx="2120" cy="930" r="2.5" opacity="0.3"/>
+      <circle cx="1460" cy="980" r="3" opacity="0.25"/>
+      <circle cx="760" cy="300" r="2" opacity="0.25"/>
+      <circle cx="2290" cy="560" r="2.5" opacity="0.3"/>
+      <circle cx="1240" cy="420" r="2" opacity="0.2"/>
+    </g>
+    <g fill="#a6ff57">
+      <circle cx="1720" cy="150" r="3" opacity="0.4"/>
+      <circle cx="2330" cy="360" r="2.5" opacity="0.35"/>
+      <circle cx="1390" cy="760" r="2.5" opacity="0.3"/>
+      <circle cx="560" cy="210" r="2" opacity="0.25"/>
+      <circle cx="1990" cy="1010" r="3" opacity="0.3"/>
+      <circle cx="1150" cy="70" r="2" opacity="0.3"/>
+    </g>
+  </svg>
+
+  <div class="ridges" aria-hidden="true">
+    <svg viewBox="0 0 1440 320" preserveAspectRatio="none" style="height: 200px">
+      <path fill="#07160f" d="M0 320 L0 210 Q120 120 240 190 Q360 260 470 150 Q580 60 700 170 Q820 270 940 160 Q1060 60 1180 170 Q1300 270 1440 140 L1440 320 Z"/>
+      <path fill="none" stroke="rgba(16,230,148,0.3)" stroke-width="1.5" d="M470 150 Q580 60 700 170"/>
+      <path fill="none" stroke="rgba(16,230,148,0.22)" stroke-width="1.5" d="M940 160 Q1060 60 1180 170"/>
+    </svg>
+    <svg viewBox="0 0 1440 320" preserveAspectRatio="none" style="height: 150px">
+      <path fill="#05100b" d="M0 320 L0 240 Q160 150 320 220 Q480 290 620 180 Q760 80 900 200 Q1040 300 1200 190 Q1320 110 1440 210 L1440 320 Z"/>
+      <path fill="none" stroke="rgba(166,255,87,0.16)" stroke-width="1.5" d="M620 180 Q760 80 900 200"/>
+    </svg>
+    <svg viewBox="0 0 1440 320" preserveAspectRatio="none" style="height: 100px">
+      <path fill="#030a07" d="M0 320 L0 260 Q220 170 440 250 Q660 330 880 230 Q1100 130 1440 250 L1440 320 Z"/>
+    </svg>
+  </div>
+
+  <!-- the logo, larvae.png on its 384 grid: three rings, a light band between darker edges -->
+  <svg id="rings" style="display: none">
+    <symbol id="larvae-mark" viewBox="0 0 384 384">
+      <g fill="none">
+        <g stroke="var(--ring-edge)" stroke-width="50">
+          <circle cx="192" cy="110" r="57"/>
+          <circle cx="96" cy="274" r="57"/>
+          <circle cx="288" cy="274" r="57"/>
+        </g>
+        <g stroke="var(--hive)" stroke-width="27">
+          <circle cx="192" cy="110" r="57.5"/>
+          <circle cx="96" cy="274" r="57.5"/>
+          <circle cx="288" cy="274" r="57.5"/>
+        </g>
+      </g>
+    </symbol>
+  </svg>
+
+  <div class="brand">
+    <svg viewBox="0 0 384 384" aria-hidden="true"><use href="#larvae-mark"/></svg>
+    <span>larvae</span>
+  </div>
+
+  <div class="copy">
+    <div class="eyebrow">The Luau toolchain, in Rust</div>
+    <h1>Format, lint,<br>and ship <span class="hive-text">Luau.</span></h1>
+    <p class="lede">One parallel Rust binary. Requires that cannot break, and style that cannot drift.</p>
+  </div>
+
+  <div class="chips">
+    <div class="chip">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
+      requires that cannot break
+    </div>
+    <div class="chip">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M4 12h10"/><path d="M4 17h13"/></svg>
+      format and lint
+    </div>
+    <div class="chip">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="16" r="3"/><circle cx="16" cy="8" r="3"/></svg>
+      worms beyond Luau
+    </div>
+  </div>
+
+  <svg class="mark" viewBox="0 0 384 384" aria-hidden="true"><use href="#larvae-mark"/></svg>
+</body>
+</html>

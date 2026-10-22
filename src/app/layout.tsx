@@ -9,7 +9,7 @@ import {
   SITE_TAGLINE,
   SITE_TITLE,
 } from '@/lib/site'
-import ogImage from '../../public/larvae-og.png'
+import banner from '../../public/larvae-embed-banner.png'
 import './globals.css'
 
 const geistSans = Geist({
@@ -41,20 +41,20 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: ogImage.src,
-        width: ogImage.width,
-        height: ogImage.height,
-        alt: 'larvae logo',
+        url: banner.src,
+        width: banner.width,
+        height: banner.height,
+        alt: 'larvae: format, lint, and ship Luau. The Luau toolchain, in Rust',
       },
     ],
   },
   twitter: {
-    // 'summary' makes Discord render the image as a small square
-    // thumbnail beside the text instead of a full-width banner.
-    card: 'summary',
+    // A full-width banner under the link, as the Alloy site has.
+    // scripts/embed-banner.html is its source.
+    card: 'summary_large_image',
     title: SITE_TITLE,
     description: SITE_TAGLINE,
-    images: [ogImage.src],
+    images: [banner.src],
   },
 }
 
