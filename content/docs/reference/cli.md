@@ -3,10 +3,10 @@ title: CLI reference
 description: Every larvae command, flag, exit code, and environment variable
 category: Reference
 order: 1
-updated: 2026-10-20
+updated: 2026-10-24
 ---
 
-larvae has nine commands: `process`, `check`, `fmt`, `lint`, `bundle`, `lsp`, `init`, `worm`, and `self`. That is the whole surface. There is no `serve` command and no `schema` command, and larvae never runs rojo for you.
+larvae has ten commands: `process`, `check`, `fmt`, `lint`, `bundle`, `lsp`, `init`, `migrate`, `worm`, and `self`. That is the whole surface. There is no `serve` command and no `schema` command, and larvae never runs rojo for you.
 
 Running `larvae` with no arguments prints the logo beside the help text, fastfetch style. `larvae --help` does the same. `larvae <cmd> -h` prints that command's help.
 
@@ -188,13 +188,41 @@ The starter config holds the root short forms `input`, `output`, and `target`, a
 
 Detection folds sibling Rojo mounts into the directory that holds them, so `src/client`, `src/server`, and `src/shared` become `input = "src"`. A package directory never becomes an input; it becomes an alias instead, unless `.luaurc` already defines one.
 
-When the project already has a `stylua.toml` or a `selene.toml`, `init` writes a note pointing at that file instead of keys, because written defaults would silently override settings the project already made. It also offers to add `.larvae/` and `dist/` to `.gitignore`.
+When the project already has a `stylua.toml` or a `selene.toml`, `init` writes a note pointing at that file instead of keys, because written defaults would silently override settings the project already made. [`migrate`](#migrate) moves those keys in later. It also offers to add `.larvae/` and `dist/` to `.gitignore`.
 
 `init` also writes `"lint": { "*": false }` into `.luaurc`, because larvae covers all 28 of the Luau compiler's lints and with both linters on each finding arrives twice under two names. Three promises about that edit:
 
 - The edit is textual, it does not parse the file and write it again, so every other byte survives, comments included.
 - The command changes nothing when the file already sets `lint`, because that is a project with an opinion.
 - The command creates no `.luaurc` when the project has none.
+
+### `migrate`
+
+Moves the settings of StyLua, selene, and darklua into `larvae.toml`.
+
+```shell
+larvae migrate
+larvae migrate --yes   # every config found, without the checklist
+```
+
+The command finds `stylua.toml` or `.stylua.toml`, `selene.toml`, and `.darklua.json` or `.darklua.json5`, and shows a checklist with every file checked. Type a number to check or uncheck a file, and press Enter to move the checked ones. `q` quits and changes nothing. A run outside a terminal needs `--yes`.
+
+| From | To |
+|---|---|
+| a StyLua key that `[fmt]` takes | `[fmt]`, with `"Tabs"` written as `"tabs"` |
+| StyLua's `syntax` | nowhere, because larvae formats Luau always |
+| selene's `std` and `exclude` | `[lint]` |
+| a selene `[lints]` level for a larvae lint | `[lint.rules]` |
+| a selene `[config]` setting that a larvae lint reads | `[lint.options]` |
+| a darklua rule that larvae has, with parameters larvae reads | `[rules]` |
+| darklua `inject_global_value` with a literal `value` | `[defines]` |
+| darklua's `generator` | `[process] generator`, and `column_span` to `[minify]` |
+
+Each setting that moves leaves its source file. A setting that larvae does not read stays where it is, so a key from a later version of a tool is not lost, and the report names each one. A source file with nothing left is deleted. Where `larvae.toml` already sets a key, that value stays, because larvae read it over the other file already.
+
+larvae writes `larvae.toml` first and loads it. When the result does not load, the command puts the old file back and changes nothing else. The comments of the TOML files stay. A darklua file that keeps some settings is written back as JSON, so its JSON5 comments go.
+
+Moving `stylua.toml` and `selene.toml` changes no result, because larvae already reads both. larvae does not read a darklua file, so its rules start to run under `process`, in larvae's order. A darklua file with no `rules` list ran darklua's default rules, and larvae runs none until `[rules]` names them.
 
 ### `worm`
 
