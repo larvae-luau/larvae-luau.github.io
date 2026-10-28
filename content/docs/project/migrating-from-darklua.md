@@ -3,10 +3,12 @@ title: Migrating from darklua
 description: What ports directly, what changes, and what your stylua and selene files keep doing
 category: Project
 order: 2
-updated: 2026-08-16
+updated: 2026-10-24
 ---
 
 larvae is a drop in alternative to darklua. Most of a `.darklua.json` ports over with a rename and a table move, and nothing that fails ports silently: every darklua rule name gets either a working rule or an error that names the larvae way to do the same thing.
+
+`larvae migrate` does the move for you. It moves each darklua rule that larvae has, `inject_global_value` into `[defines]`, and the generator, and it takes `stylua.toml` and `selene.toml` in the same run. What larvae cannot express stays in the old file. See [`migrate`](/docs/reference/cli#migrate).
 
 ## Instance requires port in both directions
 
@@ -84,7 +86,7 @@ If you would rather move to native string requires while you are here, drop the 
 
 ## Your stylua and selene files keep working
 
-A darklua project usually formats with stylua and lints with selene. larvae replaces both, and the migration cost is zero: larvae reads `stylua.toml` (or `.stylua.toml`) and `selene.toml` as they are, so the project keeps its settings and the output does not change because you changed tools.
+A darklua project usually formats with stylua and lints with selene. larvae replaces both, and the migration cost is zero: larvae reads `stylua.toml` (or `.stylua.toml`) and `selene.toml` as they are, so the project keeps its settings and the output does not change because you changed tools. When you want the settings in `larvae.toml`, `larvae migrate` moves them.
 
 The unknown key rule differs by file, on purpose:
 

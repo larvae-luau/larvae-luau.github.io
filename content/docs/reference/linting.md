@@ -3,7 +3,7 @@ title: Linting
 description: All sixty three lints, their default levels, and the flag comments that silence them
 category: Reference
 order: 5
-updated: 2026-08-30
+updated: 2026-10-24
 ---
 
 `larvae lint` reports suspicious code. It ships 64 lints, configured in the `[lint]` table of `larvae.toml`. The table is optional: `larvae lint` works with no config at all.
@@ -52,7 +52,7 @@ Resolution runs most specific first: a name in `[lint.rules]`, then the group in
 
 Two rules about groups surprise a reader who knows Biome.
 
-The table is separate from `[lint.rules]`, not nested inside it. This is not a matter of taste: a table under `[lint.rules]` already means the lints of a worm of that name, and nothing reserves a worm name, so a worm published as `style` would make `[lint.rules.style]` mean two things at once. A separate table has no such collision, and every config written before groups existed reads exactly as it did. `selene.toml` needs no change either, because selene has no group concept and its flat `[rules]` still resolves at the first step.
+The table is separate from `[lint.rules]`, not nested inside it. This is not a matter of taste: a table under `[lint.rules]` already means the lints of a worm of that name, and nothing reserves a worm name, so a worm published as `style` would make `[lint.rules.style]` mean two things at once. A separate table has no such collision, and every config written before groups existed reads exactly as it did. `selene.toml` needs no change either, because selene has no group concept and its flat `[lints]` still resolves at the first step.
 
 And a group does not wake a lint that is `allow` on purpose. `prefer_const` is off because it rewrites a keyword, and a project that writes `style = "info"` is asking the style lints it already sees to say less, not asking for a lint it never had. To turn one on, name it in `[lint.rules]`, which beats the group anyway.
 

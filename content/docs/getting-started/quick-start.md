@@ -3,7 +3,7 @@ title: Quick start
 description: Format, lint, and go from a Rojo project to native string requires in five minutes
 category: Getting started
 order: 2
-updated: 2026-10-20
+updated: 2026-10-24
 ---
 
 A handful of commands take an existing Rojo project from alias requires to Roblox native string requires, with formatting and linting along the way. This page walks through them, in order, on a project you already have.
@@ -32,7 +32,7 @@ larvae lint
 
 `fmt` formats files in place. `fmt --check` writes nothing and fails when it finds a difference, which is the form CI wants. `lint` prints findings, and `lint --explain <name>` describes what one lint reports and why.
 
-If the project already has a `stylua.toml` or a `selene.toml`, larvae reads it as it is, so the output does not change because you changed tools. Every option is documented in [formatting](/docs/reference/formatting) and [linting](/docs/reference/linting).
+If the project already has a `stylua.toml` or a `selene.toml`, larvae reads it as it is, so the output does not change because you changed tools. `larvae migrate` moves those settings, and a darklua config's, into `larvae.toml` when you want one file. Every option is documented in [formatting](/docs/reference/formatting) and [linting](/docs/reference/linting).
 
 ## Step 2, init
 
